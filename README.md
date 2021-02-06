@@ -1,2 +1,4 @@
 # Left-4-Dead-2-SNPCs-WIP
-Special Infected from Left 4 Dead 2
+Left 4 Dead 2 Special Infected SNPCs WIP
+Open-Beta
+
