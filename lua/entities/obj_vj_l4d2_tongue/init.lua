@@ -26,7 +26,7 @@ function ENT:CustomOnInitialize()
     self:SetMaterial("models/infected/hulk/ci_burning")
 	
 	-- Misc Functions
-	ParticleEffectAttach("smoker_tongue_fall", PATTACH_ABSORIGIN_FOLLOW, self, 0)
+	--ParticleEffectAttach("smoker_tongue_fall", PATTACH_ABSORIGIN_FOLLOW, self, 0)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomPhysicsObjectOnInitialize(phys)
@@ -35,6 +35,11 @@ function ENT:CustomPhysicsObjectOnInitialize(phys)
 	phys:EnableDrag(false)
 	phys:EnableGravity(false)
 	phys:SetBuoyancyRatio(0)
+end
+
+function ENT:Think()
+    local owner = self:GetOwner()
+    util.ParticleTracerEx("smoker_tongue_new", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PhysicsCollide(data,physobj,entity)
