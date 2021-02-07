@@ -6,12 +6,16 @@ include("shared.lua")
 	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
 	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
-ENT.TouchSound = Sound("player/smoker/hit/tongue_hit_1.wav")
+ENT.TouchSound = {"player/smoker/attack/tongue_fly_loop.wav"}
 ENT.SoundTbl_Idle = {"player/smoker/attack/tongue_fly_loop.wav"}
 ENT.TouchSoundv = 80
 ENT.DeathIdleSoundv = 90
 ENT.Decal = "vj_acidslime1"
 ENT.AlreadyPaintedDecal = false
+
+ENT.Model = nil
+ENT.IncappedEnemy = nil
+ENT.Tongue = nil
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:SetModel("models/spitball_medium.mdl")
@@ -25,8 +29,6 @@ function ENT:CustomOnInitialize()
 	self:SetNoDraw(true) 
     self:SetMaterial("models/infected/hulk/ci_burning")
 	
-	-- Misc Functions
-	--ParticleEffectAttach("smoker_tongue_fall", PATTACH_ABSORIGIN_FOLLOW, self, 0)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomPhysicsObjectOnInitialize(phys)
@@ -36,15 +38,30 @@ function ENT:CustomPhysicsObjectOnInitialize(phys)
 	phys:EnableGravity(false)
 	phys:SetBuoyancyRatio(0)
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Think()
     local owner = self:GetOwner()
     util.ParticleTracerEx("smoker_tongue_new", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnThink() 
+	local owner = self:GetOwner()
+	if IsValid(self.IncappedEnemy) then
+	    self.Tongue:SetOrigin(self.IncappedEnemy:GetPos())
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PhysicsCollide(data,physobj,entity)
+    local owner = self:GetOwner()
+    if IsValid(data.HitEntity) then
+        VJ_CreateSound(data.HitEntity,VJ_PICKRANDOMTABLE({"player/smoker/voice/attack/smoker_tonguehit_01.wav","player/smoker/voice/attack/smoker_tonguehit_02.wav"}),95,owner:VJ_DecideSoundPitch(100,100))
+    end
+    if !IsValid(data.HitEntity) then
+        util.ParticleTracerEx("smoker_tongue_new_fall", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
+        VJ_CreateSound(self,VJ_PICKRANDOMTABLE({"player/smoker/hit/tongue_hit_1.wav"}),95,owner:VJ_DecideSoundPitch(100,100))
+    end
 	-- Removes
-	self.Dead = true
+	self.Dead = false
 	if self.idlesoundc then self.idlesoundc:Stop() end
 	self:StopParticles()
 	
@@ -67,6 +84,7 @@ function ENT:PhysicsCollide(data,physobj,entity)
                                 if (ent1 == owner and ent2 == data.HitEntity) then return false end
                             end)]]
                             owner.nextIncapSong = CurTime()
+                            owner.nextIncapSong2 = CurTime()
                             owner.pIncapacitatedEnemy = data.HitEntity
 
                             owner.EnemyMoveType = data.HitEntity:GetMoveType()
@@ -84,6 +102,7 @@ function ENT:PhysicsCollide(data,physobj,entity)
                             owner.pDragController:Spawn()
                             owner.pDragController:SetNoDraw(true)
                             owner.pDragController:SetParent(owner)
+                            self.DragController = owner.pDragController
 
                             owner.pEnemyObj = ents.Create("prop_physics")
                             owner.pEnemyObj:SetModel("models/dav0r/hoverball.mdl")
@@ -99,15 +118,30 @@ function ENT:PhysicsCollide(data,physobj,entity)
                             data.HitEntity:SetGravity(0)
                             data.HitEntity:SetMoveType(MOVETYPE_FLY)
                             constraint.NoCollide(data.HitEntity, owner.pEnemyObj, 1, 1)
-                            constraint.Keepupright(owner.pEnemyObj, owner.pEnemyObj:GetAngles(), 0, 999999)
+                            constraint.Keepupright(owner.pEnemyObj, owner.pEnemyObj:GetAngles(), 0, 999999)  
+
+		                    hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
+				                if victim == self.pIncapacitatedEnemy then
+				                    victim:SetParent(nil)
+				                    victim:SetMoveType(self.EnemyMoveType)
+				                    victim:SetObserverMode(0)
+				                    victim:DrawViewModel(true)
+				                    victim:DrawWorldModel(true)
+				                    owner:DismountSmoker()              
+				                end
+				            end)
+
                             --owner.pEnemyObj:SetParent(data.HitEntity)
                             --owner.pEnemyObj:SetLocalPos(Vector(0, 0, 0))
 
                             owner.incapAngles = owner:GetAngles()
-                            owner.nextTongueSpawn = CurTime()
 
                             constraint.Rope(owner.pDragController, owner.pEnemyObj, 1, 1, owner.pDragController:GetPos(), owner.pEnemyObj:GetPos(), 50, 5, 0, 1, "particle/smoker_tongue_beam", false)
-
+                            for k, v in ipairs(ents.FindByClass("player")) do
+                                if data.HitEntity:IsNPC() then
+                                    VJ_CreateSound(v,"vj_l4d2/music/tags/tonguetiedhit.wav",95,owner:VJ_DecideSoundPitch(100,100))
+                                end
+                            end
                            	if data.HitEntity:IsPlayer() then
                                 --[[local weapons = data.HitEntity:GetWeapons()
                                 owner.tblEnemyWeapons = {}
@@ -120,7 +154,6 @@ function ENT:PhysicsCollide(data,physobj,entity)
                                     data.HitEntity:DrawViewModel(false)
                                     data.HitEntity:DrawWorldModel(false)
                                 end
-                                data.HitEntity:StripWeapons()
                             end
                             data.HitEntity:SetNoDraw(true)
 							local tr = util.TraceLine({start = owner:GetPos() + owner:GetUp() * owner:OBBMins():Distance(owner:OBBMaxs()), endpos = owner:GetPos() - owner:GetUp() * owner:OBBMaxs():Distance(owner:OBBMins()), filter = {owner, owner.pIncapacitatedEnemy}})
@@ -130,8 +163,9 @@ function ENT:PhysicsCollide(data,physobj,entity)
                             mdl:SetPos(--[[tr.HitPos or ]]owner.pEnemyObj:GetPos())
                             mdl:SetAngles(ang)
                             mdl:Spawn()
-                            mdl:SetRenderMode(1)
+                            mdl:SetRenderMode(0)
                             mdl:SetColor(Color(0, 0, 0, 0))
+                            self.IncappedEnemy = mdl
                             if data.HitEntity:IsPlayer() then
                                 mdl:SetParent(owner.pEnemyObj)
                             else
@@ -142,6 +176,24 @@ function ENT:PhysicsCollide(data,physobj,entity)
                             mdl:SetCycle(0)
                             mdl:SetLocalPos(Vector(0, 0, 0))
                             mdl:SetLocalAngles(Angle(0, 0, 0))
+                            mdl:SetModelScale(1.03)
+                            local tongue = ents.Create("prop_dynamic")
+                            tongue:SetModel("models/vj_l4d2/smoker_tongue_attach.mdl")
+                            tongue:SetPos(owner.pEnemyObj:GetPos())
+                            tongue:SetAngles(ang)
+                            tongue:Spawn()
+                            tongue:SetRenderMode(0)
+                            if data.HitEntity:IsPlayer() then
+                                tongue:SetParent(owner.pEnemyObj)
+                            else
+                                tongue:SetParent(data.HitEntity)
+                            end
+                            tongue:ResetSequence(tongue:LookupSequence("NamVet_Idle_Tongued_Dragging_Ground"))
+                            tongue:ResetSequenceInfo()
+                            tongue:SetCycle(0)
+                            tongue:SetLocalPos(Vector(0, 0, 0))
+                            tongue:SetLocalAngles(Angle(0, 0, 0))  
+                            mdl:DeleteOnRemove(tongue)                                       
                             timer.Simple(0.15, function()
                                 if !IsValid(owner) then return end
                                 net.Start("smoker_PounceEnemy")
@@ -158,6 +210,7 @@ function ENT:PhysicsCollide(data,physobj,entity)
                             end]]
                             --owner:SetAngles(data.HitEntity:GetAngles())
                             owner.pEnemyRagdoll = mdl
+                            owner.pEnemyTongueAttach = tongue
                             if data.HitEntity:IsNPC() then
                                 if not data.HitEntity:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
                                     data.HitEntity:AddEFlags(EFL_NO_THINK_FUNCTION)
@@ -190,6 +243,9 @@ function ENT:PhysicsCollide(data,physobj,entity)
                                 if ent.IncapSong ~= nil then
                                     ent.IncapSong:Stop()
                                 end
+                                if ent.IncapSong2 ~= nil then
+                                    ent.IncapSong2:Stop()
+                                end
                                 if IsValid(ent.pEnemyObj) then
                                 	ent.pEnemyObj:Remove()
                                 end
@@ -200,12 +256,7 @@ function ENT:PhysicsCollide(data,physobj,entity)
                                         enemy:SetPos(owner.vecLastPos)
                                         enemy:SetObserverMode(0)
                                         enemy:DrawViewModel(true)
-                                        enemy:DrawWorldModel(true)
-                                        if table.Count(owner.tblEnemyWeapons) > 0 then
-                                            for i = 1, table.Count(owner.tblEnemyWeapons) do
-                                                enemy:Give(owner.tblEnemyWeapons[i], true)
-                                            end
-                                        end
+                                        enemy:DrawWorldModel(true)                               
                                     end
                                     if enemy:GetNoDraw() == true then
                                         enemy:SetNoDraw(false)
@@ -226,7 +277,6 @@ function ENT:PhysicsCollide(data,physobj,entity)
     end
 
 	-- Effects
-	self:EmitSound( self.TouchSound,self.TouchSoundv,math.random(80,100))
 	self:Remove()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
