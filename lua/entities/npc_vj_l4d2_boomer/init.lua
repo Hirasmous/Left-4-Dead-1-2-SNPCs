@@ -281,6 +281,26 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:IsEntityAlly(ent)
+    if ent:IsNPC() then
+        if ent.IsVJBaseSNPC == true then
+            for i = 1, table.Count(ent.VJ_NPC_Class) do
+                if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
+                    return true
+                end
+            end
+        end
+    elseif ent:IsPlayer() then
+        if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
+            return true
+        end
+        if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
+            return true
+        end
+    end
+    return false
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:VomitEffect(hPlayer)
 	util.AddNetworkString("nDoBoomerBlast")
 	net.Start("nDoBoomerBlast")
@@ -302,8 +322,8 @@ function ENT:VomitBile()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:VomitEnemy(v)
-	if v:IsPlayer() && self.Enemy_IsPuked == true && self:Disposition(v) != D_LI then
-    	v:EmitSound("Event.VomitInTheFace")
+	if self.VJ_TheController == v then return end 
+	if (v:IsPlayer() or v:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
         local numBones = v:GetBoneCount()
         self.Vomit = {}
         for i = 0, numBones -1 do
@@ -329,8 +349,10 @@ function ENT:VomitEnemy(v)
 	    end  
 	    if v:IsPlayer() then
 	    	self:VomitEffect(v)
-	    end
-	    if v.IsControllingNPC == true then return end                                    
+	    	VJ_CreateSound(v,"vj_l4d2/music/terror/pukricide.wav",100,self:VJ_DecideSoundPitch(100,100))
+	    elseif v:IsNPC() then
+	        VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.wav",90,self:VJ_DecideSoundPitch(100,100))  
+	    end                       
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
