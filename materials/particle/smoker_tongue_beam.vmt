@@ -1,0 +1,5 @@
+Sprite
+{
+	$basetexture "particle/Smoker_Tongue_Beam"
+	$spriterendermode 1
+}
