@@ -234,7 +234,7 @@ function ENT:Tank_Soundtrack(fadeout)
 		filter:AddAllPlayers()
         self.soundtrack = CreateSound(game.GetWorld(),soundtracks, filter)
 		self.SoundTracks = self.soundtrack
-		self.soundtrack:ChangeVolume(100)
+		self.soundtrack:SetSoundLevel(0)		
 		self.soundtrack:PlayEx(1,100)
 	end
 	if fadeout == true then
