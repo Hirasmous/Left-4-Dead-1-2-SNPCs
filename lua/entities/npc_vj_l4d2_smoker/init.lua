@@ -542,6 +542,10 @@ function ENT:CustomOnThink()
 		self.HasRangeAttack = false    
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
+			if CurTime() >= self.nextTongueSpawn then
+				util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() + enemy:OBBCenter(), false, self:EntIndex(), 3)
+				self.nextTongueSpawn = CurTime() + 0.25
+			end
 			local dist = self:GetPos():Distance(enemy:GetPos())      
 			if self.VJ_IsBeingControlled then
 				if dist <= self.IncapacitationRange then
