@@ -104,6 +104,7 @@ function ENT:PhysicsCollide(data,physobj,entity)
                             --owner.pEnemyObj:SetLocalPos(Vector(0, 0, 0))
 
                             owner.incapAngles = owner:GetAngles()
+                            owner.nextTongueSpawn = CurTime()
 
                             constraint.Rope(owner.pDragController, owner.pEnemyObj, 1, 1, owner.pDragController:GetPos(), owner.pEnemyObj:GetPos(), 50, 5, 0, 1, "particle/smoker_tongue_beam", false)
 
