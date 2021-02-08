@@ -1,0 +1,16 @@
+VertexLitGeneric
+{
+$baseTexture "models\infected\witch/witch_hair"
+
+$bumpmap "effects\flat_normal"
+$alphatest 1
+$allowalphatocoverage 1
+$nocull 1
+$allowdiffusemodulation 0
+$halflambert 1
+$phong 1
+$phongfresnelranges "[.01 .5 1]"
+$basemapluminancephongmask 1
+$phongboost 8
+$phongexponent 10
+}

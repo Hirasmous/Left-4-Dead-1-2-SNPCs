@@ -1,0 +1,63 @@
+VertexLitGeneric
+{
+$baseTexture "models\infected\witch/witch"
+$bumpmap "models\infected\witch/witch_normal"
+$halflambert 0
+$phong 1
+$allowdiffusemodulation 0
+$diffuseexp 1
+$lightwarptexture "models\survivors\gambler\gambler_head_wrp"
+
+$phongfresnelrange_0 ".01"
+$phongfresnelrange_1 ".15"
+$phongfresnelrange_2 1
+$phongfresnelranges "[.01 .15 1]"
+$phongtint "[0.8 0.8 1]"
+$phongboost 30
+$phongexponent 20
+$ambientocclusion 1
+$detail "models/infected/common/l4d2/ci_burning"
+$seamless_detail 1
+$seamless_scale ".005"
+
+$detailblendfactor .001 
+$detailblendmode 2
+
+$bbqamount 1
+
+$BurnLevel 0
+Proxies
+{
+BBQLevel
+{
+resultVar $bbqamount
+}
+BurnLevel
+{
+resultVar $burnlevel
+}
+Multiply
+{
+srcVar1 $phongfresnelrange_0
+srcVar2 $bbqamount
+resultVar "$phongfresnelranges[0]"
+}
+Multiply
+{
+srcVar1 $phongfresnelrange_1
+srcVar2 $bbqamount
+resultVar "$phongfresnelranges[1]"
+}
+Multiply
+{
+srcVar1 $phongfresnelrange_2
+srcVar2 $bbqamount
+resultVar "$phongfresnelranges[2]"
+}
+Equals
+{
+srcVar1 $BurnLevel
+resultVar $detailblendfactor
+}
+}
+}
