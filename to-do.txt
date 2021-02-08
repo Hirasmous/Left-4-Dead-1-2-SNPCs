@@ -37,9 +37,9 @@ General:
 -New StripAmmo() function ✅
 
 Bugs:
-- Sometimes when the infected who can incap die while incapping an enemy then the enemy gets sent to a random location
+- Sometimes when an incapper dies the enemy gets sent to a random location
 - You have to click IN_USE many times before ghosting turns on
-- Smoker doesn't stop incapping after the enemy dies
+- Smoker doesn't stop incapping after the enemy dies ✅
 
 ConVars:
 -Should incapped NPC enemies drop their weapons?
