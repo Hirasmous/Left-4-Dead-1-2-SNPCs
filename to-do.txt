@@ -32,8 +32,9 @@ General:
 -Conserve incap enemy's bodygroups/skins to CSEnt
 -Be able to shove off on incapped enemies ✅
 -Proper recharge HUD icon when controlled
+-New StripAmmo() function ✅
 -Bug: You have to click IN_USE many times before ghosting turns on
 
 ConVars:
--Should incapped NPC enemies drop their weapons
+-Should incapped NPC enemies drop their weapons?
 
