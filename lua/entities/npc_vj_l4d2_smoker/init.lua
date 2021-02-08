@@ -103,6 +103,7 @@ ENT.pEnemyTongueAttach = nil --the incapacitated enemy's tongue attach
 ENT.IncapAnimation = "Tongue_Attack_Incap_Survivor_Idle"
 ENT.vecLastPos = Vector(0, 0, 0)
 ENT.tblEnemyWeapons = {}
+ENT.tblEnemyAmmo = {}
 ENT.TongueBreakDist = 1000
 ENT.iStrangleDamage = 12
 ENT.IsEnemyStuck = false
@@ -418,17 +419,19 @@ end
 function ENT:StripEnemyWeapons(ent)
     local weapons = ent:GetWeapons()
     self.tblEnemyWeapons = {}
+    self.tblEnemyAmmo = {}
+    self.tblEnemyAmmo = ent:GetAmmo()
     for l, w in ipairs(weapons) do
         if w.Base ~= "weapon_vj_base" then
             local index = table.Count(self.tblEnemyWeapons) + 1
             self.tblEnemyWeapons[index] = {}
             self.tblEnemyWeapons[index][1] = w:GetClass()
-            self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1(), ent:GetAmmoCount(w:GetPrimaryAmmoType())}
-            self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2(), ent:GetAmmoCount(w:GetSecondaryAmmoType())}
+            self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
+            self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
         end
     end
-    ent:StripAmmo()
     ent:StripWeapons()
+    ent:StripAmmo()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnSchedule()
@@ -483,22 +486,22 @@ function ENT:DismountSmoker()
 			enemy:DrawViewModel(true)
 			enemy:DrawWorldModel(true)
 		end
-		if table.Count(self.tblEnemyWeapons) > 0 then
+        if table.Count(self.tblEnemyWeapons) > 0 then
             for i = 1, table.Count(self.tblEnemyWeapons) do
                 local tbl = self.tblEnemyWeapons
                 enemy:Give(tbl[i][1], true)
                 local wpn = enemy:GetWeapon(tbl[i][1])
                 if tbl[i][2][1] ~= -1 then
-                    enemy:GiveAmmo(tbl[i][2][3], game.GetAmmoName(tbl[i][2][1]), true)
                     wpn:SetClip1(tbl[i][2][2])
                 end
                 if tbl[i][3][1] ~= -1 then
-                    enemy:GiveAmmo(tbl[i][3][3], game.GetAmmoName(tbl[i][3][1]), true)
                     wpn:SetClip2(tbl[i][3][2])
                 end
             end
-            table.Empty(self.tblEnemyWeapons)
-		end
+        end
+        for a, c in ipairs(self.tblEnemyAmmo) do
+            enemy:GiveAmmo(c, game.GetAmmoName(a), true)
+        end
 	end
 	net.Start("smoker_RemoveCSEnt")
 		net.WriteString(tostring(self:EntIndex()))
