@@ -2,8 +2,8 @@ Boomette:
 -Fix broken model
 
 Charger:
--Add shove code to repo
--Keep charging until he hits a wall or travels certain dist
+-Add shove code to repo ✅
+-Keep charging until he hits a wall or travels certain dist ✅
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
@@ -35,4 +35,5 @@ General:
 -Bug: You have to click IN_USE many times before ghosting turns on
 
 ConVars:
--Should incapped NPC enemies drop their weapon?
+-Should incapped NPC enemies drop their weapons
+
