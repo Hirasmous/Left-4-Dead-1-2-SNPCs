@@ -33,8 +33,11 @@ General:
 -Be able to shove off on incapped enemies ✅
 -Proper recharge HUD icon when controlled
 -New StripAmmo() function ✅
--Bug: Sometimes when the infected who can incap die while incapping an enemy then the enemy gets sent to a random location
--Bug: You have to click IN_USE many times before ghosting turns on
+
+Bugs:
+- Sometimes when the infected who can incap die while incapping an enemy then the enemy gets sent to a random location
+- You have to click IN_USE many times before ghosting turns on
+- Smoker doesn't stop incapping after the enemy dies
 
 ConVars:
 -Should incapped NPC enemies drop their weapons?
