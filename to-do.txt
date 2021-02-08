@@ -18,6 +18,7 @@ Smoker:
 -Incapped enemy pose params
 -Collision for tongue (lerp mouth att pos & enemy pos)
 -Fix Cloud smoke damaging Smoker
+-Cant incap when being controlled
 
 Spitter:
 -Fix Spitter goo damaging Spitter
