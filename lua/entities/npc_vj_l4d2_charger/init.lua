@@ -691,9 +691,9 @@ function ENT:DismountCharger()
             enemy:DrawViewModel(true)
             enemy:DrawWorldModel(true)
         end
-	    if table.Count(ent.tblEnemyWeapons) > 0 then
-		for i = 1, table.Count(ent.tblEnemyWeapons) do
-		    local tbl = ent.tblEnemyWeapons
+	    if table.Count(self.tblEnemyWeapons) > 0 then
+		for i = 1, table.Count(self.tblEnemyWeapons) do
+		    local tbl = self.tblEnemyWeapons
 		    enemy:Give(tbl[i][1], true)
 		    local wpn = enemy:GetWeapon(tbl[i][1])
 		    if tbl[i][2][1] ~= -1 then
