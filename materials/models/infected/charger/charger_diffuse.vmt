@@ -1,0 +1,19 @@
+vertexlitgeneric
+
+{
+$baseTexture "models\infected\charger\charger_diffuse"
+$lightwarptexture "models\survivors\coach\coach_head_wrp"
+$halflambert 0
+$diffuseexp 1
+$bumpmap "models\infected\charger\charger_normal"
+$phongexponenttexture "models\infected\charger\charger_body_exponent"
+$phong 1
+$phongboost 4
+$phongexponent 30
+$ambientocclusion 1
+$phongtint "[0 0 0]"
+$phongfresnelranges "[.1 .5 1]"
+$allowdiffusemodulation 0
+$ambientboost 0
+$color2 "[1.5 1.5 1.5]"
+}
