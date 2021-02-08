@@ -1,3 +1,7 @@
+Charger:
+-Add shove code to repo
+-Keep charging until he hits a wall or travels certain dist
+
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps
 -Don't incap player who is controlling 
