@@ -1,0 +1,13 @@
+vertexlitgeneric
+{
+$basetexture "models\infected\jockey\jockey_body_color"
+$bumpmap "models\infected\jockey\jockey_body_normal"
+$phongexponenttexture "models\infected\jockey\jockey_exponent"
+$phong 1
+$phongboost 3
+$halflambert 0
+$phongfresnelranges "[.2 .5 5]"
+$ambientocclusion 1
+$diffuseexp "1.0"
+$lightwarptexture "models\survivors\gambler\gambler_head_wrp"
+}
