@@ -1,0 +1,14 @@
+VertexLitGeneric
+{
+$baseTexture "models\infected\boomer/boomer_color"
+$bumpmap "models\infected\boomer/boomer_normal"
+$allowdiffusemodulation 0
+$lightwarptexture "models\survivors\coach\coach_head_wrp"
+$halflambert 0
+$diffuseexp 1 $phong 1
+$phongfresnelranges "[.1 .5 1]"
+$phongtint "[1 1 1]"
+$phongboost 4
+$phongexponent 15
+$ambientocclusion 1
+}
