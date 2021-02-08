@@ -1,0 +1,33 @@
+vertexlitgeneric
+
+{
+$baseTexture "models\infected\hunter\hunter_01"
+$bumpmap "models\infected\hunter\hunter_normal"
+$phongexponenttexture "models\infected\hunter\hunter_exponent"
+$halflambert 0
+$phong 1
+$phongboost 15
+
+
+$phongfresnelranges "[.2 .5 5]"
+$allowdiffusemodulation 0
+$lightwarptexture "models\survivors\coach\coach_head_wrp"
+$detail "models/infected/hunter/hunter_01_detail.vtf"
+$detailscale 2
+$detailblendfactor .001 
+$detailblendmode 0
+$detailAmount 0
+$ambientocclusion 1
+Proxies
+{
+BloodyHands
+{
+resultVar $detailAmount
+}
+Equals
+{
+srcVar1 $detailAmount
+resultVar $detailblendfactor
+}
+}
+}
