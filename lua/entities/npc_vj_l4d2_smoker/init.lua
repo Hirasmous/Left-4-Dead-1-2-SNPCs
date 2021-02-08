@@ -243,15 +243,17 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
         self:FootStepSoundCode()
     end
     if key == "event_incap_hit" then
-		local incapent = self.pIncapacitatedEnemy
-		if IsValid(incapent) then
-			local applyDmg = DamageInfo()
-			applyDmg:SetDamage(15)
-			applyDmg:SetDamageType(DMG_SLASH)
-			applyDmg:SetInflictor(incapent)
-			applyDmg:SetAttacker(self)
-			incapent:TakeDamage(2,self,incapent)
-			VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"},65,self:VJ_DecideSoundPitch(100,100))
+    	if self.IsEnemyStuck == true || self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
+			local incapent = self.pIncapacitatedEnemy
+			if IsValid(incapent) then
+				local applyDmg = DamageInfo()
+				applyDmg:SetDamage(15)
+				applyDmg:SetDamageType(DMG_SLASH)
+				applyDmg:SetInflictor(incapent)
+				applyDmg:SetAttacker(self)
+				incapent:TakeDamage(2,self,incapent)
+				VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"},65,self:VJ_DecideSoundPitch(100,100))
+			end
 		end
 	end
 	if key == "event_incap_voice" then
@@ -562,10 +564,9 @@ function ENT:CustomOnThink()
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
 
-			if enemy:Health() <= 0 then
-				self:DismountSmoker()
-				return
-			end
+			if enemy:Health() <= 0 then self:DismountSmoker() return end
+
+			if self.HasEnemyIncapacitated == false then return end
 
 			--create tongue
 			if CurTime() >= self.nextTongueSpawn then
@@ -680,7 +681,7 @@ function ENT:CustomOnThink()
 					self.IsEnemyFloating = false
 					enemy:SetMoveType(MOVETYPE_FLY)
 					if tr1.Hit == true then
-						enemy:SetLocalVelocity(-enemy:GetForward() * 50 + enemy:GetUp() * 25)
+						enemy:SetLocalVelocity(-enemy:GetForward() * 50 + enemy:GetUp() * 50)
 					else
 						enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
 					end
@@ -710,7 +711,7 @@ function ENT:CustomOnThink()
 			if self.IsEnemyStuck == false then
 				--check if enemy is stuck
 				if CurTime() >= self.nextEnemyPosCheck then
-					if self.vecEnemyPos == enemy:GetPos() then
+					if self.vecEnemyPos:Distance(enemy:GetPos()) < 10 then
 						FreezeEnemy()
 					end
 					self.vecEnemyPos = enemy:GetPos()
@@ -726,18 +727,7 @@ function ENT:CustomOnThink()
 					FreezeEnemy()
 				end
 			else
-				--if enemy is too far & stuck then strangle 
-				if dist > self.IncapacitationRange then
-					if CurTime() >= self.nextDamageTime then
-						if !IsValid(ene) then return end
-						if ene:IsPlayer() && ene:Alive() == false then return end
-						local dmgInfo = DamageInfo()
-						dmgInfo:SetDamage(self.iStrangleDamage)
-						dmgInfo:SetDamageType(DMG_SLASH)
-						ene:TakeDamageInfo(dmgInfo)
-						self.nextDamageTime = CurTime() + 1.5
-					end
-				end
+				enemy:SetLocalVelocity(Vector(0, 0, 0))
 			end
 		else
 			self:DismountSmoker()
@@ -903,8 +893,13 @@ function ENT:Controller_Initialize(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    if dmginfo:GetDamageType() == DMG_CLUB then
-        self:VJ_ACT_PLAYACTIVITY("Shoved_BackWard",false,3,false)
+    local anims = VJ_PICK{"Shoved_Backward"}
+    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+            self:DismountSmoker()
+            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)      
+        end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
