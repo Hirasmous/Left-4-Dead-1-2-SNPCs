@@ -90,12 +90,18 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     dragObj:SetPos(enemy:GetPos() + enemy:OBBCenter())
                     dragObj:Spawn()
                     owner.pEnemyObj = dragObj 
-                    dragObj:SetNoDraw(false)
+                    dragObj:SetNoDraw(true)
                     enemy:SetGravity(0)
                     enemy:SetMoveType(MOVETYPE_FLY)
                     constraint.NoCollide(enemy, dragObj, 1, 1)
                     constraint.Keepupright(dragObj, dragObj:GetAngles(), 0, 999999)
 
+                    hook.Add("PhysgunPickup", "smoker_AllowDragObjPickup", function(ply, ent)
+                        if ent == owner.pEnemyObj then
+                            return false
+                        end
+                    end)
+					
                     owner.vecEnemyPos = dragObj:GetPos()
                     owner.nextEnemyPosCheck = CurTime() + 2
                     owner.nextTongueSpawn = CurTime()
