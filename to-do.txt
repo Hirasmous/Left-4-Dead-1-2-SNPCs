@@ -6,9 +6,9 @@ Charger:
 -Keep charging until he hits a wall or travels certain dist
 
 Hunter:
--Stop leap attack after hunter's target is killed before he stops crouching and leaps
+-Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
 -Don't incap player who is controlling 
--Properly implement shove anims
+-Properly implement shove anims ✅
 -Proper crouch charging
 
 Jockey:
@@ -27,12 +27,12 @@ Tank:
 General:
 -Ignore incapped players/enemies if there are more enemies nearby
 -Match shared functions
-	> Update IsEntityAlly function
+	> Update IsEntityAlly function ✅
 	> Create a module that holds shared funcs
 -Conserve incap enemy's bodygroups/skins to CSEnt
--Be able to shove off on incapped enemies
+-Be able to shove off on incapped enemies ✅
 -Proper recharge HUD icon when controlled
--You have to click IN_USE many times before ghosting turns on
+-Bug: You have to click IN_USE many times before ghosting turns on
 
 ConVars:
 -Should incapped NPC enemies drop their weapon?
