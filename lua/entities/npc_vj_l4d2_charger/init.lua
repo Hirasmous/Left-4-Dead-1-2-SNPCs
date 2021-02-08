@@ -293,6 +293,22 @@ function ENT:IsEntityAlly(ent)
     return false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:StripEnemyWeapons(ent)
+    local weapons = ent:GetWeapons()
+    self.tblEnemyWeapons = {}
+    for l, w in ipairs(weapons) do
+        if w.Base ~= "weapon_vj_base" then
+            local index = table.Count(self.tblEnemyWeapons) + 1
+            self.tblEnemyWeapons[index] = {}
+            self.tblEnemyWeapons[index][1] = w:GetClass()
+            self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1(), ent:GetAmmoCount(w:GetPrimaryAmmoType())}
+            self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2(), ent:GetAmmoCount(w:GetSecondaryAmmoType())}
+        end
+    end
+    ent:StripWeapons()
+    ent:StripAmmo()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Pummel_Effects(fadeout)
 	self:PlayIncapSong()
 	if fadeout == false then
@@ -478,17 +494,13 @@ function ENT:PummelEnemy(v)
 					            end
 								enemy:DropWeapon()
 							elseif enemy:IsPlayer() then
-					            local weapons = enemy:GetWeapons()
-					            for k, v in ipairs(weapons) do
-					                self.tblEnemyWeapons[table.Count(self.tblEnemyWeapons) + 1] = v:GetClass()
-					            end
+									self:StripEnemyWeapons(enemy)
 					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
 					                enemy:SetObserverMode(OBS_MODE_CHASE)
 					                enemy:SpectateEntity(camera)
 					                enemy:DrawViewModel(false)
 					                enemy:DrawWorldModel(false)
 					            end
-					            enemy:StripWeapons()
 							end
 							self.HasEnemyIncapacitated = true	
 							self.pIncapacitatedEnemy = v
@@ -586,11 +598,21 @@ function ENT:PummelEnemy(v)
 		                                enemy:SetObserverMode(0)
 		                                enemy:DrawViewModel(true)
 		                                enemy:DrawWorldModel(true)
-		                                if table.Count(self.tblEnemyWeapons) > 0 then
-		                                    for i = 1, table.Count(self.tblEnemyWeapons) do
-		                                        enemy:Give(self.tblEnemyWeapons[i], true)
-		                                    end
-		                                end
+                                        if table.Count(self.tblEnemyWeapons) > 0 then
+                                            for i = 1, table.Count(self.tblEnemyWeapons) do
+                                                local tbl = self.tblEnemyWeapons
+                                                enemy:Give(tbl[i][1], true)
+                                                local wpn = enemy:GetWeapon(tbl[i][1])
+                                                if tbl[i][2][1] ~= -1 then
+                                                    enemy:GiveAmmo(tbl[i][2][3], game.GetAmmoName(tbl[i][2][1]), true)
+                                                    wpn:SetClip1(tbl[i][2][2])
+                                                end
+                                                if tbl[i][3][1] ~= -1 then
+                                                    enemy:GiveAmmo(tbl[i][3][3], game.GetAmmoName(tbl[i][3][1]), true)
+                                                    wpn:SetClip2(tbl[i][3][2])
+                                                end
+                                            end
+                                        end
 						            end
 						            if enemy:GetNoDraw() == true then
 						                enemy:SetNoDraw(false)
@@ -642,15 +664,6 @@ function ENT:DismountCharger()
 	end
     if !IsValid(self.pIncapacitatedEnemy) then return end
     local enemy = self.pIncapacitatedEnemy
-    if enemy:IsPlayer() then
-	    if table.Count(self.tblEnemyWeapons) > 0 then
-	        for i = 1, table.Count(self.tblEnemyWeapons) do
-	        	if enemy:IsPlayer() then
-	                enemy:Give(self.tblEnemyWeapons[i], true)
-	            end
-	        end
-	    end
-	end
     hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
         if (ent1 == self and ent2 == enemy) then return true end
     end)
@@ -661,15 +674,28 @@ function ENT:DismountCharger()
         enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
     end
     if enemy:IsPlayer() then
-        --[[if enemy:IsFrozen() == true then
-            enemy:Freeze(false)
-        end]]
         if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
             enemy:SetPos(self.vecLastPos)
             enemy:SetObserverMode(0)
             enemy:DrawViewModel(true)
             enemy:DrawWorldModel(true)
         end
+	if table.Count(self.tblEnemyWeapons) > 0 then
+	    for i = 1, table.Count(self.tblEnemyWeapons) do
+		local tbl = self.tblEnemyWeapons
+		enemy:Give(tbl[i][1], true)
+		local wpn = enemy:GetWeapon(tbl[i][1])
+		if tbl[i][2][1] ~= -1 then
+		    enemy:GiveAmmo(tbl[i][2][3], game.GetAmmoName(tbl[i][2][1]), true)
+		    wpn:SetClip1(tbl[i][2][2])
+		end
+		if tbl[i][3][1] ~= -1 then
+		    enemy:GiveAmmo(tbl[i][3][3], game.GetAmmoName(tbl[i][3][1]), true)
+		    wpn:SetClip2(tbl[i][3][2])
+		end
+	    end
+			table.Empty(self.tblEnemyWeapons)
+	end
     end
 	net.Start("Charger_RemoveCSEnt")
 		net.WriteString(tostring(self:EntIndex()))
