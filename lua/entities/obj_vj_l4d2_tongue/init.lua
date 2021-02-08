@@ -216,17 +216,18 @@ function ENT:PhysicsCollide(data, physobj, entity)
                                 if table.Count(owner.tblEnemyWeapons) > 0 then
                                     for i = 1, table.Count(owner.tblEnemyWeapons) do
                                         local tbl = owner.tblEnemyWeapons
-                                        enemy:Give(tbl[i][1], true)
-                                        local wpn = enemy:GetWeapon(tbl[i][1])
+                                        ene:Give(tbl[i][1], true)
+                                        local wpn = ene:GetWeapon(tbl[i][1])
                                         if tbl[i][2][1] ~= -1 then
-                                            enemy:GiveAmmo(tbl[i][2][3], game.GetAmmoName(tbl[i][2][1]), true)
                                             wpn:SetClip1(tbl[i][2][2])
                                         end
                                         if tbl[i][3][1] ~= -1 then
-                                            enemy:GiveAmmo(tbl[i][3][3], game.GetAmmoName(tbl[i][3][1]), true)
                                             wpn:SetClip2(tbl[i][3][2])
                                         end
                                     end
+                                end
+                                for a, c in ipairs(owner.tblEnemyAmmo) do
+                                    ene:GiveAmmo(c, game.GetAmmoName(a), true)
                                 end
                             end
                             if ene:GetNoDraw() == true then
