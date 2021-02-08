@@ -4,6 +4,7 @@ Boomette:
 Charger:
 -Add shove code to repo ✅
 -Keep charging until he hits a wall or travels certain dist ✅
+-Can pound the bullseye entity when being controlled
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
