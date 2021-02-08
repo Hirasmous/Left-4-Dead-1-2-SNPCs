@@ -456,11 +456,20 @@ end
 function ENT:CustomOnLeapAttack_AfterStartTimer()
     self.nEntityIndex = self:EntIndex()
     timer.Simple(1.7,function() 
+        if IsValid(self) && IsValid(self:GetEnemy()) then 
+            self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true)           
+        end    
         if IsValid(self) then 
-            self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true) 
             self.AnimTbl_Run = {ACT_RUN}
 		    self.AnimTbl_Walk = {ACT_RUN}           
-        end     
+        end 
+    end)
+    timer.Simple(1.9, function()
+    	if IsValid(self) && IsValid(self:GetEnemy()) then 
+    		self:VJ_ACT_PLAYACTIVITY("vjges_pounce_idle_low",true,1.5,true) 
+        	self:VJ_ACT_PLAYACTIVITY("vjges_Idlenoise_02",true,1.5,true) 
+        	ParticleEffectAttach("hunter_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
+        end
     end)
     timer.Simple(2, function()
         if IsValid(self) then 
@@ -636,10 +645,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 				        end
 				    end
 			    end
-		    end)
-            self:VJ_ACT_PLAYACTIVITY("vjges_pounce_idle_low",true,1.5,true) 
-            self:VJ_ACT_PLAYACTIVITY("vjges_Idlenoise_02",true,1.5,true) 
-            ParticleEffectAttach("hunter_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
+		    end)    
         end
     end)     
 end
