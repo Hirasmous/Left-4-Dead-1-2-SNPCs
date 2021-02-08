@@ -20,6 +20,7 @@ Smoker:
 -Collision for tongue (lerp mouth att pos & enemy pos)
 -Fix Cloud smoke damaging Smoker
 -Cant incap when being controlled
+-Smoker's incapped enemy can move
 
 Spitter:
 -Fix Spitter goo damaging Spitter
