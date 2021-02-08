@@ -97,15 +97,17 @@ ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/smokerbacteria.wav","vj_l4d2/mu
 ENT.nEntityIndex = -1 --this is for identifying timers unique to each hunter in the world
 ENT.IncapacitationRange = 50 --how close can he be to incapacitate his enemies?
 ENT.HasEnemyIncapacitated = false --is he in range of being incapacitated?
-ENT.IsPouncing = false --is the sequence "Melee_Pounce" playing?
 ENT.pIncapacitatedEnemy = nil --the enemy that is incapacitated 
 ENT.pEnemyRagdoll = nil --the incapacitated enemy's ragdoll
 ENT.pEnemyTongueAttach = nil --the incapacitated enemy's tongue attach
 ENT.IncapAnimation = "Tongue_Attack_Incap_Survivor_Idle"
 ENT.vecLastPos = Vector(0, 0, 0)
 ENT.tblEnemyWeapons = {}
-ENT.pDragController = nil
 ENT.TongueBreakDist = 1000
+ENT.iStrangleDamage = 12
+ENT.IsEnemyStuck = false
+ENT.IsEnemyFloating = false
+
 ENT.SoundTbl_Incapacitation_Tied = {"vj_l4d2/music/terror/tonguetied.wav"}
 ENT.SoundTbl_Incapacitation_Incap = {"vj_l4d2/music/special_attacks/asphyxiation.wav"} 
 ENT.BacteriaSound = nil
@@ -237,7 +239,6 @@ function ENT:Incap_Effects(fadeout)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
-	//print(key)
     if key == "event_emit FootStep" then
         self:FootStepSoundCode()
     end
@@ -343,10 +344,6 @@ function ENT:PlayIncapSong_Choke(bOverwrite,fadeout)
 			self.IncapSong2 = sound2
 			sound2:SetSoundLevel(0)
 			sound2:Play()
-			--timer.Simple(math.Round(SoundDuration(sndIncap)), function()
-				--sound2:Stop()
-				--self.IncapSong2 = nil
-			--end)
 			local id = self:EntIndex()
 			timer.Create("smoker"..id.."_CheckIncapSong", 0.1, math.Round(SoundDuration(sndIncap)) * 10, function()
 				if !IsValid(self) then timer.Stop("smoker"..id.."_CheckIncapSong") end
@@ -400,11 +397,11 @@ function ENT:IsEntityAlly(ent)
 	if ent:IsNPC() then
 		if ent.IsVJBaseSNPC == true then
 			for i = 1, table.Count(ent.VJ_NPC_Class) do
-				if ent.VJ_NPC_Class[i] == self.VJ_NPC_Class[c] then
-					return true
-				end
-			end
-		end
+                if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
+                    return true
+                end
+            end
+        end
 	elseif ent:IsPlayer() then
 		if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
 			return true
@@ -416,6 +413,22 @@ function ENT:IsEntityAlly(ent)
 	return false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:StripEnemyWeapons(ent)
+    local weapons = ent:GetWeapons()
+    self.tblEnemyWeapons = {}
+    for l, w in ipairs(weapons) do
+        if w.Base ~= "weapon_vj_base" then
+            local index = table.Count(self.tblEnemyWeapons) + 1
+            self.tblEnemyWeapons[index] = {}
+            self.tblEnemyWeapons[index][1] = w:GetClass()
+            self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1(), ent:GetAmmoCount(w:GetPrimaryAmmoType())}
+            self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2(), ent:GetAmmoCount(w:GetSecondaryAmmoType())}
+        end
+    end
+    ent:StripAmmo()
+    ent:StripWeapons()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnSchedule()
 	local ent = self.pIncapacitatedEnemy
 	if IsValid(ent) then
@@ -423,11 +436,9 @@ function ENT:CustomOnSchedule()
 		local dist = self:GetPos():Distance(ent:GetPos())
 		if dist <= self.IncapacitationRange then
 			self:VJ_PlaySequence(self.IncapAnimation)
-			self.CombatFaceEnemy = false
 			self.IsChokingEnemy = true 
 		else
 			self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
-			self.CombatFaceEnemy = false
 		end
 	end
 end
@@ -444,13 +455,16 @@ function ENT:DismountSmoker()
 		self.IncapSong2:Stop()
 		self.IncapSong2 = nil
 	end
-	if !IsValid(self.pIncapacitatedEnemy) then return end
-    local enemy = self.pIncapacitatedEnemy
+    if self.VJ_IsBeingControlled then
+    	self.AnimTbl_IdleStand = {ACT_IDLE}
+    end
+	self.IsEnemyStuck = false
+	if IsValid(self.pEnemyObj) then
+		self.pEnemyObj:Remove()
+		self.pEnemyObj = nil
+	end
 	self.MovementType = VJ_MOVETYPE_GROUND
 	self:SetParent(nil)
-	self.pDragController:Remove()
-	self.pDragController = nil
-	--self:VJ_ACT_PLAYACTIVITY("Jump", true, 0, false)
 	if !IsValid(self.pIncapacitatedEnemy) then return end
 	local enemy = self.pIncapacitatedEnemy
 	enemy:SetMoveType(self.EnemyMoveType)
@@ -461,11 +475,27 @@ function ENT:DismountSmoker()
 		enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
 	end
 	if enemy:IsPlayer() then
+		enemy:SetParent(nil)
 		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-			enemy:SetPos(self.vecLastPos)
 			enemy:SetObserverMode(0)
 			enemy:DrawViewModel(true)
 			enemy:DrawWorldModel(true)
+		end
+		if table.Count(self.tblEnemyWeapons) > 0 then
+            for i = 1, table.Count(self.tblEnemyWeapons) do
+                local tbl = self.tblEnemyWeapons
+                enemy:Give(tbl[i][1], true)
+                local wpn = enemy:GetWeapon(tbl[i][1])
+                if tbl[i][2][1] ~= -1 then
+                    enemy:GiveAmmo(tbl[i][2][3], game.GetAmmoName(tbl[i][2][1]), true)
+                    wpn:SetClip1(tbl[i][2][2])
+                end
+                if tbl[i][3][1] ~= -1 then
+                    enemy:GiveAmmo(tbl[i][3][3], game.GetAmmoName(tbl[i][3][1]), true)
+                    wpn:SetClip2(tbl[i][3][2])
+                end
+            end
+            table.Empty(self.tblEnemyWeapons)
 		end
 	end
 	net.Start("smoker_RemoveCSEnt")
@@ -475,24 +505,11 @@ function ENT:DismountSmoker()
 		self.pEnemyRagdoll:Remove()
 		self.pEnemyRagdoll = nil
     end
-	if IsValid(enemy) then
-		if enemy:IsPlayer() then
-			if table.Count(self.tblEnemyWeapons) > 0 then
-		        for i = 1, table.Count(self.tblEnemyWeapons) do
-		            enemy:Give(self.tblEnemyWeapons[i], true)
-		        end
-		    end
-		end
-	end
 	self.pIncapacitatedEnemy = nil
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-ENT.LastDragTime = -1
-ENT.LastIncapTime = -1
 function ENT:CustomOnThink()
 	self.vecLastPos = self:GetPos()
-
-	--print(self.HasEnemyIncapacitated)
 
 	local function FaceTarget(ent, tgt, bBack)
 		local spos = ent:GetPos()
@@ -533,40 +550,45 @@ function ENT:CustomOnThink()
 	else
 		self.IsIncapacitating = false
 	end
+
 	if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
 		self:VJ_ACT_PLAYACTIVITY("Jump", true)   
 	end
+
 	if self.HasEnemyIncapacitated == true then 
 		self.HasIdleSounds = false
 		self.HasMeleeAttack = false
 		self.HasRangeAttack = false    
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
+
+			if enemy:Health() <= 0 then
+				self:DismountSmoker()
+				return
+			end
+
+			--create tongue
 			if CurTime() >= self.nextTongueSpawn then
 				util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() + enemy:OBBCenter(), false, self:EntIndex(), 3)
 				self.nextTongueSpawn = CurTime() + 0.25
 			end
-			local dist = self:GetPos():Distance(enemy:GetPos())      
+
+			local dist = self:GetPos():Distance(enemy:GetPos())  
+
+			--add anim support for player control    
 			if self.VJ_IsBeingControlled then
 				if dist <= self.IncapacitationRange then
 					self.CombatFaceEnemy = true
-					self:VJ_PlaySequence(self.IncapAnimation)
+					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
+					--self:VJ_PlaySequence(self.IncapAnimation)
 				else
 					self.CombatFaceEnemy = false
 					self:SetAngles(self.incapAngles)
-					self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
+					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle"))}
+					--self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
 				end
-			end		
-			local weapons = enemy:GetWeapons()
-            for k, v in ipairs(weapons) do
-                self.tblEnemyWeapons[table.Count(self.tblEnemyWeapons) + 1] = v:GetClass()
-            end
-			if enemy:IsPlayer() then
-	        	enemy:StripWeapons() 
-	        end
-			if enemy:IsNPC() then
-				enemy:DropWeapon()
 			end	
+
 			if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
 				if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
 					self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
@@ -589,109 +611,146 @@ function ENT:CustomOnThink()
 					self:VJ_ACT_PLAYACTIVITY("Tongue_Attack_Drag_Survivor_Idle", true)   
 				end
 			end
-			local dCtrl = self.pDragController
-           
+
+			local ene = self.pIncapacitatedEnemy
+
+			--check enemy type           
 			if enemy:IsPlayer() then
 				enemy = self.pEnemyObj
-				self.pIncapacitatedEnemy:SetPos(enemy:GetPos())
-			end
-			FaceTarget(enemy, self, true)
-			local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, self.pIncapacitatedEnemy, self.pEnemyRagdoll}})
-			local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 50, filter = {self, enemy, self.pIncapacitatedEnemy, self.pEnemyRagdoll}})
-			if dist > self.IncapacitationRange then
-				if tr1.Hit then
-					enemy:SetLocalVelocity(enemy:GetUp() * 75)
-				else
-					enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 50)
-				end
-				if enemy:GetVelocity() == Vector(0, 0, 0) then
-					enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
-				end
-				if enemy:GetPos().z > self:GetPos().z then
-					enemy:SetGravity(1)
-					enemy:SetMoveType(MOVETYPE_FLYGRAVITY)
-				elseif enemy:GetPos().z + 10 < self:GetPos().z then
-					enemy:SetMoveType(MOVETYPE_FLY)
-				end
-				if not enemy:IsPlayer() then
-					enemy:GetPhysicsObject():EnableMotion(true)
-				end
+				ene:SetPos(enemy:GetPos())
 			else
-				if not enemy:IsPlayer() then
+				if IsValid(self.pEnemyObj) then
+					self.pEnemyObj:Remove()
+				end
+			end
+
+			--make enemy face opposite
+			FaceTarget(enemy, self, true)
+
+			--check if path to us is blocked
+			local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+			--check if enemy is on ground
+			local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 15, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+			
+			--call if enemy is stuck
+			local function FreezeEnemy()
+				if ene:IsPlayer() then
 					enemy:GetPhysicsObject():Sleep()
 					enemy:GetPhysicsObject():EnableMotion(false)
 				end
 				enemy:SetPos(enemy:GetPos())
 				enemy:SetLocalVelocity(Vector(0, 0, 0))
-				--[[if enemy:IsOnGround() || tr2.Hit == true then
-					enemy:SetMoveType(MOVETYPE_FLYGRAVITY)
-					enemy:SetVelocity(Vector(0, 0, 0))
-				end]]
+				self.IsEnemyStuck = true
+				self.nextDamageTime = CurTime()
 			end
-			if enemy:IsNPC() then
-                if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-                    enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
-                end
-            end
-            enemy:CallOnRemove("smoker_ClearParent", function(ent)
-                if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
-                    self:SetParent(nil)
-                    net.Start("smoker_RemoveCSEnt")
-                        net.WriteString(tostring(self:EntIndex()))
-                    net.Broadcast()
-                end
-                if ent:IsPlayer() then
-                    ent:SetParent(nil)
-                end
-            end)          
-            hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
-                if victim == self.pIncapacitatedEnemy then
-                    victim:SetParent(nil)
-                    victim:SetMoveType(self.EnemyMoveType)
-                    victim:SetObserverMode(0)
-                    victim:DrawViewModel(true)
-                    victim:DrawWorldModel(true)
-                    self:DismountSmoker()              
-                end
-            end)
-            self:CallOnRemove("smoker_OnRemove", function(ent)
-                net.Start("smoker_RemoveCSEnt")
-                    net.WriteString(tostring(ent:EntIndex()))
-                net.Broadcast()
-                if ent.IncapSong ~= nil then
-                    ent.IncapSong:Stop()
-                end
-                if ent.IncapSong2 ~= nil then
-                    ent.IncapSong2:Stop()
-                end
-                if IsValid(ent.pEnemyObj) then
-                	ent.pEnemyObj:Remove()
-                end
-                local enemy = self.pIncapacitatedEnemy
-                if IsValid(enemy) then
-                	enemy:SetMoveType(self.EnemyMoveType)
-                	self:DismountSmoker()
-                    if enemy:IsPlayer() then
-                        enemy:SetPos(self.vecLastPos)
-                        enemy:SetObserverMode(0)
-                        enemy:DrawViewModel(true)
-                        enemy:DrawWorldModel(true)                               
-                    end
-                    if enemy:GetNoDraw() == true then
-                        enemy:SetNoDraw(false)
-                    end
-                    if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-                        enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-                    end
-                    if IsValid(self.pEnemyRagdoll) then
-                        self.pEnemyRagdoll:Remove()
-                    end
-                end
-            end)
+
+			local function ResetEnemyEFlags()
+				if not ene:IsPlayer() then
+	                enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
+	                timer.Simple(0.2, function()
+	                	if !IsValid(enemy) then return end
+	                	if ene ~= enemy then return end
+	                	enemy:StopMoving()
+	                	enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
+	                end)
+	                self.lastEFlagsReset = CurTime() + 2
+	            end
+			end
+
+			local function CheckPath()
+				if enemy:GetPos().z > self:GetPos().z then
+					if tr2.Hit == true then
+						--on ledge
+						self.IsEnemyFloating = false
+						enemy:SetMoveType(MOVETYPE_FLY)
+						if tr1.Hit == false then
+							enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+						end
+					else
+						--floating
+						self.IsEnemyFloating = true
+						if not ene:IsPlayer() then
+							enemy:SetMoveType(self.EnemyMoveType)
+						else
+							enemy:SetMoveType(MOVETYPE_FLY)
+							enemy:SetLocalVelocity(- enemy:GetUp() * 100)
+						end
+					end
+				else
+					self.IsEnemyFloating = false
+					enemy:SetMoveType(MOVETYPE_FLY)
+					if tr1.Hit == true then
+						enemy:SetLocalVelocity(-enemy:GetForward() * 50 + enemy:GetUp() * 25)
+					else
+						enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+					end
+				end
+			end
+
+			--tracks terrestrial status
+			if self.IsEnemyFloating == true then
+				self.lastEnemyFloat = CurTime()
+			else
+				self.lastEnemyGround = CurTime()
+			end
+
+			--is enemy floating?
+			if CurTime() >= self.lastEFlagsReset then
+				if self.IsEnemyFloating == true then
+					if self.lastEnemyFloat == CurTime() then
+						ResetEnemyEFlags()
+					end
+				elseif self.IsEnemyFloating == false then
+					if self.lastEnemyGround == CurTime() then
+						ResetEnemyEFlags()
+					end
+				end
+			end
+
+			if self.IsEnemyStuck == false then
+				--check if enemy is stuck
+				if CurTime() >= self.nextEnemyPosCheck then
+					if self.vecEnemyPos == enemy:GetPos() then
+						FreezeEnemy()
+					end
+					self.vecEnemyPos = enemy:GetPos()
+					self.nextEnemyPosCheck = CurTime() + 2
+				end
+				--if enemy is too far to be clawed
+				if dist > self.IncapacitationRange then
+					CheckPath()
+					if enemy:IsPlayer() then
+						enemy:GetPhysicsObject():EnableMotion(true)
+					end
+				else
+					FreezeEnemy()
+				end
+			else
+				--if enemy is too far & stuck then strangle 
+				if dist > self.IncapacitationRange then
+					if CurTime() >= self.nextDamageTime then
+						if !IsValid(ene) then return end
+						if ene:IsPlayer() && ene:Alive() == false then return end
+						local dmgInfo = DamageInfo()
+						dmgInfo:SetDamage(self.iStrangleDamage)
+						dmgInfo:SetDamageType(DMG_SLASH)
+						ene:TakeDamageInfo(dmgInfo)
+						self.nextDamageTime = CurTime() + 1.5
+					end
+				end
+			end
 		else
 			self:DismountSmoker()
 		end
 	else
+		--fail-safe
+		if self.IsIncapacitating == true then
+			net.Start("smoker_RemoveCSEnt")
+				net.WriteString(tostring(self:EntIndex()))
+			net.Broadcast()
+			self:DismountSmoker()
+			self:SetPos(self:GetPos())
+		end
 		if self.IncapSound ~= nil then
 			self.IncapSound:Stop()
 		end
@@ -700,6 +759,7 @@ function ENT:CustomOnThink()
 		self.HasRangeAttack = true
 		self.CombatFaceEnemy = true
 	end
+
 	--Sounds
 	if CurTime() >= self.nextBacteria then
 		self:PlayBacteria()
@@ -726,7 +786,6 @@ function ENT:CustomOnThink()
 		end
 	end
 	if self.VJ_IsBeingControlled == true then
-		--self:CapabilitiesRemove(CAP_MOVE_JUMP)
 		hook.Add("KeyPress", "smoker_Crouch", function(ply, key)
 			if self.VJ_TheController == ply then
 				if key == IN_DUCK then
