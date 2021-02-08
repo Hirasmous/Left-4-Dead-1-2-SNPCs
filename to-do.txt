@@ -1,3 +1,6 @@
+Boomette:
+-Fix broken model
+
 Charger:
 -Add shove code to repo
 -Keep charging until he hits a wall or travels certain dist
@@ -14,6 +17,12 @@ Jockey:
 Smoker:
 -Incapped enemy pose params
 -Collision for tongue (lerp mouth att pos & enemy pos)
+
+Spitter:
+-Fix Spitter goo damaging Spitter
+
+Tank:
+-Fix textures not being applied to model
 
 General:
 -Ignore incapped players/enemies if there are more enemies nearby
