@@ -1,0 +1,24 @@
+Hunter:
+-Stop leap attack after hunter's target is killed before he stops crouching and leaps
+-Don't incap player who is controlling 
+-Properly implement shove anims
+-Proper crouch charging
+
+Jockey:
+-Directional movement for incapped mdl
+
+Smoker:
+-Incapped enemy pose params
+-Collision for tongue (lerp mouth att pos & enemy pos)
+
+General:
+-Ignore incapped players/enemies if there are more enemies nearby
+-Match shared functions
+	> Update IsEntityAlly function
+	> Create a module that holds shared funcs
+-Conserve incap enemy's bodygroups/skins to CSEnt
+-Be able to shove off on incapped enemies
+-Proper recharge HUD icon when controlled
+
+ConVars:
+-Should incapped NPC enemies drop their weapon?
