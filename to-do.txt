@@ -33,6 +33,7 @@ General:
 -Be able to shove off on incapped enemies ✅
 -Proper recharge HUD icon when controlled
 -New StripAmmo() function ✅
+-Bug: Sometimes when the infected who can incap die while incapping an enemy then the enemy gets sent to a random location
 -Bug: You have to click IN_USE many times before ghosting turns on
 
 ConVars:
