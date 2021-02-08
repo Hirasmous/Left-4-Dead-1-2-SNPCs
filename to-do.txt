@@ -17,6 +17,7 @@ Jockey:
 Smoker:
 -Incapped enemy pose params
 -Collision for tongue (lerp mouth att pos & enemy pos)
+-Fix Cloud smoke damaging Smoker
 
 Spitter:
 -Fix Spitter goo damaging Spitter
