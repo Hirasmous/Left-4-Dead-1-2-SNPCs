@@ -320,8 +320,13 @@ function ENT:ManageHUD(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
+    local anims = VJ_PICK{"Shoved_Backward"}
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        self:VJ_ACT_PLAYACTIVITY("Shoved_BackWard_02",false,3,false)
+        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+            self:DismountHunter()
+            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)      
+        end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -373,6 +378,22 @@ function ENT:IsEntityAlly(ent)
     end
     return false
 end
+
+function ENT:StripEnemyWeapons(ent)
+    local weapons = ent:GetWeapons()
+    self.tblEnemyWeapons = {}
+    for l, w in ipairs(weapons) do
+        if w.Base ~= "weapon_vj_base" then
+            local index = table.Count(self.tblEnemyWeapons) + 1
+            self.tblEnemyWeapons[index] = {}
+            self.tblEnemyWeapons[index][1] = w:GetClass()
+            self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1(), ent:GetAmmoCount(w:GetPrimaryAmmoType())}
+            self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2(), ent:GetAmmoCount(w:GetSecondaryAmmoType())}
+        end
+    end
+    ent:StripWeapons()
+    ent:StripAmmo()
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Pounce_Effects(fadeout)
     if fadeout == false then
@@ -419,7 +440,6 @@ function ENT:Pounce_Effects(fadeout)
         glowlight:SetParent(self)
         glowlight:Spawn()
         glowlight:Activate()
-        --glowlight:Fire("SetParentAttachment","attach_blur")
         glowlight:Fire("TurnOn","",0)
         self:DeleteOnRemove(glowlight)
         self.Light3 = glowlight
@@ -481,17 +501,13 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 					                   	if enemy:IsNPC() then
 								            enemy:DropWeapon()
 								        elseif enemy:IsPlayer() then
-                                            local weapons = enemy:GetWeapons()
-                                            for k, v in ipairs(weapons) do
-                                                self.tblEnemyWeapons[table.Count(self.tblEnemyWeapons) + 1] = v:GetClass()
-                                            end
+                                            self:StripEnemyWeapons(v)
                                             if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
                                                 enemy:SetObserverMode(OBS_MODE_CHASE)
                                                 enemy:SpectateEntity(camera)
                                                 enemy:DrawViewModel(false)
                                                 enemy:DrawWorldModel(false)
                                             end
-                                            enemy:StripWeapons()
 								        end
 					                    self.HasEnemyIncapacitated = true
 					                    self.nextShredSound = CurTime()
@@ -575,16 +591,26 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 											net.Start("hunter_RemoveCSEnt")
 												net.WriteString(tostring(ent:EntIndex()))
 											net.Broadcast()
-					                        local enemy = self.pIncapacitatedEnemy
+					                        local enemy = ent.pIncapacitatedEnemy
 									        if IsValid(enemy) then
 									            if enemy:IsPlayer() then
-                                                    enemy:SetPos(self.vecLastPos)
+                                                    enemy:SetPos(ent.vecLastPos)
                                                     enemy:SetObserverMode(0)
                                                     enemy:DrawViewModel(true)
                                                     enemy:DrawWorldModel(true)
-                                                    if table.Count(self.tblEnemyWeapons) > 0 then
-                                                        for i = 1, table.Count(self.tblEnemyWeapons) do
-                                                            enemy:Give(self.tblEnemyWeapons[i], true)
+                                                    if table.Count(ent.tblEnemyWeapons) > 0 then
+                                                        for i = 1, table.Count(ent.tblEnemyWeapons) do
+                                                            local tbl = ent.tblEnemyWeapons
+                                                            enemy:Give(tbl[i][1], true)
+                                                            local wpn = enemy:GetWeapon(tbl[i][1])
+                                                            if tbl[i][2][1] ~= -1 then
+                                                                enemy:GiveAmmo(tbl[i][2][3], game.GetAmmoName(tbl[i][2][1]), true)
+                                                                wpn:SetClip1(tbl[i][2][2])
+                                                            end
+                                                            if tbl[i][3][1] ~= -1 then
+                                                                enemy:GiveAmmo(tbl[i][3][3], game.GetAmmoName(tbl[i][3][1]), true)
+                                                                wpn:SetClip2(tbl[i][3][2])
+                                                            end
                                                         end
                                                     end
 									            end
@@ -594,8 +620,8 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 									            if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
 									                enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
 									            end
-									            if IsValid(self.pEnemyRagdoll) then
-									            	self.pEnemyRagdoll:Remove()
+									            if IsValid(ent.pEnemyRagdoll) then
+									            	ent.pEnemyRagdoll:Remove()
 									            end
 									        end
 					                    end)
@@ -653,11 +679,6 @@ function ENT:DismountHunter()
 	end
     if !IsValid(self.pIncapacitatedEnemy) then return end
     local enemy = self.pIncapacitatedEnemy
-    if table.Count(self.tblEnemyWeapons) > 0 then
-        for i = 1, table.Count(self.tblEnemyWeapons) do
-            enemy:Give(self.tblEnemyWeapons[i], true)
-        end
-    end
     hook.Add("ShouldCollide", "hunter_EnableCollisions", function(ent1, ent2)
         if (ent1 == self and ent2 == enemy) then return true end
     end)
@@ -673,6 +694,22 @@ function ENT:DismountHunter()
             enemy:SetObserverMode(0)
             enemy:DrawViewModel(true)
             enemy:DrawWorldModel(true)
+        end
+        if table.Count(self.tblEnemyWeapons) > 0 then
+            for i = 1, table.Count(self.tblEnemyWeapons) do
+                local tbl = self.tblEnemyWeapons
+                enemy:Give(tbl[i][1], true)
+                local wpn = enemy:GetWeapon(tbl[i][1])
+                if tbl[i][2][1] ~= -1 then
+                    enemy:GiveAmmo(tbl[i][2][3], game.GetAmmoName(tbl[i][2][1]), true)
+                    wpn:SetClip1(tbl[i][2][2])
+                end
+                if tbl[i][3][1] ~= -1 then
+                    enemy:GiveAmmo(tbl[i][3][3], game.GetAmmoName(tbl[i][3][1]), true)
+                    wpn:SetClip2(tbl[i][3][2])
+                end
+            end
+            table.Empty(self.tblEnemyWeapons)
         end
     end
 	net.Start("hunter_RemoveCSEnt")
@@ -727,11 +764,9 @@ function ENT:CustomOnThink()
             self:SetPos(self:GetPos())
         end
     end
-
     if CurTime() >= self.nextBacteria then
         self:PlayBacteria()
     end
-
     if IsValid(self.pIncapacitatedEnemy) then
 	    if CurTime() >= self.nextIncapSong then
 	    	self:PlayIncapSong()
@@ -741,7 +776,6 @@ function ENT:CustomOnThink()
             self.IncapSong:Stop()
         end
     end
-
     if self.HasEnemyIncapacitated == true then 
         self.HasMeleeAttack = false
         self.CombatFaceEnemy = false
@@ -826,17 +860,6 @@ function ENT:CustomOnThink()
 	    	end
     	end)
     end
-    --[[if self.VJ_IsBeingControlled == false then
-    	self:CapabilitiesAdd(bit.bor(CAP_MOVE_JUMP))
-        self:DrawShadow(true)
-        self.GodMode = false 
-        self:SetCollisionGroup(COLLISION_GROUP_NONE)
-        self.VJ_NoTarget = false
-        self.DisableMakingSelfEnemyToNPCs = false
-        self:SetRenderMode(RENDERMODE_NORMAL)
-        self.HasSounds = true
-        --self.HasLeapAttack = true
-    end]]
 end 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
