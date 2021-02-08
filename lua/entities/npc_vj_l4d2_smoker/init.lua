@@ -449,6 +449,11 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
+        if IsValid(self.pIncapacitatedEnemy) then
+	    util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pEnemyRagdoll:GetPos() + self.pEnemyRagdoll:OBBCenter(), false, self:EntIndex(), 3)
+	elseif !IsValid(self.pIncapacitatedEnemy) then
+	    util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pDragController:GetPos() + self.pDragController:OBBCenter(), false, self:EntIndex(), 3)
+	end
 	self:Incap_Effects(true)
 	self.HasEnemyIncapacitated = false
 	self.IsChokingEnemy = false
