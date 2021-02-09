@@ -480,6 +480,11 @@ function ENT:DismountSmoker()
 	self:SetParent(nil)
 	if !IsValid(self.pIncapacitatedEnemy) then return end
 	local enemy = self.pIncapacitatedEnemy
+	if enemy.IsVJBaseSNPC == true then
+		if self.EnemyVJMoveType ~= nil then
+			enemy.MovementType = self.EnemyVJMoveType
+		end
+	end
 	enemy:SetMoveType(self.EnemyMoveType)
 	if enemy:GetNoDraw() == true then
 		enemy:SetNoDraw(false)
