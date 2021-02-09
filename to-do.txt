@@ -12,6 +12,7 @@ Hunter:
 -Don't incap player who is controlling 
 -Properly implement shove anims ✅
 -Proper crouch charging
+-Gets stuck in incapped enemy when shoved off
 
 Jockey:
 -Directional movement for incapped mdl
