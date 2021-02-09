@@ -130,6 +130,16 @@ function ENT:PhysicsCollide(data, physobj, entity)
                         end
                     end
 
+		    local camera = ents.Create("prop_dynamic")
+                    camera:SetModel("models/error.mdl")
+                    camera:SetPos(owner:GetPos())
+                    camera:Spawn()
+                    camera:Activate()
+                    camera:SetRenderMode(RENDERMODE_NONE)
+                    camera:DrawShadow(false)
+                    camera:SetParent(owner)
+                    camera:Fire("SetParentAttachment","spine")
+                    owner.Camera = camera
                     if enemy:IsPlayer() then
                         owner:StripEnemyWeapons(enemy)
                         if owner.VJ_IsBeingControlled == false && owner.VJ_TheController ~= enemy then
