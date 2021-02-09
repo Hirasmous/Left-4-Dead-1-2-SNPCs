@@ -22,7 +22,7 @@ VJ.AddNPC("Spitter","npc_vj_l4d2_spitter",vCat)
 
 //Particles
 game.AddParticles("particles/boomer_fx.pcf")
-game.AddParticles("particles/blood_fx.pcf")
+game.AddParticles("particles/l4d2_blood_fx.pcf")
 game.AddParticles("particles/smoker_fx.pcf")
 game.AddParticles("particles/smoker_fx2.pcf")
 game.AddParticles("particles/hunter_fx.pcf")
