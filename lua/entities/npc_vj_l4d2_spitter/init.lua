@@ -183,9 +183,10 @@ function ENT:SetGhost(bool)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-	if dmginfo:GetDamageType() == DMG_CLUB then
-		self:VJ_ACT_PLAYACTIVITY("Shoved_BackWard",false,3,false)
-	end
+    local anims = VJ_PICK{"Shoved_BackWard","Shoved_Leftward","Shoved_Forward","Shoved_Rightward"}
+    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
