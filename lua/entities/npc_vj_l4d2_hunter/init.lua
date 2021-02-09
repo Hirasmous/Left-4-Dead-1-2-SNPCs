@@ -544,6 +544,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
                                                 enemy:SpectateEntity(camera)
                                                 enemy:DrawViewModel(false)
                                                 enemy:DrawWorldModel(false)
+						enemy:SetFOV(75)
                                             end
 								        end
 					                    self.HasEnemyIncapacitated = true
