@@ -23,6 +23,7 @@ Smoker:
 -Cant incap when being controlled
 -Smoker's incapped enemy can move
 -Center tongue particle on incapped model (make tracer particle end at incapped enemy's waist)
+-Drag enemies off of ledges
 
 Spitter:
 -Fix Spitter goo damaging Spitter
