@@ -224,14 +224,36 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
         self:FootStepSoundCode()
     end
     if key == "event_pounce" then
-		local incapent = self.pIncapacitatedEnemy
+        local incapent = self.pIncapacitatedEnemy
+        for i = 1, 1 do 
+            local ent = ents.Create("obj_vj_l4d2_bile")
+            ent:SetPos(self:GetAttachment(4).Pos)
+            ent:SetOwner(self)
+            ent:Spawn()
+            ent:Activate()
+            local phys = ent:GetPhysicsObject()
+            if IsValid(phys) then
+                phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
+            end
+        end 
+        for i = 1, 1 do 
+            local ent = ents.Create("obj_vj_l4d2_bile")
+            ent:SetPos(self:GetAttachment(5).Pos)
+            ent:SetOwner(self)
+            ent:Spawn()
+            ent:Activate()
+            local phys = ent:GetPhysicsObject()
+            if IsValid(phys) then
+                phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
+            end
+        end 
 		if IsValid(incapent) then
 			local applyDmg = DamageInfo()
 			applyDmg:SetDamage(10)
 			applyDmg:SetDamageType(DMG_SLASH)
 			applyDmg:SetInflictor(incapent)
 			applyDmg:SetAttacker(self)
-			incapent:TakeDamage(2,self,incapent)
+			incapent:TakeDamage(2,self,incapent)  		
 		end
 	end
 end
@@ -321,7 +343,7 @@ function ENT:ManageHUD(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward"}
+    local anims = VJ_PICK{"Shoved_Backward_01","Shoved_Backward_02","Shoved_Leftward","Shoved_Rightward"}
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
         self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
         if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
