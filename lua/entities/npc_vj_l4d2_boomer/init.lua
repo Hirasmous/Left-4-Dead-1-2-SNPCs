@@ -282,6 +282,9 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:IsEntityAlly(ent)
+    if ent:GetClass() == "obj_vj_bullseye" then
+        return true
+    end
     if ent:IsNPC() then
         if ent.IsVJBaseSNPC == true then
             for i = 1, table.Count(ent.VJ_NPC_Class) do
