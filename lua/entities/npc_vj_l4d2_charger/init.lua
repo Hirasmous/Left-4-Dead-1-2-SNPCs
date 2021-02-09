@@ -241,7 +241,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
     if self.VJ_IsBeingControlled == false then
-        self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Forward","Shoved_Rightward"},true,0.1,false)
+        self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"},true,0.1,false)
     end
     VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
     VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))                 
