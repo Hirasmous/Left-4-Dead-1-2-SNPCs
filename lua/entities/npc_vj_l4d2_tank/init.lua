@@ -217,6 +217,13 @@ function ENT:CustomOnThink_AIEnabled()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
+    local anims = VJ_PICK{"Shoved_BackWard","Shoved_Forward","Shoved_Leftward","Shoved_Rightward"}
+    if dmginfo:GetDamageType() == DMG_CRUSH || dmginfo:GetDamageType() == DMG_BLAST then
+        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Tank_Soundtrack(fadeout) 
 	if fadeout == false then
 		for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_tank")) do
