@@ -37,6 +37,11 @@ end
 
 function ENT:Think()
     local owner = self:GetOwner()
+	
+    if !IsValid(owner) then 
+        self:Remove()
+    end
+	
     util.ParticleTracerEx("smoker_tongue_new", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
 
     --remove @ max travel dist
@@ -101,11 +106,12 @@ function ENT:PhysicsCollide(data, physobj, entity)
                             return false
                         end
                     end)
-					
+
                     owner.vecEnemyPos = dragObj:GetPos()
                     owner.nextEnemyPosCheck = CurTime() + 2
                     owner.nextTongueSpawn = CurTime()
                     owner.lastEFlagsReset = CurTime()
+                    owner.nextSegmentCreation = CurTime()
 
                     for k, v in ipairs(ents.FindByClass("player")) do
                         if data.HitEntity:IsNPC() then
@@ -123,6 +129,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                         end
                     else
                         enemy:DropWeapon()
+                        --enemy:GetActiveWeapon():SetNoDraw(true)
                         if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
                             enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
                         end
@@ -174,6 +181,15 @@ function ENT:PhysicsCollide(data, physobj, entity)
 
                     owner.pEnemyTongueAttach = tongue
 
+                    local tngCol = ents.Create("prop_dynamic")
+                    tngCol:SetModel("models/dav0r/camera.mdl")
+                    tngCol:SetPos(owner:GetAttachment(3).Pos)
+                    tngCol:DrawShadow(false)
+                    tngCol:SetNoDraw(true)
+                    tngCol:Spawn()
+                    tngCol:SetOwner(owner)
+                    owner.pTongueController = tngCol
+
                     --enemy fail-safes
                     enemy:CallOnRemove("smoker_ClearParent", function(ent)
                         if IsValid(owner.pIncapacitatedEnemy) && owner.pIncapacitatedEnemy == ent then
@@ -205,6 +221,9 @@ function ENT:PhysicsCollide(data, physobj, entity)
                         end
                         if IsValid(ent.pEnemyObj) then
                             ent.pEnemyObj:Remove()
+                        end
+                        if IsValid(ent.pTongueController) then
+                            ent.pTongueController:Remove()
                         end
                         local ene = ent.pIncapacitatedEnemy
                         if IsValid(ene) then
