@@ -188,11 +188,20 @@ function ENT:CustomOnThink()
 	    self.HasSounds = true
 	    self.HasMeleeAttack = true
 	    self.HasRangeAttack = true
+	    self.TimeUntilRangeAttackProjectileRelease = 1.5
+	    self.SoundTbl_BeforeRangeAttack= {"BoomerZombie.Warn"}
+	    self.RangeAttackAnimationDelay = 1.5
+	end 
+	if self.VJ_IsBeingControlled == true then
+	    self.TimeUntilRangeAttackProjectileRelease = 0
+	    self.SoundTbl_BeforeRangeAttack= {}
+	    self.RangeAttackAnimationDelay = 0
 	end 	        
     self:SetBodygroup(1,1)
 	if CurTime() >= self.nextBacteria then
 	    self:PlayBacteria()
 	end
+	
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayBacteria()
@@ -265,7 +274,7 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward_01"}
+    local anims = VJ_PICK{"Shoved_Backward_01","Shoved_Leftward","Shoved_Rightward"}
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
         self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
     end
