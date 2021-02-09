@@ -314,7 +314,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
     self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
-    local anims = VJ_PICK{"Shoved_BackWard_03","Shoved_Forward_01","Shoved_Leftward_01","Shoved_Rightward_01"}
+    local anims = VJ_PICK{"Shoved_BackWard_03","Shoved_Leftward_01","Shoved_Rightward_01"}
     if IsValid(self:GetEnemy()) then
         if dmginfo:GetDamageType() == DMG_CLUB then
             self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
