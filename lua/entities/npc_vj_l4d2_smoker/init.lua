@@ -780,17 +780,10 @@ function ENT:CustomOnThink()
 				self.lastEnemyGround = CurTime()
 			end
 
-			--is enemy floating?
-			if CurTime() >= self.lastEFlagsReset then
-				if self.IsEnemyFloating == true then
-					if self.lastEnemyFloat == CurTime() then
-						ResetEnemyEFlags()
-					end
-				elseif self.IsEnemyFloating == false then
-					if self.lastEnemyGround == CurTime() then
-						ResetEnemyEFlags()
-					end
-				end
+			--reset if t status changes
+			local timeDiff = math.abs(self.lastEnemyFloat - self.lastEnemyGround)
+			if timeDiff > 0.45 && timeDiff < 0.55 then
+				ResetEnemyEFlags()
 			end
 
 			if self.IsEnemyStuck == false then
