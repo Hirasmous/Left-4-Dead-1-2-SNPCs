@@ -20,6 +20,7 @@ ENT.RadiusDamageType = DMG_ACID -- Damage type
 ENT.RadiusDamageForce = false -- Put the force amount it should apply | false = Don't apply any force
 ENT.RadiusDamageForce_Up = false -- How much up force should it have? | false = Let the base automatically decide the force using RadiusDamageForce value
 ENT.RadiusDamageDisableVisibilityCheck = false -- Should it disable the visibility check? | true = Disables the visibility check
+ENT.Owner = nil
 
 ENT.SoundTbl_SpitterAcid = Sound("SpitterZombie.Acid")
 ENT.SoundTbl_SpitterAcidTheme = Sound("vj_l4d2/music/terror/pileobile.wav")
@@ -35,16 +36,12 @@ function ENT:CustomOnInitialize()
 	self:DrawShadow(false)
 	self:SetNoDraw(false) 
     self:SetMaterial("models/flesh")
+    self.Owner = self:GetOwner()
        
-        
-       
-        
-	
 	-- Physics Functions
 	local phys = self.Entity:GetPhysicsObject()
 	if (phys:IsValid()) then
 		phys:Wake()
-		//phys:SetMass(1)
 		phys:SetBuoyancyRatio(0)
 		phys:EnableDrag(false)
 	end
@@ -74,8 +71,11 @@ function ENT:PhysicsCollide(data,physobj,entity)
 	self:SetNoDraw(true)
 	
 	-- Damages
-	if self:GetOwner() == NULL then util.VJ_SphereDamage(self,self,self:GetPos(),50,10,DMG_ACID,true,true) else
-	util.VJ_SphereDamage(self:GetOwner(),self,self:GetPos(),50,10,DMG_ACID,true,true) end
+	local ent = data.HitEntity
+	if ent:IsNPC() || ent:IsNextBot() || (ent:IsPlayer() && ent:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0) then
+		if ent:IsNPC() && (ent:Classify() == CLASS_ZOMBIE || ent.IsVJBaseSNPC && table.HasValue(ent.VJ_NPC_Class, "CLASS_ZOMBIE")) then return end
+		ent:TakeDamage(25, self:GetOwner() or self, self:GetOwner() or self)
+	end
 	
 	-- Effects
 	self:DeathEffects()
