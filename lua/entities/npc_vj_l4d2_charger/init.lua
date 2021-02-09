@@ -135,7 +135,29 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 		VJ_EmitSound(self,self.SoundTbl_Charger_PummelVocalize,75,self:VJ_DecideSoundPitch(100,95)) 
 	end
 	if key == "event_emit Pummel" then
-		local incapent = self.pIncapacitatedEnemy
+		local incapent = self.pIncapacitatedEnemy		
+                for i = 1, 1 do 
+		    local ent = ents.Create("obj_vj_l4d2_bile")
+		    ent:SetPos(self:GetAttachment(4).Pos)
+		    ent:SetOwner(self)
+		    ent:Spawn()
+		    ent:Activate()
+		    local phys = ent:GetPhysicsObject()
+		    if IsValid(phys) then
+			phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
+		    end
+		end 
+		for i = 1, 1 do 
+		    local ent = ents.Create("obj_vj_l4d2_bile")
+		    ent:SetPos(self:GetAttachment(4).Pos)
+		    ent:SetOwner(self)
+		    ent:Spawn()
+		    ent:Activate()
+		    local phys = ent:GetPhysicsObject()
+		    if IsValid(phys) then
+			phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
+		    end
+		end
 		VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95)) 
 		if IsValid(incapent) then
 			local applyDmg = DamageInfo()
