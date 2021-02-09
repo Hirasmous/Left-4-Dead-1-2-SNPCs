@@ -529,6 +529,7 @@ function ENT:PummelEnemy(v)
 					                enemy:SpectateEntity(camera)
 					                enemy:DrawViewModel(false)
 					                enemy:DrawWorldModel(false)
+						        enemy:SetFOV(80)
 					            end
 							end
 							self.HasEnemyIncapacitated = true	
