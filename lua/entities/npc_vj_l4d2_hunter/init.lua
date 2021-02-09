@@ -708,21 +708,21 @@ function ENT:DismountHunter()
             enemy:DrawViewModel(true)
             enemy:DrawWorldModel(true)
         end
-	    if table.Count(ent.tblEnemyWeapons) > 0 then
-		for i = 1, table.Count(ent.tblEnemyWeapons) do
-		    local tbl = ent.tblEnemyWeapons
-		    enemy:Give(tbl[i][1], true)
-		    local wpn = enemy:GetWeapon(tbl[i][1])
-		    if tbl[i][2][1] ~= -1 then
-			wpn:SetClip1(tbl[i][2][2])
-		    end
-		    if tbl[i][3][1] ~= -1 then
-			wpn:SetClip2(tbl[i][3][2])
-		    end
-		end
+	    if table.Count(self.tblEnemyWeapons) > 0 then
+    		for i = 1, table.Count(self.tblEnemyWeapons) do
+    		    local tbl = self.tblEnemyWeapons
+    		    enemy:Give(tbl[i][1], true)
+    		    local wpn = enemy:GetWeapon(tbl[i][1])
+    		    if tbl[i][2][1] ~= -1 then
+        			wpn:SetClip1(tbl[i][2][2])
+    		    end
+    		    if tbl[i][3][1] ~= -1 then
+        			wpn:SetClip2(tbl[i][3][2])
+    		    end
+    		end
 	    end
 	    for a, c in ipairs(self.tblEnemyAmmo) do
-		enemy:GiveAmmo(c, game.GetAmmoName(a), true)
+            enemy:GiveAmmo(c, game.GetAmmoName(a), true)
 	    end
     end
 	net.Start("hunter_RemoveCSEnt")
