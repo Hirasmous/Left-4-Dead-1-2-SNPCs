@@ -861,6 +861,15 @@ function ENT:CustomOnThink()
 			self:SetGhost(self.VJ_TheController)  
 		end
 	end
+	if self.VJ_IsBeingControlled == false then
+		self.TimeUntilRangeAttackProjectileRelease = 2
+        self.RangeAttackAnimationDelay = 2
+        self.SoundTbl_BeforeRangeAttack = {"SmokerZombie.Warn","SmokerZombie.Recognize"}
+    elseif self.VJ_IsBeingControlled == true then
+		self.TimeUntilRangeAttackProjectileRelease = 0
+        self.RangeAttackAnimationDelay = 0
+        self.SoundTbl_BeforeRangeAttack = {}
+    end
 	if self.VJ_IsBeingControlled == true then
 		hook.Add("KeyPress", "smoker_Crouch", function(ply, key)
 			if self.VJ_TheController == ply then
@@ -1020,7 +1029,9 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_BeforeStartTimer(seed) 
-    self:VJ_ACT_PLAYACTIVITY("vjseq_Tongue_Attack_Antic",false,VJ_GetSequenceDuration(self,"vjseq_Tongue_Attack_Antic"),false)
+    if self.VJ_IsBeingControlled == false then
+        self:VJ_ACT_PLAYACTIVITY("vjseq_Tongue_Attack_Antic",false,VJ_GetSequenceDuration(self,"vjseq_Tongue_Attack_Antic"),false)
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
