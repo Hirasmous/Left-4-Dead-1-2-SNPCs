@@ -82,9 +82,19 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     owner.pIncapacitatedEnemy = enemy
                     owner.incapAngles = owner:GetAngles()
                     owner.EnemyMoveType = enemy:GetMoveType()
+                    if enemy:IsOnGround() then
+                        owner.lastEnemyGround = CurTime()
+                        owner.lastEnemyFloat = -1
+                    else
+                        owner.lastEnemyFloat = CurTime()
+                        owner.lastEnemyGround = -1
+                    end
 
                     --VJ vars
                     owner.MovementType = VJ_MOVETYPE_STATIONARY
+                    if enemy.IsVJBaseSNPC == true then
+                        owner.EnemyVJMoveType = enemy.MovementType
+                    end
 
                     local dragObj = ents.Create("prop_physics")
                     dragObj:SetModel("models/dav0r/hoverball.mdl")
