@@ -309,9 +309,14 @@ function ENT:SetGhost(bool)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-	if dmginfo:GetDamageType() == DMG_CLUB then
-		self:VJ_ACT_PLAYACTIVITY("Shoved_BackWard",false,3,false)
-	end
+    local anims = VJ_PICK{"Shoved_Backward","Shoved_Forward","Shoved_Leftward","Shoved_Rightward"}
+    if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
+        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+            self:DismountJockey()
+            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
