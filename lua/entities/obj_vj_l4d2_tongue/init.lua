@@ -54,12 +54,13 @@ end
 function ENT:PhysicsCollide(data, physobj, entity)
 	local owner = self:GetOwner()
 
-    if IsValid(data.HitEntity) then
-        VJ_CreateSound(data.HitEntity,VJ_PICKRANDOMTABLE({"player/smoker/voice/attack/smoker_tonguehit_01.wav","player/smoker/voice/attack/smoker_tonguehit_02.wav"}),95,owner:VJ_DecideSoundPitch(100,100))
-    end
-    if !IsValid(data.HitEntity) then
-        util.ParticleTracerEx("smoker_tongue_new_fall", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
-        VJ_CreateSound(self,VJ_PICKRANDOMTABLE({"player/smoker/hit/tongue_hit_1.wav"}),95,owner:VJ_DecideSoundPitch(100,100))
+    if IsValid(self) then
+        if IsValid(data.HitEntity) then
+            VJ_CreateSound(data.HitEntity,VJ_PICKRANDOMTABLE({"player/smoker/voice/attack/smoker_tonguehit_01.wav","player/smoker/voice/attack/smoker_tonguehit_02.wav"}),95,owner:VJ_DecideSoundPitch(100,100))
+        elseif !IsValid(data.HitEntity) then
+            util.ParticleTracerEx("smoker_tongue_new_fall", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
+            VJ_CreateSound(self,VJ_PICKRANDOMTABLE({"player/smoker/hit/tongue_hit_1.wav"}),95,owner:VJ_DecideSoundPitch(100,100))
+        end
     end
     -- Removes
     self.Dead = false
