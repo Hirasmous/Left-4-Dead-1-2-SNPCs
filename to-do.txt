@@ -35,6 +35,7 @@ Spitter:
 
 Tank:
 -Fix textures not being applied to model
+-Implement rock bodygroup for range attack
 
 General:
 -Ignore incapped players/enemies if there are more enemies nearby
