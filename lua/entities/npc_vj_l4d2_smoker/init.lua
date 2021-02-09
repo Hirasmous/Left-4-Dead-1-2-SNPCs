@@ -398,23 +398,26 @@ function ENT:CanIncapacitate(ent)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:IsEntityAlly(ent)
-	if ent:IsNPC() then
-		if ent.IsVJBaseSNPC == true then
-			for i = 1, table.Count(ent.VJ_NPC_Class) do
+    if ent:GetClass() == "obj_vj_bullseye" then
+        return true
+    end
+    if ent:IsNPC() then
+        if ent.IsVJBaseSNPC == true then
+            for i = 1, table.Count(ent.VJ_NPC_Class) do
                 if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
                     return true
                 end
             end
         end
-	elseif ent:IsPlayer() then
-		if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
-			return true
-		end
-		if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
-			return true
-		end
-	end
-	return false
+    elseif ent:IsPlayer() then
+        if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
+            return true
+        end
+        if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
+            return true
+        end
+    end
+    return false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StripEnemyWeapons(ent)
