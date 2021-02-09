@@ -666,8 +666,13 @@ function ENT:CustomOnThink()
 
 			--create tongue
 			if CurTime() >= self.nextTongueSpawn then
-				util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() + enemy:OBBCenter(), false, self:EntIndex(), 3)
-				self.nextTongueSpawn = CurTime() + 0.25
+				if self.IsChokingEnemy then
+					util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() +enemy:OBBCenter(), false, self:EntIndex(), 3)
+					self.nextTongueSpawn = CurTime() + 0.25
+				else
+					util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos(), false, self:EntIndex(), 3)
+					self.nextTongueSpawn = CurTime() + 0.25
+				end
 			end
 
 			local dist = self:GetPos():Distance(enemy:GetPos())  
