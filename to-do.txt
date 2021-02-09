@@ -24,6 +24,7 @@ Smoker:
 -Smoker's incapped enemy can move
 -Center tongue particle on incapped model (make tracer particle end at incapped enemy's waist)
 -Drag enemies off of ledges
+-Reset recharge after DismountSmoker() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 
 Spitter:
 -Fix Spitter goo damaging Spitter
