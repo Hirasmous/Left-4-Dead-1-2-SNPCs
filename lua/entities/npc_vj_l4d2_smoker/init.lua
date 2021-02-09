@@ -100,6 +100,7 @@ ENT.HasEnemyIncapacitated = false --is he in range of being incapacitated?
 ENT.pIncapacitatedEnemy = nil --the enemy that is incapacitated 
 ENT.pEnemyRagdoll = nil --the incapacitated enemy's ragdoll
 ENT.pEnemyTongueAttach = nil --the incapacitated enemy's tongue attach
+ENT.pTongueController = nil
 ENT.IncapAnimation = "Tongue_Attack_Incap_Survivor_Idle"
 ENT.vecLastPos = Vector(0, 0, 0)
 ENT.tblEnemyWeapons = {}
@@ -449,11 +450,6 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
-        if IsValid(self.pIncapacitatedEnemy) then
-	    util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pEnemyRagdoll:GetPos() + self.pEnemyRagdoll:OBBCenter(), false, self:EntIndex(), 3)
-	elseif !IsValid(self.pIncapacitatedEnemy) then
-	    util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pDragController:GetPos() + self.pDragController:OBBCenter(), false, self:EntIndex(), 3)
-	end
 	self:Incap_Effects(true)
 	self.HasEnemyIncapacitated = false
 	self.IsChokingEnemy = false
@@ -473,6 +469,10 @@ function ENT:DismountSmoker()
 		self.pEnemyObj:Remove()
 		self.pEnemyObj = nil
 	end
+    if IsValid(self.pTongueController) then
+        self.pTongueController:Remove()
+        self.pTongueController = nil
+    end
 	self.MovementType = VJ_MOVETYPE_GROUND
 	self:SetParent(nil)
 	if !IsValid(self.pIncapacitatedEnemy) then return end
@@ -571,6 +571,80 @@ function ENT:CustomOnThink()
 		self.HasRangeAttack = false    
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
+
+			local function FacePos(ent, ePos, tPos, deg)
+				local pos = ePos
+				local ang = ent:GetAngles()
+				local deg = deg or 0
+				local tblPos = {
+					[1] = Vector(pos.x, pos.y, pos.z + 1),
+					[2] = Vector(pos.x, pos.y, pos.z - 1)
+				}
+				local quadrants = {
+					[1] = Vector(pos.x + 45, pos.y, pos.z),
+					[2] = Vector(pos.x - 45, pos.y, pos.z),
+					[3] = Vector(pos.x, pos.y + 45, pos.z),
+					[4] = Vector(pos.x, pos.y - 45, pos.z)
+				}
+				local distX = math.max(pos.x, tPos.x) - math.min(pos.x, tPos.x)
+				local distY = math.max(pos.y, tPos.y) - math.min(pos.y, tPos.y)
+				local distZ = math.max(pos.z, tPos.z) - math.min(pos.z, tPos.z)
+				local degX = math.deg(math.atan(distZ / distX))
+				local degY = math.deg(math.atan(distZ / distY))
+				local pos = math.min(tPos:Distance(tblPos[1]), tPos:Distance(tblPos[2]))
+				local quad = math.min(tPos:Distance(quadrants[1]), tPos:Distance(quadrants[2]), tPos:Distance(quadrants[3]), tPos:Distance(quadrants[4]))
+				if quad == tPos:Distance(quadrants[1]) || quad == tPos:Distance(quadrants[2]) then
+					if pos == tPos:Distance(tblPos[1]) then
+						ent:SetAngles(Angle(-degX + deg, ang.y, ang.z))
+					elseif pos == tPos:Distance(tblPos[2]) then
+						ent:SetAngles(Angle(degX + deg, ang.y, ang.z))
+					end
+				elseif quad == tPos:Distance(quadrants[3]) || quad == tPos:Distance(quadrants[4]) then
+					if pos == tPos:Distance(tblPos[1]) then
+						ent:SetAngles(Angle(-degY + deg, ang.y, ang.z))
+					elseif pos == tPos:Distance(tblPos[2]) then
+						ent:SetAngles(Angle(degY + deg, ang.y, ang.z))
+					end
+				end
+			end
+
+			if IsValid(self.pTongueController) then
+				local tCtrl = self.pTongueController
+				tCtrl:SetPos(self:GetAttachment(3).Pos)
+				FacePos(tCtrl, tCtrl:GetPos(), enemy:GetPos() + enemy:OBBCenter())
+				FaceTarget(tCtrl, enemy)
+			end
+
+			if CurTime() >= self.nextSegmentCreation then
+				local flDistance = self:GetAttachment(3).Pos:Distance((enemy:GetPos() + enemy:OBBCenter()))
+				local instances = 0
+				local pos = self:GetAttachment(3).Pos
+				local ang = self:GetAngles()
+				local dSeg = 15
+				if flDistance >= dSeg then
+					math.Round(flDistance, 1)
+					instances = flDistance / dSeg
+				end
+				local iteration = dSeg
+				if instances > 0 then
+					for i = 1, instances do
+						if !IsValid(self) then return end
+						local seg = ents.Create("obj_vj_l4d2_tongue_collision")
+						seg:SetPos(pos + self.pTongueController:GetForward() * iteration)
+						seg:SetAngles(ang)
+						seg:Spawn()
+						seg:SetOwner(self)
+						FacePos(seg, seg:GetPos(), enemy:GetPos() + enemy:OBBCenter())
+						timer.Simple(1, function()
+							if !IsValid(seg) then return end
+							seg:Remove()
+						end)
+						iteration = iteration + dSeg
+					end
+				end
+
+				self.nextSegmentCreation = CurTime() + 1
+			end
 
 			if enemy:Health() <= 0 then self:DismountSmoker() return end
 
