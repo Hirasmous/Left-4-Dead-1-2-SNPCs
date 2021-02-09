@@ -109,6 +109,7 @@ ENT.TongueBreakDist = 1000
 ENT.iStrangleDamage = 12
 ENT.IsEnemyStuck = false
 ENT.IsEnemyFloating = false
+ENT.Camera = nil
 
 ENT.SoundTbl_Incapacitation_Tied = {"vj_l4d2/music/terror/tonguetied.wav"}
 ENT.SoundTbl_Incapacitation_Incap = {"vj_l4d2/music/special_attacks/asphyxiation.wav"} 
@@ -501,6 +502,8 @@ function ENT:DismountSmoker()
 			enemy:SetObserverMode(0)
 			enemy:DrawViewModel(true)
 			enemy:DrawWorldModel(true)
+			enemy:SpectateEntity(self.Camera)
+                        enemy:SetFOV(80)
 		end
         if table.Count(self.tblEnemyWeapons) > 0 then
             for i = 1, table.Count(self.tblEnemyWeapons) do
