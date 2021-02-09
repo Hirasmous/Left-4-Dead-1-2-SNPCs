@@ -15,6 +15,8 @@ Hunter:
 
 Jockey:
 -Directional movement for incapped mdl
+-Add updated IsEntityAlly() func
+-Add updated StripEnemyWeapons() func
 
 Smoker:
 -Incapped enemy pose params
