@@ -218,6 +218,27 @@ function ENT:SetGhost(bool)
     self.HasLeapAttack = false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnLeapAttack_AfterStartTimer()
+    if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
+    timer.Create("Charger_HitWall", 0.1, 11, function()
+    	if !IsValid(self) then return end
+		local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
+	    local tr = util.TraceLine( {
+	        start = self:GetPos() +self:OBBCenter() +self:OBBMaxs() +self:OBBMins(),
+	        endpos = self:GetPos() + self:GetForward() *60 +self:GetUp() *20,
+	        filter = self,
+	        mask = MASK_SOLID_BRUSHONLY,
+	    } )
+	    if tr.Hit then
+	        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+	        VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
+	        VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))                 
+	        ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
+	        timer.Stop("Charger_HitWall")
+	    end
+	end)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
     if self.VJ_IsBeingControlled == false then
         self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Forward","Shoved_Rightward"},true,0.1,false)
@@ -643,7 +664,7 @@ function ENT:PummelEnemy(v)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward","Shoved_Forward","Shoved_Leftward","Shoved_Rightward"}
+    local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
     if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
         self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
         if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
@@ -722,22 +743,7 @@ function ENT:DismountCharger()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-    local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Forward","Shoved_Rightward"}
-    local tr = util.TraceLine( {
-        start = self:GetPos() +self:OBBCenter() +self:OBBMaxs() +self:OBBMins(),
-        endpos = self:GetPos() + self:GetForward() *60,
-        filter = self,
-        mask = MASK_SOLID_BRUSHONLY,
-    } )
-    if self.LeapAttacking == true then
-        if tr.Hit then
-            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-            VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
-            VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))                 
-            ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
-        end
-    end
-	self.vecLastPos = self:GetPos()
+    self.vecLastPos = self:GetPos()
     if self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
         self.IsIncapacitating = true
     else
