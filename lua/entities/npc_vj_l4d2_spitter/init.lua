@@ -231,15 +231,23 @@ function ENT:CustomOnThink()
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayBacteria()
+function ENT:PlayBacteria(bOverwrite)
     for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-        if v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            return
+        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
+            if bOverwrite == true then
+                v.BacteriaSound:Stop()
+            else
+                return
+            end
         end
     end
     for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            return
+        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
+            if bOverwrite == true then
+                v.BacteriaSound:Stop()
+            else
+                return
+            end
         end
     end
     self.nextBacteria = CurTime() + math.random(14, 22)
@@ -251,18 +259,18 @@ function ENT:PlayBacteria()
             if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
                 filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
             end
+            if IsValid(w.pIncapacitatedEnemy) && w.pIncapacitatedEnemy == v then
+                filter:RemovePlayer(v)
+            end
         end
     end
-    self.bacterianoise = CreateSound(self, bacteria, filter)
-    self.BacteriaSound = self.bacterianoise
-    print(self.BacteriaSound)
-    self.bacterianoise:SetSoundLevel(0)
-    self.bacterianoise:Play()
-    timer.Simple(SoundDuration(bacteria), function()
-    	if IsValid(self.BacteriaSound) then
-    	    self.BacteriaSound:Stop()
-    	end
-	end)
+    local bacterianoise = CreateSound(game.GetWorld(), bacteria, filter)
+    self.BacteriaSound = bacterianoise
+    bacterianoise:SetSoundLevel(0)
+    bacterianoise:Play()
+    timer.Simple(math.Round(SoundDuration(bacteria)), function()
+        bacterianoise:Stop()
+    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SpitterAcid(fadeout)
