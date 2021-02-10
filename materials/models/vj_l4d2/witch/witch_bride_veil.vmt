@@ -1,0 +1,14 @@
+VertexLitGeneric
+{
+$basetexture "models\vj_l4d2\witch\witch_bride_veil"
+$allowdiffusemodulation 0
+$translucent 1
+$mostlyopaque 1
+
+$nocull 1
+
+
+
+
+
+}
