@@ -1,0 +1,4 @@
+VertexLitGeneric
+{
+$baseTexture "models/vj_l4d2/Gibs/gibs.vtf"
+}
