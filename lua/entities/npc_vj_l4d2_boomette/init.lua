@@ -5,7 +5,7 @@ include('shared.lua')
 	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
 	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
-ENT.Model = {"models/vj_l4d2//boomette.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
+ENT.Model = {"models/vj_l4d2/boomette.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_b_h")
 ENT.HullType = HULL_HUMAN
 ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
@@ -95,7 +95,6 @@ ENT.UseTheSameGeneralSoundPitch = false
 ENT.Boomer_IsVomiting = false
 ENT.Enemy_IsPuked = true
 ENT.IsGhosted = false
-ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/boomerbacteria.wav","vj_l4d2/music/bacteria/boomerbacterias.wav"}
 ENT.BacteriaSound = nil
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
