@@ -1,0 +1,33 @@
+vertexlitgeneric
+
+{
+$baseTexture "models\vj_l4d2\hunter\hunter_01"
+$bumpmap "models\vj_l4d2\hunter\hunter_normal"
+$phongexponenttexture "models\vj_l4d2\hunter\hunter_exponent"
+$halflambert 0
+$phong 1
+$phongboost 15
+
+
+$phongfresnelranges "[.2 .5 5]"
+$allowdiffusemodulation 0
+$lightwarptexture "models\vj_l4d2\survivors\coach\coach_head_wrp"
+$detail "models/vj_l4d2/hunter/hunter_01_detail.vtf"
+$detailscale 2
+$detailblendfactor .001 
+$detailblendmode 0
+$detailAmount 0
+$ambientocclusion 1
+Proxies
+{
+BloodyHands
+{
+resultVar $detailAmount
+}
+Equals
+{
+srcVar1 $detailAmount
+resultVar $detailblendfactor
+}
+}
+}
