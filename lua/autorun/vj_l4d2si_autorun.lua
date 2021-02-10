@@ -1,9 +1,9 @@
 /*--------------------------------------------------
-	=============== Left 4 Dead 2 SNPCs Autorun ===============
+	=============== [VJ] Left 4 Dead 1-2 Special Infected SNPCs Autorun ===============
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
 	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
 	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
-INFO: Used to load autorun file for Left 4 Dead 2 SNPCs
+INFO: Used to load autorun file for [VJ] Left 4 Dead 1-2 Special Infected SNPCs
 --------------------------------------------------*/
 -- Addon Information(Important!):
 	local PublicAddonName = "Left 4 Dead 2 SNPCs"
@@ -15,8 +15,6 @@ local VJExists = "lua/autorun/vj_base_autorun.lua"
 if( file.Exists( VJExists, "GAME" ) ) then
 	include('autorun/vj_controls.lua')
 	AddCSLuaFile("autorun/vj_l4d2si_autorun.lua")
-	AddCSLuaFile("autorun/vj_l4d2si_convar.lua")
-	AddCSLuaFile("autorun/vj_l4d2si_spawn.lua")
 	VJ.AddAddonProperty(AddonName,AddonType)
 
     sound.AddSoundOverrides("lua/sound/game_sounds_infected_special.lua")
@@ -26,12 +24,69 @@ if( file.Exists( VJExists, "GAME" ) ) then
     sound.AddSoundOverrides("lua/sound/game_sounds_terror.lua")
     sound.AddSoundOverrides("lua/sound/game_sounds_physics.lua")
 
+	local vCat = "Left 4 Dead 2"
+	VJ.AddNPC("Boomer","npc_vj_l4d2_boomer",vCat) 
+	VJ.AddNPC("Boomette","npc_vj_l4d2_boomette",vCat) 
+	VJ.AddNPC("Smoker","npc_vj_l4d2_smoker",vCat) 
+	VJ.AddNPC("Charger","npc_vj_l4d2_charger",vCat) 
+	VJ.AddNPC("Tank","npc_vj_l4d2_tank",vCat) 
+	VJ.AddNPC("Hunter","npc_vj_l4d2_hunter",vCat)  
+	VJ.AddNPC("Jockey","npc_vj_l4d2_jockey",vCat)  
+	VJ.AddNPC("Witch","sent_vj_l4d2_witch",vCat)  
+	VJ.AddNPC("Spitter","npc_vj_l4d2_spitter",vCat) 
+
+	local vCatL4D = "Left 4 Dead"
+	VJ.AddNPC("Boomer","npc_vj_l4d_boomer",vCatL4D)  
+	VJ.AddNPC("Smoker","npc_vj_l4d_smoker",vCatL4D)  
+	VJ.AddNPC("Hunter","npc_vj_l4d_hunter",vCatL4D)  
+	VJ.AddNPC("Tank","npc_vj_l4d_tank",vCatL4D)  
+	VJ.AddNPC("Witch","npc_vj_l4d_witch",vCatL4D)  
+
+
+	//Particles
+	game.AddParticles("particles/boomer_fx.pcf")
+	game.AddParticles("particles/l4d2_blood_fx.pcf")
+	game.AddParticles("particles/smoker_fx.pcf")
+	game.AddParticles("particles/smoker_fx2.pcf")
+	game.AddParticles("particles/hunter_fx.pcf")
+	game.AddParticles("particles/charger_fx.pcf")
+	game.AddParticles("particles/spitter_fx.pcf")
+	game.AddParticles("particles/witch_fx.pcf")
+	game.AddParticles("particles/tank_fx.pcf")
+
+	local AddConvars = {}
+
+	-- Boomer
+	AddConvars["vj_l4d2_b_h"] = 50
+	AddConvars["vj_l4d2_b_d"] = 5
+	-- Charger
+	AddConvars["vj_l4d2_c_h"] = 600
+	AddConvars["vj_l4d2_c_d"] = 10
+	-- Smoker
+	AddConvars["vj_l4d2_s_h"] = 250
+	AddConvars["vj_l4d2_s_d"] = 5
+	-- Spitter
+	AddConvars["vj_l4d2_sp_h"] = 100
+	AddConvars["vj_l4d2_sp_d"] = 5
+	-- Tank
+	AddConvars["vj_l4d2_t_h"] = 3500
+	AddConvars["vj_l4d2_t_d"] = 20
+	-- Hunter
+	AddConvars["vj_l4d2_h_h"] = 250
+	AddConvars["vj_l4d2_h_d"] = 5
+	-- Jockey
+	AddConvars["vj_l4d2_j_h"] = 325
+	AddConvars["vj_l4d2_j_d"] = 5
+	-- Witch
+	AddConvars["vj_l4d2_w_h"] = 1000
+	AddConvars["vj_l4d2_w_d"] = 100
+
     VJ.AddConVar("vj_l4d2_musictype",0)
 end
 
 if CLIENT then
 	hook.Add("PopulateToolMenu", "VJ_L4D2_MENU", function()	
-		spawnmenu.AddToolMenuOption("DrVrej", "SNPC Configures", "Left 4 Dead 2 ", "Left 4 Dead 2 Special Infected", "", "", function(Panel)
+		spawnmenu.AddToolMenuOption("DrVrej", "SNPC Configures", "Left 4 Dead 1/2 ", "Left 4 Dead 1/2 Special Infected SNPCs", "", "", function(Panel)
 			if !game.SinglePlayer() then
 			if !LocalPlayer():IsAdmin() or !LocalPlayer():IsSuperAdmin() then
 				Panel:AddControl( "Label", {Text = "You are not an admin!"})
@@ -39,10 +94,7 @@ if CLIENT then
 				return
 				end
 			end
-			Panel:AddControl("Label", {Text = "Notice: Only admins can change this settings."})
-			Panel:AddControl( "Label", {Text = "WARNING: Only future spawned SNPCs will be affected!"})
-			Panel:AddControl("Button",{Text = "Reset Everything", Command = "vj_l4d2_musictype 0"})
-			Panel:AddControl("Checkbox", {Label = "Metalized Tank Theme", Command = "vj_l4d2_musictype"})
+			Panel:AddControl("Checkbox", {Label = "Metalized Music (Tank)", Command = "vj_l4d2_musictype"})
 		end, {})
 	end)
 end
