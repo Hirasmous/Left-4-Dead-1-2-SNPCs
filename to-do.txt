@@ -11,7 +11,7 @@ Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
 -Don't incap player who is controlling 
 -Properly implement shove anims ✅
--Proper crouch charging
+-Proper crouch charging 
 -Gets stuck in incapped enemy when shoved off
 
 Jockey:
@@ -21,17 +21,17 @@ Jockey:
 
 Smoker:
 -Incapped enemy pose params
--Collision for tongue (lerp mouth att pos & enemy pos)
+-Collision for tongue (lerp mouth att pos & enemy pos) ✅
 -Fix Cloud smoke damaging Smoker
--Cant incap when being controlled
--Smoker's incapped enemy can move
--Center tongue particle on incapped model (make tracer particle end at incapped enemy's waist)
+-Fix cant incap when being controlled ✅
+-Smoker's incapped enemy can move ✅
+-Center tongue particle on incapped model (make tracer particle end at incapped enemy's waist) ✅
 -Drag enemies off of ledges
 -Reset recharge after DismountSmoker() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 -Prevent smoke cloud from damaging altogether; add smoke overlay  effect
 
 Spitter:
--Fix Spitter goo damaging Spitter
+-Fix Spitter goo damaging Spitter ✅
 
 Tank:
 -Fix textures not being applied to model
