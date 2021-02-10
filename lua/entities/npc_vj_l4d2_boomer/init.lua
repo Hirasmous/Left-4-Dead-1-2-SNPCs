@@ -189,12 +189,12 @@ function ENT:CustomOnThink()
 	    self.HasMeleeAttack = true
 	    self.HasRangeAttack = true
 	    self.TimeUntilRangeAttackProjectileRelease = 1.5
-	    self.SoundTbl_BeforeRangeAttack= {"BoomerZombie.Warn"}
+	    self.HasBeforeRangeAttackSound = true 
 	    self.RangeAttackAnimationDelay = 1.5
 	end 
 	if self.VJ_IsBeingControlled == true then
 	    self.TimeUntilRangeAttackProjectileRelease = 0
-	    self.SoundTbl_BeforeRangeAttack= {}
+	    self.HasBeforeRangeAttackSound = false
 	    self.RangeAttackAnimationDelay = 0
 	end 	        
     self:SetBodygroup(1,1)
@@ -204,38 +204,46 @@ function ENT:CustomOnThink()
 	
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayBacteria()
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-		if v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-			return
-		end
-	end
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            return
+function ENT:PlayBacteria(bOverwrite)
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
+            if bOverwrite == true then
+                v.BacteriaSound:Stop()
+            else
+                return
+            end
+        end
+    end
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
+        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
+            if bOverwrite == true then
+                v.BacteriaSound:Stop()
+            else
+                return
+            end
         end
     end
     self.nextBacteria = CurTime() + math.random(14, 22)
-	local bacteria = table.Random(self.SoundTbl_Bacteria)
+    local bacteria = table.Random(self.SoundTbl_Bacteria)
     local filter = RecipientFilter()
     filter:AddAllPlayers()
     for k, v in ipairs(ents.FindByClass("player")) do 
-    	for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
-	    	if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
-	    		filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
-	    	end
-	    end
+        for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
+            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
+                filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
+            end
+            if IsValid(w.pIncapacitatedEnemy) && w.pIncapacitatedEnemy == v then
+                filter:RemovePlayer(v)
+            end
+        end
     end
-    self.bacterianoise = CreateSound(self, bacteria, filter)
-    self.BacteriaSound = self.bacterianoise
-    print(self.BacteriaSound)
-    self.bacterianoise:SetSoundLevel(0)
-    self.bacterianoise:Play()
-    timer.Simple(SoundDuration(bacteria), function()
-    	if IsValid(self.BacteriaSound) then
-    	    self.BacteriaSound:Stop()
-    	end
-	end)
+    local bacterianoise = CreateSound(game.GetWorld(), bacteria, filter)
+    self.BacteriaSound = bacterianoise
+    bacterianoise:SetSoundLevel(0)
+    bacterianoise:Play()
+    timer.Simple(math.Round(SoundDuration(bacteria)), function()
+        bacterianoise:Stop()
+    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
