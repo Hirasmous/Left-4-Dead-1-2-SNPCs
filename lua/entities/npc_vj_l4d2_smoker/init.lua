@@ -873,26 +873,6 @@ function ENT:CustomOnThink()
     end
 
 	if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "smoker_Crouch", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-				 	self.HasLeapAttack = true
-				 	self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle_Upper_KNIFE"))}
-				 	self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-				 	self.AnimTbl_Run = {ACT_RUN_CROUCH}
-				end
-			end
-		end)
-		hook.Add("KeyRelease", "smoker_CrouchRelease", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-				 	self.HasLeapAttack = false
-				 	self.AnimTbl_IdleStand = {ACT_IDLE}
-				 	self.AnimTbl_Walk = {ACT_WALK}
-				 	self.AnimTbl_Run = {ACT_RUN}
-				end
-			end
-		end)
 		hook.Add("KeyPress", "smoker_Dismount", function(ply, key)
 			if self.HasEnemyIncapacitated then
 				if self.VJ_TheController == ply then
