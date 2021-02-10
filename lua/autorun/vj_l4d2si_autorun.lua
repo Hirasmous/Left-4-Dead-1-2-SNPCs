@@ -54,32 +54,30 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	game.AddParticles("particles/witch_fx.pcf")
 	game.AddParticles("particles/tank_fx.pcf")
 
-	local AddConvars = {}
-
 	-- Boomer
-	AddConvars["vj_l4d2_b_h"] = 50
-	AddConvars["vj_l4d2_b_d"] = 5
+	VJ.AddConVar("vj_l4d2_b_h",50)
+	VJ.AddConVar("vj_l4d2_b_d",5)
 	-- Charger
-	AddConvars["vj_l4d2_c_h"] = 600
-	AddConvars["vj_l4d2_c_d"] = 10
+	VJ.AddConVar("vj_l4d2_c_h",600)
+	VJ.AddConVar("vj_l4d2_c_d",10)
 	-- Smoker
-	AddConvars["vj_l4d2_s_h"] = 250
-	AddConvars["vj_l4d2_s_d"] = 5
+	VJ.AddConVar("vj_l4d2_s_h",250)
+	VJ.AddConVar("vj_l4d2_s_d",5)
 	-- Spitter
-	AddConvars["vj_l4d2_sp_h"] = 100
-	AddConvars["vj_l4d2_sp_d"] = 5
+	VJ.AddConVar("vj_l4d2_sp_h",100)
+	VJ.AddConVar("vj_l4d2_sp_d",5)
 	-- Tank
-	AddConvars["vj_l4d2_t_h"] = 3500
-	AddConvars["vj_l4d2_t_d"] = 20
+	VJ.AddConVar("vj_l4d2_t_h",3500)
+	VJ.AddConVar("vj_l4d2_t_d",20)
 	-- Hunter
-	AddConvars["vj_l4d2_h_h"] = 250
-	AddConvars["vj_l4d2_h_d"] = 5
+	VJ.AddConVar("vj_l4d2_h_h",250)
+	VJ.AddConVar("vj_l4d2_h_d",5)
 	-- Jockey
-	AddConvars["vj_l4d2_j_h"] = 325
-	AddConvars["vj_l4d2_j_d"] = 5
+	VJ.AddConVar("vj_l4d2_j_h",325)
+	VJ.AddConVar("vj_l4d2_j_d",5)
 	-- Witch
-	AddConvars["vj_l4d2_w_h"] = 1000
-	AddConvars["vj_l4d2_w_d"] = 100
+	VJ.AddConVar("vj_l4d2_w_h",1000)
+	VJ.AddConVar("vj_l4d2_w_d",100)
 
     VJ.AddConVar("vj_l4d2_musictype",0)
 end
