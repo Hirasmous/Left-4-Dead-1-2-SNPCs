@@ -12,6 +12,7 @@ ENT.TouchSoundv = 80
 ENT.DeathIdleSoundv = 90
 ENT.Decal = "vj_acidslime1"
 ENT.AlreadyPaintedDecal = false
+
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:SetModel("models/spitball_medium.mdl")
@@ -42,12 +43,16 @@ function ENT:Think()
         self:Remove()
     end
 	
-    util.ParticleTracerEx("smoker_tongue_new", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
+    if IsValid(self) && IsValid(owner) then
+        util.ParticleTracerEx("smoker_tongue_new", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
+    end
 
     --remove @ max travel dist
     local dist = self:GetPos():Distance(self.StartPos)
-    if dist > owner.RangeDistance + 100 then
-        self:Remove()
+    if IsValid(owner) then
+        if dist > owner.RangeDistance + 100 then
+            self:Remove()
+        end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -103,7 +108,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     dragObj:SetMoveType(MOVETYPE_FLY)
                     dragObj:SetSolid(SOLID_VPHYSICS)
                     dragObj:SetCollisionGroup(1)
-                    dragObj:SetPos(enemy:GetPos() + enemy:OBBCenter())
+                    dragObj:SetPos(enemy:GetPos() +enemy:OBBCenter())
                     dragObj:Spawn()
                     owner.pEnemyObj = dragObj 
                     dragObj:SetNoDraw(true)
@@ -129,8 +134,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                             VJ_CreateSound(v,"vj_l4d2/music/tags/tonguetiedhit.wav",95,owner:VJ_DecideSoundPitch(100,100))
                         end
                     end
-
-		    local camera = ents.Create("prop_dynamic")
+                    local camera = ents.Create("prop_dynamic")
                     camera:SetModel("models/error.mdl")
                     camera:SetPos(owner:GetPos())
                     camera:Spawn()
@@ -147,6 +151,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                             enemy:SpectateEntity(dragObj)
                             enemy:DrawViewModel(false)
                             enemy:DrawWorldModel(false)
+                            enemy:SetFOV(85)
                         end
                     else
                         enemy:DropWeapon()
@@ -155,7 +160,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                             enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
                         end
                     end
-
+                 
                     local mdl = ents.Create("prop_anim_survivor")
                     mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
                     mdl:SetPos(dragObj:GetPos())
