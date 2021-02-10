@@ -1,0 +1,13 @@
+VertexLitGeneric
+{
+$basetexture "models\vj_l4d2\boomer\boomette_color"
+$phong 1
+$phongexponenttexture "models\vj_l4d2\boomer\boomette_exponent"
+$lightwarptexture "models\vj_l4d2\survivors\coach\coach_head_wrp"
+$halflambert 0
+$diffuseexp 1
+$phongboost 2
+$phongfresnelranges "[.2 0.5 5]"
+$bumpmap "models\vj_l4d2\boomer\boomette_normal"
+$ambientocclusion 1
+}

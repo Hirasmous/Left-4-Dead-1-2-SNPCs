@@ -1,0 +1,7 @@
+VertexLitGeneric
+{
+$baseTexture "models\vj_l4d2\boomer/Boomer_Hair"
+$alphatest 1
+$allowalphatocoverage 1
+$nocull 1
+}
