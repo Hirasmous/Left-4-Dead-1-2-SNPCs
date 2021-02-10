@@ -46,6 +46,7 @@ General:
 -Be able to shove off on incapped enemies ✅
 -Proper recharge HUD icon when controlled
 -New StripAmmo() function ✅
+-Change material directories ("infected" to "vj_l4d2")
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
