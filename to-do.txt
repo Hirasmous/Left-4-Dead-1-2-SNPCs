@@ -34,7 +34,7 @@ Spitter:
 -Fix Spitter goo damaging Spitter ✅
 
 Tank:
--Fix textures not being applied to model
+-Fix textures not being applied to model ✅
 -Implement rock bodygroup for range attack
 
 General:
@@ -46,7 +46,7 @@ General:
 -Be able to shove off on incapped enemies ✅
 -Proper recharge HUD icon when controlled
 -New StripAmmo() function ✅
--Change material directories ("infected" to "vj_l4d2")
+-Change material directories ("infected" to "vj_l4d2") ✅
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
@@ -54,5 +54,5 @@ Bugs:
 - Smoker doesn't stop incapping after the enemy dies ✅
 
 ConVars:
--Should incapped NPC enemies drop their weapons?
+-Should incapped NPC enemies drop their weapons? ✅
 
