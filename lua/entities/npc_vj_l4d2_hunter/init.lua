@@ -65,8 +65,7 @@ ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward_01"}}}
     -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
---ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.wav","player/footsteps/infected/run/concrete2.wav","player/footsteps/infected/run/concrete3.wav","player/footsteps/infected/run/concrete4.wav"}
-ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.wav","vj_l4d2/footsteps/infected/run/concrete2.wav","vj_l4d2/footsteps/infected/run/concrete3.wav","vj_l4d2/footsteps/infected/run/concrete4.wav"}
+ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.wav","player/footsteps/infected/run/concrete2.wav","player/footsteps/infected/run/concrete3.wav","player/footsteps/infected/run/concrete4.wav"}
 ENT.SoundTbl_Idle = {"HunterZombie.Voice","HunterZombie.Growl"}
 ENT.SoundTbl_Alert = {"HunterZombie.Alert"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
