@@ -553,14 +553,12 @@ function ENT:PummelEnemy(v)
 							enemy:DropWeapon()
 						    elseif enemy:IsPlayer() then
 							self:StripEnemyWeapons(enemy)
-						    end
-					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-					                enemy:SetObserverMode(OBS_MODE_CHASE)
-					                enemy:SpectateEntity(camera)
-					                enemy:DrawViewModel(false)
-					                enemy:DrawWorldModel(false)
-						        enemy:SetFOV(80)
-					            end
+						        if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+							    enemy:SetObserverMode(OBS_MODE_CHASE)
+							    enemy:SpectateEntity(camera)
+							    enemy:DrawViewModel(false)
+							    enemy:DrawWorldModel(false)
+							    enemy:SetFOV(80)
 							end
 							self.HasEnemyIncapacitated = true	
 							self.pIncapacitatedEnemy = v
