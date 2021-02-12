@@ -112,6 +112,7 @@ ENT.iStrangleDamage = 12
 ENT.IsEnemyStuck = false
 ENT.IsEnemyFloating = false
 ENT.pEnemyCamera = nil
+ENT.NextTongueSpawn = CurTime()
 ENT.SoundTbl_Incapacitation_Tied = {"vj_l4d2/music/terror/tonguetied.wav"}
 ENT.SoundTbl_Incapacitation_Incap = {"vj_l4d2/music/special_attacks/asphyxiation.wav"} 
 ENT.BacteriaSound = nil
@@ -665,13 +666,13 @@ function ENT:CustomOnThink()
 			if self.HasEnemyIncapacitated == false then return end
 
 			--create tongue
-			if CurTime > self.NextTongueSpawn then
+			if CurTime() > self.NextTongueSpawn then
 	            if self.IsChokingEnemy == true then
 	                util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() +enemy:OBBCenter(), false, self:EntIndex(), 3)
-	                self.NextTongueSpawn = 0.1
+	                self.NextTongueSpawn = CurTime() +0.1
 	            elseif self.IsChokingEnemy == false then
 	                util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos(), false, self:EntIndex(), 3)
-	                self.NextTongueSpawn = 0.1
+	                self.NextTongueSpawn = CurTime() +0.1
 	            end
 	        end
 
