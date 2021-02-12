@@ -494,11 +494,11 @@ function ENT:DismountSmoker()
 	if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
 		enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
 	end
-	if IsValid(enemy) then 
-            if enemy:IsNPC() && GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
-                enemy:GetActiveWeapon():SetNoDraw(false)
-            end
-        end
+	if enemy:IsNPC() && GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+		if IsValid(enemy:GetActiveWeapon()) then
+			enemy:GetActiveWeapon():SetNoDraw(false)
+		end
+	end
 	if enemy:IsPlayer() then
 		enemy:SetParent(nil)
 		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
@@ -1009,8 +1009,8 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
     end) 
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
-    local ent = self:GetEnemy()
+function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, corpseEnt)
+    local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
     if IsValid(ent) then
         if ent:IsNPC() then
             PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
@@ -1018,6 +1018,7 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
             PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
         end
     end
+	self:DismountSmoker()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_BeforeStartTimer(seed) 
