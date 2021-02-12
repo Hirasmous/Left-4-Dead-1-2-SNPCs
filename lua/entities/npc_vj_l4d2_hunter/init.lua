@@ -249,7 +249,7 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
                 phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
             end
         end 
-	if GetConvarNumber("vj_l4d2_incapdamage") == 1 then
+	if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
 	    if IsValid(incapent) then
 	        local applyDmg = DamageInfo()
 		applyDmg:SetDamage(10)
