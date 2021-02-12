@@ -24,6 +24,8 @@ ENT.VJC_Data = {
 	FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
 	FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
+ENT.ConstantlyFaceEnemy = true -- Should it face the enemy constantly?
+ENT.ConstantlyFaceEnemy_Postures = "Moving" -- "Both" = Moving or standing | "Moving" = Only when moving | "Standing" = Only when standing
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ENT.HasBloodPool = false -- Does it have a blood pool?
 ENT.VJ_NPC_Class = {"CLASS_ZOMBIE"} -- NPCs with the same class with be allied to each other
@@ -240,14 +242,16 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
     if key == "event_incap_hit" then
     	if self.IsEnemyStuck == true || self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
     		local incapent = self.pIncapacitatedEnemy
-			if IsValid(incapent) then
-				local applyDmg = DamageInfo()
-				applyDmg:SetDamage(15)
-				applyDmg:SetDamageType(DMG_SLASH)
-				applyDmg:SetInflictor(incapent)
-				applyDmg:SetAttacker(self)
-				incapent:TakeDamage(2,self,incapent)
-				VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"},65,self:VJ_DecideSoundPitch(100,100))
+			if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
+				if IsValid(incapent) then
+					local applyDmg = DamageInfo()
+					applyDmg:SetDamage(15)
+					applyDmg:SetDamageType(DMG_SLASH)
+					applyDmg:SetInflictor(incapent)
+					applyDmg:SetAttacker(self)
+					incapent:TakeDamage(2,self,incapent)
+					VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"},65,self:VJ_DecideSoundPitch(100,100))
+				end
 			end
 		end
 	end
@@ -446,7 +450,7 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
-	if IsValid(self.pIncapacitatedEnemy) then
+    if IsValid(self.pIncapacitatedEnemy) then
         util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pIncapacitatedEnemy:GetPos(), false, self:EntIndex(), 3)
     end
     self.HasRangeAttack = true
@@ -489,6 +493,11 @@ function ENT:DismountSmoker()
 	if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
 		enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
 	end
+	if IsValid(enemy) then 
+            if enemy:IsNPC() && GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
+                enemy:GetActiveWeapon():SetNoDraw(false)
+            end
+        end
 	if enemy:IsPlayer() then
 		enemy:SetParent(nil)
 		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
@@ -656,14 +665,10 @@ function ENT:CustomOnThink()
 			if self.HasEnemyIncapacitated == false then return end
 
 			--create tongue
-			if CurTime() >= self.nextTongueSpawn then
-				if self.IsChokingEnemy then
-					util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() +enemy:OBBCenter(), false, self:EntIndex(), 3)
-					self.nextTongueSpawn = CurTime() + 0.25
-				else
-					util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos(), false, self:EntIndex(), 3)
-					self.nextTongueSpawn = CurTime() + 0.25
-				end
+			if self.IsChokingEnemy == true then
+		            util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() +enemy:OBBCenter(), false, self:EntIndex(), 3)
+			elseif self.IsChokingEnemy == false then
+			    util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos(), false, self:EntIndex(), 3)
 			end
 
 			local dist = self:GetPos():Distance(enemy:GetPos())  
