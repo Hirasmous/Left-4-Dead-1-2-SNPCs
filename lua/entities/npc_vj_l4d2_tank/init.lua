@@ -114,12 +114,12 @@ ENT.Climbing = false
 ENT.NextClimb = 0
 ENT.AllowClimbing = true
 ENT.SoundTracks = nil
-ENT.SoundTrack = {"vj_l4d2/music/taank.wav","vj_l4d2/music/tank.wav"}
+ENT.SoundTrack = {"vj_l4d2/music/tank/taank.wav","vj_l4d2/music/tank/tank.wav"}
 util.AddNetworkString("L4D2TankHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
-    if GetConVarNumber("vj_l4d2_musictype") == 1 then self.SoundTrack = {"vj_l4d2/music/tank_metal.wav","vj_l4d2/music/taank_metal.wav"} end
+    if GetConVarNumber("vj_l4d2_musictype") == 1 then self.SoundTrack = {"vj_l4d2/music/tank/tank_metal.wav","vj_l4d2/music/tank/taank_metal.wav"} end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RangeAttackCode_OverrideProjectilePos(TheProjectile)
