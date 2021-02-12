@@ -249,28 +249,17 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
                 phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
             end
         end 
-	if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
-	    if IsValid(incapent) then
-	        local applyDmg = DamageInfo()
-		applyDmg:SetDamage(10)
-		applyDmg:SetDamageType(DMG_SLASH)
-		applyDmg:SetInflictor(incapent)
-		applyDmg:SetAttacker(self)
-		incapent:TakeDamage(2,self,incapent)  	
-	    end
-	end
+    	if GetConVar("vj_l4d2_incapdamage"):GetInt() == 1 then
+    	    if IsValid(incapent) then
+    	        local applyDmg = DamageInfo()
+        		applyDmg:SetDamage(10)
+        		applyDmg:SetDamageType(DMG_SLASH)
+        		applyDmg:SetInflictor(incapent)
+        		applyDmg:SetAttacker(self)
+        		incapent:TakeDamage(2,self,incapent)  	
+    	    end
+    	end
     end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnLeapAttackVelocityCode() 
-    timer.Simple(0.9,function()                 
-        if IsValid(self) then 
-            if self:IsOnGround() then
-                --self:VJ_ACT_PLAYACTIVITY("Lunge_Land_Low_Nav_01",true,1.74,true) 
-                --VJ_CreateSound(self,self.SoundTbl_HunterPounceMiss,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,95))   
-            end
-        end
-    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
@@ -301,7 +290,6 @@ function ENT:UnSetGhost(bool)
     self:EmitSound("ui/pickup_guitarriff10.wav")
     self.HasSounds = true
     self.HasMeleeAttack = true
-    --self.HasLeapAttack = true
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetGhost(bool)
@@ -315,7 +303,6 @@ function ENT:SetGhost(bool)
     self:EmitSound("ui/menu_horror01.wav")
     self.HasSounds = false
     self.HasMeleeAttack = false
-    --self.HasLeapAttack = false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
@@ -532,29 +519,29 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
                                 camera:Fire("SetParentAttachment","camera_att")
                                 self:DeleteOnRemove(camera)
                                 VJ_CreateSound(v,"player/hunter/hit/tackled_1.wav",75,self:VJ_DecideSoundPitch(100,100))
-				if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
-				    local dist = self:GetPos():Distance(enemy:GetPos())
-				    if dist <= self.IncapacitationRange then
-			                timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") --kill the timer
-					self:SetLocalVelocity(self:GetForward() * 0) --stop the hunter from lunging forward
-					self.pIncapacitatedEnemy = enemy
-					enemy:SetLocalVelocity(self:GetForward() * 0)
-					if enemy:IsNPC() then
-					    if GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
-				                enemy:GetActiveWeapon():SetNoDraw(true)
-					    elseif GetConVarNumber("vj_l4d2_npcs_dropweapons") == 1 then
-						enemy:DropWeapon()
-					    end 
-					elseif enemy:IsPlayer() then
-                                            self:StripEnemyWeapons(v)
+                				if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
+                				    local dist = self:GetPos():Distance(enemy:GetPos())
+                				    if dist <= self.IncapacitationRange then
+            			                timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") --kill the timer
+                    					self:SetLocalVelocity(self:GetForward() * 0) --stop the hunter from lunging forward
+                    					self.pIncapacitatedEnemy = enemy
+                    					enemy:SetLocalVelocity(self:GetForward() * 0)
+                                        if enemy:IsNPC() then
+                                            if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+                                                enemy:GetActiveWeapon():SetNoDraw(true)
+                                            else
+                                                enemy:DropWeapon()
+                                            end
+                                        elseif enemy:IsPlayer() then
+                                            self:StripEnemyWeapons(enemy)
                                             if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
                                                 enemy:SetObserverMode(OBS_MODE_CHASE)
                                                 enemy:SpectateEntity(camera)
                                                 enemy:DrawViewModel(false)
                                                 enemy:DrawWorldModel(false)
-						enemy:SetFOV(75)
+                                                enemy:SetFOV(75)
                                             end
-								        end
+                                        end
 					                    self.HasEnemyIncapacitated = true
 					                    self.nextShredSound = CurTime()
 					                    self.nextIncapSong = CurTime()
@@ -688,8 +675,8 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
     end)     
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    local ent = self:GetEnemy()
+function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, GetCorpse)
+    local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
     if IsValid(ent) then
         if ent:IsNPC() then
             PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
@@ -697,6 +684,7 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
             PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
         end
     end
+    self:DismountHunter()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnSchedule()
@@ -726,8 +714,10 @@ function ENT:DismountHunter()
     hook.Add("ShouldCollide", "hunter_EnableCollisions", function(ent1, ent2)
         if (ent1 == self and ent2 == enemy) then return true end
     end)
-    if enemy:IsNPC() && GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
-        enemy:GetActiveWeapon():SetNoDraw(false)
+    if enemy:IsNPC() && GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+        if IsValid(enemy:GetActiveWeapon()) then
+            enemy:GetActiveWeapon():SetNoDraw(false)
+        end
     end
     if enemy:GetNoDraw() == true then
         enemy:SetNoDraw(false)
