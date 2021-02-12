@@ -27,6 +27,8 @@ ENT.VJC_Data = {
 	FirstP_Bone = "bip_head", -- If left empty, the base will attempt to calculate a position for first person
 	FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
+ENT.ConstantlyFaceEnemy = true -- Should it face the enemy constantly?
+ENT.ConstantlyFaceEnemy_Postures = "Moving" -- "Both" = Moving or standing | "Moving" = Only when moving | "Standing" = Only when standing
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ENT.VJ_NPC_Class = {"CLASS_ZOMBIE"} -- NPCs with the same class with be allied to each other
 ENT.BloodColor = "Red" -- The blood type, this will determine what it should use (decal, particle, etc.)
@@ -159,13 +161,15 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 		    end
 		end
 		VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95)) 
-		if IsValid(incapent) then
-			local applyDmg = DamageInfo()
-			applyDmg:SetDamage(10)
-			applyDmg:SetDamageType(DMG_CRUSH)
-			applyDmg:SetInflictor(incapent)
-			applyDmg:SetAttacker(self)
-			incapent:TakeDamage(25,self,incapent)
+		if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
+			if IsValid(incapent) then
+				local applyDmg = DamageInfo()
+				applyDmg:SetDamage(10)
+				applyDmg:SetDamageType(DMG_CRUSH)
+				applyDmg:SetInflictor(incapent)
+				applyDmg:SetAttacker(self)
+				incapent:TakeDamage(25,self,incapent)
+			end
 		end
 	end
 end
@@ -543,9 +547,13 @@ function ENT:PummelEnemy(v)
 					        	for k, v in ipairs(ents.FindByClass("player")) do
 					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.wav",90,self:VJ_DecideSoundPitch(100,100))
 					            end
-								enemy:DropWeapon()
-							elseif enemy:IsPlayer() then
-									self:StripEnemyWeapons(enemy)
+						    if GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
+                                                        enemy:GetActiveWeapon():SetNoDraw(true)
+                                                    elseif GetConVarNumber("vj_l4d2_npcs_dropweapons") == 1 then
+							enemy:DropWeapon()
+						    elseif enemy:IsPlayer() then
+							self:StripEnemyWeapons(enemy)
+						    end
 					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
 					                enemy:SetObserverMode(OBS_MODE_CHASE)
 					                enemy:SpectateEntity(camera)
@@ -725,6 +733,9 @@ function ENT:DismountCharger()
     hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
         if (ent1 == self and ent2 == enemy) then return true end
     end)
+    if enemy:IsNPC() && GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
+        enemy:GetActiveWeapon():SetNoDraw(false)
+    end
     if enemy:GetNoDraw() == true then
         enemy:SetNoDraw(false)
     end
