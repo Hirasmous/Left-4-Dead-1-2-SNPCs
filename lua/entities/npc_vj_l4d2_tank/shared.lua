@@ -36,21 +36,26 @@ if CLIENT then
 			DrawColorModify(tab)
 		end)
 		if isdeleted == true then hook.Remove("RenderScreenspaceEffects","L4D2TankScreen") end
-		local chargemat = Material( "vgui/hud/pz_charge_bg" )
-        local chargemat2 = Material( "vgui/hud/pz_charge_tank" )
+		local chargemat = Material( "vgui/hud/pz_charge_tank" )
+        local chargemat2 = Material( "vgui/hud/PZ_charge_meter" )
+        local chargemat3 = surface.GetTextureID( "vgui/hud/PZ_charge_bg" )
 
-        hook.Add( "HUDPaint", "TankHUD2", function()
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial( chargemat ) 
+        hook.Add( "HUDPaint", "TankChargeHUD", function()
+        	surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetTexture(chargemat3) 
 	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
-        end)
-        hook.Add( "HUDPaint", "TankHUD", function()
+	        surface.DisableClipping(false)
+	        
 	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial( chargemat2 ) 
+	        surface.SetMaterial(chargemat) 
 	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+
+	        surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetMaterial(chargemat2) 
+	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+     
         end)
-        if isdeleted == true then hook.Remove("HUDPaint","TankHUD2") end
-		if isdeleted == true then hook.Remove("HUDPaint","TankHUD") end
+        if isdeleted == true then hook.Remove("HUDPaint","TankChargeHUD") end
 		hook.Add("PreDrawHalos","L4D2TankHalo",function()
 			local tbL4D2Infected = {}
 			local tbL4D2Survivors = {}
