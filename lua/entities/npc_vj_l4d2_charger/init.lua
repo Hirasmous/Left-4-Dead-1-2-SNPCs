@@ -551,20 +551,25 @@ function ENT:PummelEnemy(v)
 					        	for k, v in ipairs(ents.FindByClass("player")) do
 					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.wav",90,self:VJ_DecideSoundPitch(100,100))
 					            end
-    						    if GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
+    						    if enemy:IsNPC() then
+					        	for k, v in ipairs(ents.FindByClass("player")) do
+					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.wav",90,self:VJ_DecideSoundPitch(100,100))
+					            end
+                                if GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
                                     enemy:GetActiveWeapon():SetNoDraw(true)
                                 elseif GetConVarNumber("vj_l4d2_npcs_dropweapons") == 1 then
-    							    enemy:DropWeapon()
+								    enemy:DropWeapon()
                                 end
-						    elseif enemy:IsPlayer() then
-							    self:StripEnemyWeapons(enemy)
-						        if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-							    enemy:SetObserverMode(OBS_MODE_CHASE)
-							    enemy:SpectateEntity(camera)
-							    enemy:DrawViewModel(false)
-							    enemy:DrawWorldModel(false)
-							    enemy:SetFOV(80)
-							end
+							elseif enemy:IsPlayer() then
+								self:StripEnemyWeapons(enemy)
+					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+					                enemy:SetObserverMode(OBS_MODE_CHASE)
+					                enemy:SpectateEntity(camera)
+					                enemy:DrawViewModel(false)
+					                enemy:DrawWorldModel(false)
+                                    enemy:SetFOV(80)
+					            end
+                            end
 							self.HasEnemyIncapacitated = true	
 							self.pIncapacitatedEnemy = v
 							self.nextIncapSong = CurTime()
