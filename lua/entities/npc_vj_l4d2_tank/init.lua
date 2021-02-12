@@ -27,6 +27,8 @@ ENT.VJC_Data = {
 	FirstP_Bone = "ValveBiped.Bip01_Head", -- If left empty, the base will attempt to calculate a position for first person
 	FirstP_Offset = Vector(5, 0, 5), -- The offset for the controller when the camera is in first person
 }
+ENT.ConstantlyFaceEnemy = true -- Should it face the enemy constantly?
+ENT.ConstantlyFaceEnemy_Postures = "Moving" -- "Both" = Moving or standing | "Moving" = Only when moving | "Standing" = Only when standing
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ENT.VJ_NPC_Class = {"CLASS_ZOMBIE"} -- NPCs with the same class with be allied to each other
 ENT.BloodColor = "Red" -- The blood type, this will determine what it should use (decal, particle, etc.)
