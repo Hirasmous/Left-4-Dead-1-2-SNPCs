@@ -22,7 +22,7 @@ ENT.CallForHelp = false -- Does the SNPC call for help?
 ENT.InvestigateSoundDistance = 0 -- How far away can the SNPC hear sounds? | This number is timed by the calculated volume of the detectable sound.
 ENT.VJC_Data = {
 	CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
-	ThirdP_Offset = Vector(0, 0, 0), -- The offset for the controller when the camera is in third person
+	ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
 	FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
 	FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
