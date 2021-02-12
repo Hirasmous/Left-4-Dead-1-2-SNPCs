@@ -8,12 +8,11 @@ include("shared.lua")
 -----------------------------------------------*/
 ENT.TouchSoundv = 80
 ENT.DeathIdleSoundv = 90
-ENT.Decal = "vj_acidslime1"
 ENT.AlreadyPaintedDecal = false
 ENT.Damage = 45
 ENT.DamageDistance = 200
 ENT.Dead = false
-ENT.DecalTbl_DeathDecals = {"Blood"} -- Decals that paint when the projectile dies | It picks a random one from this table
+ENT.DecalTbl_DeathDecals = {"VJ_Blood_Red"} -- Decals that paint when the projectile dies | It picks a random one from this table
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
@@ -57,17 +56,10 @@ function ENT:PhysicsCollide(data,physobj,entity)
 	if self.idlesoundc then self.idlesoundc:Stop() end
 	self:StopParticles()
 
-        -- Damages
-	if self:GetOwner() == NULL then util.VJ_SphereDamage(self,self,self:GetPos(),4,4,DMG_ACID,true,true) else
-	util.VJ_SphereDamage(self:GetOwner(),self,self:GetPos(),4,4,DMG_ACID,true,true) end
-
-        util.Decal(VJ_PICKRANDOMTABLE(self.DecalTbl_DeathDecals), data.HitPos +data.HitNormal, data.HitPos -data.HitNormal)
-        ParticleEffect("blood_impact_boomer_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)        
-        ParticleEffect("blood_impact_boomer_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)
-        ParticleEffect("blood_impact_boomer_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)        
-        ParticleEffect("blood_impact_boomer_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)
-        ParticleEffect("blood_impact_red_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)        
-        ParticleEffect("blood_impact_infected_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)
+    util.Decal(VJ_PICKRANDOMTABLE(self.DecalTbl_DeathDecals), data.HitPos +data.HitNormal, data.HitPos -data.HitNormal)
+    ParticleEffect("blood_impact_boomer_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)        
+    ParticleEffect("blood_impact_red_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)        
+    ParticleEffect("blood_impact_infected_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)
 	
 	-- Effects
 	self:Remove()
