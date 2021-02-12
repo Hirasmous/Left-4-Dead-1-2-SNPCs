@@ -1,6 +1,7 @@
 UnlitGeneric
 {
-$baseTexture "vgui\hud\PZ_charge_witch"
+$baseTexture "vgui\hud\PZ_charge_Witch"
+$texture2 "vgui\hud\PZ_charge_bg"
 $translucent 1
 $vertexcolor 1
 $vertexalpha 1
