@@ -56,6 +56,6 @@ Bugs:
 
 ConVars:
 -Should incapped NPC enemies drop their weapons? ✅
--Spitter goo damage
--Other incap damage?
+-Spitter goo damage ✅
+-Other incap damage ✅
 
