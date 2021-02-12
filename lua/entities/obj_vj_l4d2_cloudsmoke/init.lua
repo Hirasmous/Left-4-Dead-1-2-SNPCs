@@ -17,7 +17,7 @@ function ENT:CustomOnThink()
 	local sphere = ents.FindInSphere(self:GetPos(),150)
 	local owner = self:GetOwner()
 	for k, v in ipairs(sphere) do
-		if GetConVarNumber("vj_l4d2_gasdamage") == 1 then
+		if GetConVar("vj_l4d2_gasdamage"):GetInt() == 1 then
 			if (v:IsNPC() or v:IsPlayer()) then
 	    	    if math.random(1,4) == 1 then
 	    		    VJ_EmitSound(v,VJ_PICKRANDOMTABLE({"ambient/voices/cough1.wav","ambient/voices/cough2.wav","ambient/voices/cough3.wav","ambient/voices/cough4.wav"}),70,math.random(100,100))
