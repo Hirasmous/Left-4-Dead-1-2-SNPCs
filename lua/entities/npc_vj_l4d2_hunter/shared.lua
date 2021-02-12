@@ -36,21 +36,26 @@ if CLIENT then
 			DrawColorModify(tab)
 		end)
 		if isdeleted == true then hook.Remove("RenderScreenspaceEffects","L4D2HunterScreen") end
-		local chargemat = Material( "vgui/hud/pz_charge_bg" )
-        local chargemat2 = Material( "vgui/hud/pz_charge_lunge" )
+		local chargemat = Material( "vgui/hud/pz_charge_lunge" )
+        local chargemat2 = Material( "vgui/hud/PZ_charge_meter" )
+        local chargemat3 = surface.GetTextureID( "vgui/hud/PZ_charge_bg" )
 
         hook.Add( "HUDPaint", "HunterChargeHUD", function()
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial( chargemat ) 
+        	surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetTexture(chargemat3) 
 	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
-        end)
-        hook.Add( "HUDPaint", "HunterChargeHUD2", function()
+	        surface.DisableClipping(false)
+	        
 	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial( chargemat2 ) 
+	        surface.SetMaterial(chargemat) 
 	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+
+	        surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetMaterial(chargemat2) 
+	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+     
         end)
-        if isdeleted == true then hook.Remove("HUDPaint","HunterChargeHUD2") end
-		if isdeleted == true then hook.Remove("HUDPaint","HunterChargeHUD") end
+        if isdeleted == true then hook.Remove("HUDPaint","HunterChargeHUD") end
 		hook.Add("PreDrawHalos","L4D2HunterHalo",function()
 			local tbL4D2Infected = {}
 			local tbL4D2Survivors = {}
@@ -89,21 +94,26 @@ if CLIENT then
 			DrawColorModify(tab)
 		end)
 		if isdeleted == true then hook.Remove("RenderScreenspaceEffects","GhostL4D2HunterScreen") end
-		local chargemat = Material( "vgui/hud/pz_charge_bg" )
-        local chargemat2 = Material( "vgui/hud/pz_charge_lunge" )
+		local chargemat = Material( "vgui/hud/pz_charge_lunge" )
+        local chargemat2 = Material( "vgui/hud/PZ_charge_meter" )
+        local chargemat3 = surface.GetTextureID( "vgui/hud/PZ_charge_bg" )
 
-        hook.Add( "HUDPaint", "GhostHunterChargeHUD2", function()
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial( chargemat ) 
-	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
-        end)
         hook.Add( "HUDPaint", "GhostHunterChargeHUD", function()
+        	surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetTexture(chargemat3) 
+	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
+	        surface.DisableClipping(false)
+	        
 	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial( chargemat2 ) 
+	        surface.SetMaterial(chargemat) 
 	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+
+	        surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetMaterial(chargemat2) 
+	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+     
         end)
-        if isdeleted == true then hook.Remove("HUDPaint","GhostHunterChargeHUD2") end
-		if isdeleted == true then hook.Remove("HUDPaint","GhostHunterChargeHUD") end
+        if isdeleted == true then hook.Remove("HUDPaint","GhostHunterChargeHUD") end
 		hook.Add("PreDrawHalos","GhostL4D2HunterHalo",function()
 			local tbL4D2Infected = {}
 			local tbL4D2Survivors = {}
