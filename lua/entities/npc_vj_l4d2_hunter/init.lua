@@ -26,6 +26,8 @@ ENT.VJC_Data = {
     FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
     FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
+ENT.ConstantlyFaceEnemy = true -- Should it face the enemy constantly?
+ENT.ConstantlyFaceEnemy_Postures = "Moving" -- "Both" = Moving or standing | "Moving" = Only when moving | "Standing" = Only when standing
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ENT.VJ_NPC_Class = {"CLASS_ZOMBIE"} -- NPCs with the same class with be allied to each other
 ENT.BloodColor = "Red" -- The blood type, this will determine what it should use (decal, particle, etc.)
@@ -247,15 +249,17 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
                 phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
             end
         end 
-		if IsValid(incapent) then
-			local applyDmg = DamageInfo()
-			applyDmg:SetDamage(10)
-			applyDmg:SetDamageType(DMG_SLASH)
-			applyDmg:SetInflictor(incapent)
-			applyDmg:SetAttacker(self)
-			incapent:TakeDamage(2,self,incapent)  		
-		end
+	if GetConvarNumber("vj_l4d2_incapdamage") == 1 then
+	    if IsValid(incapent) then
+	        local applyDmg = DamageInfo()
+		applyDmg:SetDamage(10)
+		applyDmg:SetDamageType(DMG_SLASH)
+		applyDmg:SetInflictor(incapent)
+		applyDmg:SetAttacker(self)
+		incapent:TakeDamage(2,self,incapent)  	
+	    end
 	end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttackVelocityCode() 
@@ -528,16 +532,20 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
                                 camera:Fire("SetParentAttachment","attach_blur")
                                 self:DeleteOnRemove(camera)
                                 VJ_CreateSound(v,"player/hunter/hit/tackled_1.wav",75,self:VJ_DecideSoundPitch(100,100))
-					            if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
-					                local dist = self:GetPos():Distance(enemy:GetPos())
-					                if dist <= self.IncapacitationRange then
-					                    timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") --kill the timer
-					                    self:SetLocalVelocity(self:GetForward() * 0) --stop the hunter from lunging forward
-					                    self.pIncapacitatedEnemy = enemy
-					                    enemy:SetLocalVelocity(self:GetForward() * 0)
-					                   	if enemy:IsNPC() then
-								            enemy:DropWeapon()
-								        elseif enemy:IsPlayer() then
+				if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
+				    local dist = self:GetPos():Distance(enemy:GetPos())
+				    if dist <= self.IncapacitationRange then
+			                timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") --kill the timer
+					self:SetLocalVelocity(self:GetForward() * 0) --stop the hunter from lunging forward
+					self.pIncapacitatedEnemy = enemy
+					enemy:SetLocalVelocity(self:GetForward() * 0)
+					if enemy:IsNPC() then
+					    if GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
+				                enemy:GetActiveWeapon():SetNoDraw(true)
+					    elseif GetConVarNumber("vj_l4d2_npcs_dropweapons") == 1 then
+						enemy:DropWeapon()
+					    end 
+					elseif enemy:IsPlayer() then
                                             self:StripEnemyWeapons(v)
                                             if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
                                                 enemy:SetObserverMode(OBS_MODE_CHASE)
@@ -718,6 +726,9 @@ function ENT:DismountHunter()
     hook.Add("ShouldCollide", "hunter_EnableCollisions", function(ent1, ent2)
         if (ent1 == self and ent2 == enemy) then return true end
     end)
+    if enemy:IsNPC() && GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
+        enemy:GetActiveWeapon():SetNoDraw(false)
+    end
     if enemy:GetNoDraw() == true then
         enemy:SetNoDraw(false)
     end
