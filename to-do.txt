@@ -13,6 +13,7 @@ Hunter:
 -Properly implement shove anims ✅
 -Proper crouch charging 
 -Gets stuck in incapped enemy when shoved off
+-Not make boomer bile damage enemy
 
 Jockey:
 -Directional movement for incapped mdl
