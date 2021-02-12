@@ -10,7 +10,7 @@ ENT.StartHealth = GetConVarNumber("vj_l4d2_s_h")
 ENT.HullType = HULL_HUMAN
 	-- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
-ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.wav","vj_l4d2/footsteps/infected/run/concrete2.wav","vj_l4d2/footsteps/infected/run/concrete3.wav","vj_l4d2/footsteps/infected/run/concrete4.wav"}
+ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.wav","player/footsteps/infected/run/concrete2.wav","player/footsteps/infected/run/concrete3.wav","player/footsteps/infected/run/concrete4.wav"}
 ENT.SoundTbl_Idle = {"vj_l4d/smoker/voice/idle/smoker_lurk_01.wav","vj_l4d/smoker/voice/idle/smoker_lurk_03.wav","vj_l4d/smoker/voice/idle/smoker_lurk_04.wav","vj_l4d/smoker/voice/idle/smoker_lurk_06.wav","vj_l4d/smoker/voice/idle/smoker_lurk_08.wav"}
 ENT.SoundTbl_Alert = {"vj_l4d/smoker/voice/idle/smoker_spotprey_01.wav","vj_l4d/smoker/voice/idle/smoker_spotprey_02.wav","vj_l4d/smoker/voice/idle/smoker_spotprey_07.wav","vj_l4d/smoker/voice/idle/smoker_spotprey_08.wav"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
