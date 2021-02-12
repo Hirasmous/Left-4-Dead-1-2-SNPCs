@@ -154,12 +154,11 @@ function ENT:PhysicsCollide(data, physobj, entity)
                             enemy:SetFOV(85)
                         end
                     elseif enemy:IsNPC() then
-                        if GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
+                        if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
                             enemy:GetActiveWeapon():SetNoDraw(true)
-                        elseif GetConVarNumber("vj_l4d2_npcs_dropweapons") == 1 then
+                        else
                             enemy:DropWeapon()
                         end
-                        --enemy:GetActiveWeapon():SetNoDraw(true)
                         if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
                             enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
                         end
