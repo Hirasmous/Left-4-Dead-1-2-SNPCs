@@ -124,8 +124,8 @@ util.AddNetworkString("Charger_RemoveCSEnt")
 util.AddNetworkString("Charger_PounceEnemy")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
-    self:SetHullType(self.HullType)
-    self.nextBacteria = 0
+	self:SetHullType(self.HullType)
+	self.nextBacteria = 0
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -138,27 +138,27 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	end
 	if key == "event_emit Pummel" then
 		local incapent = self.pIncapacitatedEnemy		
-                for i = 1, 1 do 
-		    local ent = ents.Create("obj_vj_l4d2_bile")
-		    ent:SetPos(self:GetAttachment(4).Pos)
-		    ent:SetOwner(self)
-		    ent:Spawn()
-		    ent:Activate()
-		    local phys = ent:GetPhysicsObject()
-		    if IsValid(phys) then
+				for i = 1, 1 do 
+			local ent = ents.Create("obj_vj_l4d2_bile")
+			ent:SetPos(self:GetAttachment(4).Pos)
+			ent:SetOwner(self)
+			ent:Spawn()
+			ent:Activate()
+			local phys = ent:GetPhysicsObject()
+			if IsValid(phys) then
 			phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
-		    end
+			end
 		end 
 		for i = 1, 1 do 
-		    local ent = ents.Create("obj_vj_l4d2_bile")
-		    ent:SetPos(self:GetAttachment(4).Pos)
-		    ent:SetOwner(self)
-		    ent:Spawn()
-		    ent:Activate()
-		    local phys = ent:GetPhysicsObject()
-		    if IsValid(phys) then
+			local ent = ents.Create("obj_vj_l4d2_bile")
+			ent:SetPos(self:GetAttachment(4).Pos)
+			ent:SetOwner(self)
+			ent:Spawn()
+			ent:Activate()
+			local phys = ent:GetPhysicsObject()
+			if IsValid(phys) then
 			phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
-		    end
+			end
 		end
 		VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95)) 
 		if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
@@ -175,199 +175,195 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    self:SetGhost()
+	self:SetGhost()
 	function self.VJ_TheControllerEntity:CustomOnStopControlling()
 		net.Start("L4D2ChargerHUD")
 			net.WriteBool(true)
 			net.WriteEntity(self)
 			net.WriteEntity(ply)
 		net.Send(ply)
-        net.Start("L4D2ChargerHUDGhost")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
+		net.Start("L4D2ChargerHUDGhost")
+			net.WriteBool(true)
+			net.WriteEntity(self)
+			net.WriteEntity(ply)
+		net.Send(ply)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
-    if self.VJ_IsBeingControlled == true then
-        if self.IsGhosted == true then
-            net.Start("L4D2ChargerHUDGhost")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2ChargerHUD")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        elseif self.IsGhosted == false then
-            net.Start("L4D2ChargerHUD")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2ChargerHUDGhost")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        end
-    end
+	if self.VJ_IsBeingControlled == true then
+		if self.IsGhosted == true then
+			net.Start("L4D2ChargerHUDGhost")
+				net.WriteBool(false)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+			net.Start("L4D2ChargerHUD")
+				net.WriteBool(true)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+		elseif self.IsGhosted == false then
+			net.Start("L4D2ChargerHUD")
+				net.WriteBool(false)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+			net.Start("L4D2ChargerHUDGhost")
+				net.WriteBool(true)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:UnSetGhost(bool)
-    self.IsGhosted = false
-    self:DrawShadow(true)
-    self.GodMode = false 
-    self:SetCollisionGroup(COLLISION_GROUP_NONE)
-    self.VJ_NoTarget = false
-    self.DisableMakingSelfEnemyToNPCs = false
-    self:SetRenderMode(RENDERMODE_NORMAL)
-    self:EmitSound("ui/pickup_guitarriff10.wav")
-    self.HasSounds = true
-    self.HasLeapAttack = true
+	self.IsGhosted = false
+	self:DrawShadow(true)
+	self.GodMode = false 
+	self:SetCollisionGroup(COLLISION_GROUP_NONE)
+	self.VJ_NoTarget = false
+	self.DisableMakingSelfEnemyToNPCs = false
+	self:SetRenderMode(RENDERMODE_NORMAL)
+	self:EmitSound("ui/pickup_guitarriff10.wav")
+	self.HasSounds = true
+	self.HasLeapAttack = true
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetGhost(bool)
-    self.IsGhosted = true
-    self:DrawShadow(false)
-    self.GodMode = true 
-    self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-    self.VJ_NoTarget = true
-    self.DisableMakingSelfEnemyToNPCs = true
-    self:SetRenderMode(RENDERMODE_NONE)
-    self:EmitSound("ui/menu_horror01.wav")
-    self.HasSounds = false
-    self.HasLeapAttack = false
+	self.IsGhosted = true
+	self:DrawShadow(false)
+	self.GodMode = true 
+	self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+	self.VJ_NoTarget = true
+	self.DisableMakingSelfEnemyToNPCs = true
+	self:SetRenderMode(RENDERMODE_NONE)
+	self:EmitSound("ui/menu_horror01.wav")
+	self.HasSounds = false
+	self.HasLeapAttack = false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
-    if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
-    timer.Create("Charger_HitWall", 0.1, 11, function()
-    	if !IsValid(self) then return end
+	if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
+	timer.Create("Charger_HitWall", 0.1, 11, function()
+		if !IsValid(self) then return end
 		local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
-	    local tr = util.TraceLine( {
-	        start = self:GetPos() +self:OBBCenter() +self:OBBMaxs() +self:OBBMins(),
-	        endpos = self:GetPos() + self:GetForward() *60 +self:GetUp() *20,
-	        filter = self,
-	        mask = MASK_SOLID_BRUSHONLY,
-	    } )
-	    if tr.Hit then
-	        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-	        VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
-	        VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))                 
-	        ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
-	        timer.Stop("Charger_HitWall")
-	    end
+		local tr = util.TraceLine( {
+			start = self:GetPos() +self:OBBCenter() +self:OBBMaxs() +self:OBBMins(),
+			endpos = self:GetPos() + self:GetForward() *60 +self:GetUp() *20,
+			filter = self,
+			mask = MASK_SOLID_BRUSHONLY,
+		} )
+		if tr.Hit then
+			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+			VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
+			VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
+			ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
+			timer.Stop("Charger_HitWall")
+		end
 	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
-    if self.VJ_IsBeingControlled == false then
-        self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"},true,0.1,false)
-    end
-    VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
-    VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))                 
-    ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
-    self:PummelEnemy(TheHitEntity)
-    for k, v in ipairs(ents.FindByClass("player")) do
-	    if TheHitEntity:IsPlayer() then
-	    	VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.wav",90,self:VJ_DecideSoundPitch(100,100))
-	    elseif TheHitEntity:IsNPC() then
-	    	VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.wav",90,self:VJ_DecideSoundPitch(100,100))
-	    end
+	if self.VJ_IsBeingControlled == false then
+		self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"},true,0.1,false)
+	end
+	VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
+	VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
+	ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
+	self:PummelEnemy(TheHitEntity)
+	for k, v in ipairs(ents.FindByClass("player")) do
+		if TheHitEntity:IsPlayer() then
+			VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.wav",90,self:VJ_DecideSoundPitch(100,100))
+		elseif TheHitEntity:IsNPC() then
+			VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.wav",90,self:VJ_DecideSoundPitch(100,100))
+		end
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    local ent = self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
-        end
-    end
-    self:DismountCharger()
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRemove()
-    self:DismountCharger()
+	local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
+	if IsValid(ent) then
+		if ent:IsNPC() then
+			PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
+		elseif ent:IsPlayer() then
+			PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+		end
+	end
+	self:DismountCharger()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChargerIncapacitate(ent)
-    local ent = self.pIncapacitatedEnemy
-    if ent then
-        self.pIncapacitatedEnemy = ent 
-        self.HasEnemyIncapacitated = true
-        if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-            ent:AddEFlags(EFL_NO_THINK_FUNCTION)
-        end
-    end
+	local ent = self.pIncapacitatedEnemy
+	if ent then
+		self.pIncapacitatedEnemy = ent 
+		self.HasEnemyIncapacitated = true
+		if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+			ent:AddEFlags(EFL_NO_THINK_FUNCTION)
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CanIncapacitate(ent)
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-        if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-            return false
-        end
-    end
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-            return false
-        end
-    end
-    return true
+	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
+			return false
+		end
+	end
+	for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
+		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
+			return false
+		end
+	end
+	return true
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:IsEntityAlly(ent)
-    if ent:GetClass() == "obj_vj_bullseye" then
-        return true
-    end
-    if ent:IsNPC() then
-        if ent.IsVJBaseSNPC == true then
-            for i = 1, table.Count(ent.VJ_NPC_Class) do
-                if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
-                    return true
-                end
-            end
-        end
-    elseif ent:IsPlayer() then
-        if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
-            return true
-        end
-        if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
-            return true
-        end
-    end
-    return false
+	if ent:GetClass() == "obj_vj_bullseye" then
+		return true
+	end
+	if ent:IsNPC() then
+		if ent.IsVJBaseSNPC == true then
+			for i = 1, table.Count(ent.VJ_NPC_Class) do
+				if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
+					return true
+				end
+			end
+		end
+	elseif ent:IsPlayer() then
+		if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
+			return true
+		end
+		if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
+			return true
+		end
+	end
+	return false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:StripEnemyWeapons(ent)
-    local weapons = ent:GetWeapons()
-    self.tblEnemyWeapons = {}
-    self.tblEnemyAmmo = {}
-    self.tblEnemyAmmo = ent:GetAmmo()
-    for l, w in ipairs(weapons) do
-        if w.Base ~= "weapon_vj_base" then
-            local index = table.Count(self.tblEnemyWeapons) + 1
-            self.tblEnemyWeapons[index] = {}
-            self.tblEnemyWeapons[index][1] = w:GetClass()
-            self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
-            self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
-        end
-    end
-    ent:StripWeapons()
-    ent:StripAmmo()
+	local weapons = ent:GetWeapons()
+	self.tblEnemyWeapons = {}
+	self.tblEnemyAmmo = {}
+	self.tblEnemyAmmo = ent:GetAmmo()
+	for l, w in ipairs(weapons) do
+		if w.Base ~= "weapon_vj_base" then
+			local index = table.Count(self.tblEnemyWeapons) + 1
+			self.tblEnemyWeapons[index] = {}
+			self.tblEnemyWeapons[index][1] = w:GetClass()
+			self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
+			self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
+		end
+	end
+	ent:StripWeapons()
+	ent:StripAmmo()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Pummel_Effects(fadeout)
 	self:PlayIncapSong()
 	if fadeout == false then
-	    self.spotlightpoint = ents.Create("env_projectedtexture")
+		self.spotlightpoint = ents.Create("env_projectedtexture")
 		self.spotlightpoint:SetPos( self:GetPos() +self:GetUp()*110)
 		self.spotlightpoint:SetKeyValue('lightcolor', "145 25 12")
 		self.spotlightpoint:SetKeyValue('lightfov', '70')
@@ -402,17 +398,17 @@ function ENT:Pummel_Effects(fadeout)
 		self:DeleteOnRemove(self.spotlightpoint1)
 		self.Light2 = self.spotlightpoint1
 		local glowlight = ents.Create("light_dynamic")
-        glowlight:SetKeyValue("_light","145 25 12")
-        glowlight:SetKeyValue("brightness","5")
-        glowlight:SetKeyValue("distance","107")
-        glowlight:SetKeyValue("style","0")
-        glowlight:SetPos(self:GetPos() +self:GetUp()*95)
-        glowlight:SetParent(self)
-        glowlight:Spawn()
-        glowlight:Activate()
-        --glowlight:Fire("SetParentAttachment","attach_blur")
-        glowlight:Fire("TurnOn","",0)
-        self:DeleteOnRemove(glowlight)
+		glowlight:SetKeyValue("_light","145 25 12")
+		glowlight:SetKeyValue("brightness","5")
+		glowlight:SetKeyValue("distance","107")
+		glowlight:SetKeyValue("style","0")
+		glowlight:SetPos(self:GetPos() +self:GetUp()*95)
+		glowlight:SetParent(self)
+		glowlight:Spawn()
+		glowlight:Activate()
+		--glowlight:Fire("SetParentAttachment","attach_blur")
+		glowlight:Fire("TurnOn","",0)
+		self:DeleteOnRemove(glowlight)
 		self.Light3 = glowlight
 	end
 	if fadeout == true then
@@ -425,88 +421,88 @@ function ENT:Pummel_Effects(fadeout)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayBacteria(bOverwrite)
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            if bOverwrite == true then
-                v.BacteriaSound:Stop()
-            else
-                return
-            end
-        end
-    end
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            if bOverwrite == true then
-                v.BacteriaSound:Stop()
-            else
-                return
-            end
-        end
-    end
-    self.nextBacteria = CurTime() + math.random(14, 22)
-    local bacteria = table.Random(self.SoundTbl_Bacteria)
-    local filter = RecipientFilter()
-    filter:AddAllPlayers()
-    for k, v in ipairs(ents.FindByClass("player")) do 
-        for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
-            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
-                filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
-            end
-            if IsValid(w.pIncapacitatedEnemy) && w.pIncapacitatedEnemy == v then
-                filter:RemovePlayer(v)
-            end
-        end
-    end
-    local bacterianoise = CreateSound(game.GetWorld(), bacteria, filter)
-    self.BacteriaSound = bacterianoise
-    bacterianoise:SetSoundLevel(0)
-    bacterianoise:Play()
-    timer.Simple(math.Round(SoundDuration(bacteria)), function()
-        bacterianoise:Stop()
-    end)
+	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+		if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
+			if bOverwrite == true then
+				v.BacteriaSound:Stop()
+			else
+				return
+			end
+		end
+	end
+	for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
+		if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
+			if bOverwrite == true then
+				v.BacteriaSound:Stop()
+			else
+				return
+			end
+		end
+	end
+	self.nextBacteria = CurTime() + math.random(14, 22)
+	local bacteria = table.Random(self.SoundTbl_Bacteria)
+	local filter = RecipientFilter()
+	filter:AddAllPlayers()
+	for k, v in ipairs(ents.FindByClass("player")) do 
+		for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
+			if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
+				filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
+			end
+			if IsValid(w.pIncapacitatedEnemy) && w.pIncapacitatedEnemy == v then
+				filter:RemovePlayer(v)
+			end
+		end
+	end
+	local bacterianoise = CreateSound(game.GetWorld(), bacteria, filter)
+	self.BacteriaSound = bacterianoise
+	bacterianoise:SetSoundLevel(0)
+	bacterianoise:Play()
+	timer.Simple(math.Round(SoundDuration(bacteria)), function()
+		bacterianoise:Stop()
+	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayIncapSong(bOverwrite)
-    if self.IncapSong ~= nil && self.IncapSong:IsPlaying() then return end
-    if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
-        for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-            if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy then
-                if v ~= self && v.IncapSong && v.IncapSong:IsPlaying() then
-                    if bOverwrite == true then
-                        v.IncapSong:Stop()
-                    else
-                        return
-                    end
-                end
-            end
-        end
-        local sndIncap = self.SoundTbl_Incapacitation[1]
-        self.nextIncapSong = CurTime() + math.Round(SoundDuration(sndIncap))
-        local filter = RecipientFilter()
-        filter:AddPlayer(self.pIncapacitatedEnemy)
-        local sound = CreateSound(game.GetWorld(), sndIncap, filter)
-        self.IncapSong = sound
-        sound:SetSoundLevel(0)
-        sound:Play()
-        timer.Simple(math.Round(SoundDuration(sndIncap)), function()
-            sound:Stop()
-            self.IncapSong = nil
-        end)
-        local id = self:EntIndex()
-        timer.Create("Charger"..id.."_CheckIncapSong", 0.1, math.Round(SoundDuration(sndIncap)) * 10, function()
-            if !IsValid(self) then timer.Stop("Charger"..id.."_CheckIncapSong") end
-            if self.HasEnemyIncapacitated == false then
-                if self.IncapSong ~= nil then
-                    self.IncapSong:Stop()
-                end
-            end
-        end)
-        self:CallOnRemove("Charger_StopIncapSong", function(ent)
-            if ent.IncapSong ~= nil then
-                ent.IncapSong:Stop()
-            end
-        end)
-    end
+	if self.IncapSong ~= nil && self.IncapSong:IsPlaying() then return end
+	if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
+		for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+			if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy then
+				if v ~= self && v.IncapSong && v.IncapSong:IsPlaying() then
+					if bOverwrite == true then
+						v.IncapSong:Stop()
+					else
+						return
+					end
+				end
+			end
+		end
+		local sndIncap = self.SoundTbl_Incapacitation[1]
+		self.nextIncapSong = CurTime() + math.Round(SoundDuration(sndIncap))
+		local filter = RecipientFilter()
+		filter:AddPlayer(self.pIncapacitatedEnemy)
+		local sound = CreateSound(game.GetWorld(), sndIncap, filter)
+		self.IncapSong = sound
+		sound:SetSoundLevel(0)
+		sound:Play()
+		timer.Simple(math.Round(SoundDuration(sndIncap)), function()
+			sound:Stop()
+			self.IncapSong = nil
+		end)
+		local id = self:EntIndex()
+		timer.Create("Charger"..id.."_CheckIncapSong", 0.1, math.Round(SoundDuration(sndIncap)) * 10, function()
+			if !IsValid(self) then timer.Stop("Charger"..id.."_CheckIncapSong") end
+			if self.HasEnemyIncapacitated == false then
+				if self.IncapSong ~= nil then
+					self.IncapSong:Stop()
+				end
+			end
+		end)
+		self:CallOnRemove("Charger_StopIncapSong", function(ent)
+			if ent.IncapSong ~= nil then
+				ent.IncapSong:Stop()
+			end
+		end)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PummelEnemy(v)
@@ -547,19 +543,11 @@ function ENT:PummelEnemy(v)
 					        	for k, v in ipairs(ents.FindByClass("player")) do
 					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.wav",90,self:VJ_DecideSoundPitch(100,100))
 					            end
-						    if enemy:IsNPC() then
-					        	for k, v in ipairs(ents.FindByClass("player")) do
-					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.wav",90,self:VJ_DecideSoundPitch(100,100))
-					            end
-    						    if enemy:IsNPC() then
-					        	for k, v in ipairs(ents.FindByClass("player")) do
-					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.wav",90,self:VJ_DecideSoundPitch(100,100))
-					            end
-                                if GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
-                                    enemy:GetActiveWeapon():SetNoDraw(true)
-                                elseif GetConVarNumber("vj_l4d2_npcs_dropweapons") == 1 then
-								    enemy:DropWeapon()
-                                end
+					            if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+					            	enemy:GetActiveWeapon():SetNoDraw(true)
+					            else
+									enemy:DropWeapon()
+								end
 							elseif enemy:IsPlayer() then
 								self:StripEnemyWeapons(enemy)
 					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
@@ -567,9 +555,8 @@ function ENT:PummelEnemy(v)
 					                enemy:SpectateEntity(camera)
 					                enemy:DrawViewModel(false)
 					                enemy:DrawWorldModel(false)
-                                    enemy:SetFOV(80)
 					            end
-                            end
+							end
 							self.HasEnemyIncapacitated = true	
 							self.pIncapacitatedEnemy = v
 							self.nextIncapSong = CurTime()
@@ -636,7 +623,6 @@ function ENT:PummelEnemy(v)
 							    enemy:SetLocalPos(Vector(0, 0, 0))
 							else
 							    self:SetParent(enemy)
-							    --self:SetLocalPos(Vector(0, 0, 0))
 							end
 		                    enemy:CallOnRemove("Charger_ClearParent", function(ent)
 		        				if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
@@ -666,22 +652,22 @@ function ENT:PummelEnemy(v)
 		                                enemy:SetObserverMode(0)
 		                                enemy:DrawViewModel(true)
 		                                enemy:DrawWorldModel(true)
-					    if table.Count(ent.tblEnemyWeapons) > 0 then
-						for i = 1, table.Count(ent.tblEnemyWeapons) do
-						    local tbl = ent.tblEnemyWeapons
-						    enemy:Give(tbl[i][1], true)
-						    local wpn = enemy:GetWeapon(tbl[i][1])
-						    if tbl[i][2][1] ~= -1 then
-							wpn:SetClip1(tbl[i][2][2])
-						    end
-						    if tbl[i][3][1] ~= -1 then
-							wpn:SetClip2(tbl[i][3][2])
-						    end
-						end
-					    end
-					    for a, c in ipairs(self.tblEnemyAmmo) do
-						enemy:GiveAmmo(c, game.GetAmmoName(a), true)
-					    end
+								    if table.Count(ent.tblEnemyWeapons) > 0 then
+										for i = 1, table.Count(ent.tblEnemyWeapons) do
+										    local tbl = ent.tblEnemyWeapons
+										    enemy:Give(tbl[i][1], true)
+										    local wpn = enemy:GetWeapon(tbl[i][1])
+										    if tbl[i][2][1] ~= -1 then
+												wpn:SetClip1(tbl[i][2][2])
+										    end
+										    if tbl[i][3][1] ~= -1 then
+												wpn:SetClip2(tbl[i][3][2])
+										    end
+										end
+								    end
+								    for a, c in ipairs(self.tblEnemyAmmo) do
+										enemy:GiveAmmo(c, game.GetAmmoName(a), true)
+								    end
 						            end
 						            if enemy:GetNoDraw() == true then
 						                enemy:SetNoDraw(false)
@@ -703,206 +689,208 @@ function ENT:PummelEnemy(v)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
-    if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
-        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
-            self:DismountCharger()
-            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-        end
-    end
+	local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
+	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
+		self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+		if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+			self:DismountCharger()
+			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnSchedule()
-    local ent = self.pIncapacitatedEnemy
-    if IsValid(ent) then
-        local dist = self:GetPos():Distance(ent:GetPos())
-        if dist <= self.IncapacitationRange then
-            if ent:Health() <= 0 then return end
-            self:VJ_PlaySequence("Charger_Pound")      
-        end
-    end
+	local ent = self.pIncapacitatedEnemy
+	if IsValid(ent) then
+		local dist = self:GetPos():Distance(ent:GetPos())
+		if dist <= self.IncapacitationRange then
+			if ent:Health() <= 0 then return end
+			self:VJ_PlaySequence("Charger_Pound")	  
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountCharger()
-    self.MovementType = VJ_MOVETYPE_GROUND
+	self.MovementType = VJ_MOVETYPE_GROUND
 	self:Pummel_Effects(true)
 	self.HasEnemyIncapacitated = false
-    self:SetParent(nil)
-    if self.VJ_IsBeingControlled then
-    	self.AnimTbl_IdleStand = {ACT_IDLE}
-    end
+	self:SetParent(nil)
+	if self.VJ_IsBeingControlled then
+		self.AnimTbl_IdleStand = {ACT_IDLE}
+	end
 	if IsValid(self.IncapSong) then
 		self.IncapSong:Stop()
 		self.IncapSong = nil
 	end
-    if !IsValid(self.pIncapacitatedEnemy) then return end
-    local enemy = self.pIncapacitatedEnemy
-    hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
-        if (ent1 == self and ent2 == enemy) then return true end
-    end)
-    if enemy:IsNPC() && GetConVarNumber("vj_l4d2_npcs_dropweapons") == 0 then
-        enemy:GetActiveWeapon():SetNoDraw(false)
-    end
-    if enemy:GetNoDraw() == true then
-        enemy:SetNoDraw(false)
-    end
-    if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-        enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-    end
-    if enemy:IsPlayer() then
-        if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-            enemy:SetPos(self.vecLastPos)
-            enemy:SetObserverMode(0)
-            enemy:DrawViewModel(true)
-            enemy:DrawWorldModel(true)
-        end
-	    if table.Count(self.tblEnemyWeapons) > 0 then
-		for i = 1, table.Count(self.tblEnemyWeapons) do
-		    local tbl = self.tblEnemyWeapons
-		    enemy:Give(tbl[i][1], true)
-		    local wpn = enemy:GetWeapon(tbl[i][1])
-		    if tbl[i][2][1] ~= -1 then
-			wpn:SetClip1(tbl[i][2][2])
-		    end
-		    if tbl[i][3][1] ~= -1 then
-			wpn:SetClip2(tbl[i][3][2])
-		    end
+	if !IsValid(self.pIncapacitatedEnemy) then return end
+	local enemy = self.pIncapacitatedEnemy
+	hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
+		if (ent1 == self and ent2 == enemy) then return true end
+	end)
+	if enemy:IsNPC() && GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+		if IsValid(enemy:GetActiveWeapon()) then
+			enemy:GetActiveWeapon():SetNoDraw(false)
 		end
-	    end
-	    for a, c in ipairs(self.tblEnemyAmmo) do
+	end
+	if enemy:GetNoDraw() == true then
+		enemy:SetNoDraw(false)
+	end
+	if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+		enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
+	end
+	if enemy:IsPlayer() then
+		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+			enemy:SetPos(self.vecLastPos)
+			enemy:SetObserverMode(0)
+			enemy:DrawViewModel(true)
+			enemy:DrawWorldModel(true)
+		end
+		if table.Count(self.tblEnemyWeapons) > 0 then
+		for i = 1, table.Count(self.tblEnemyWeapons) do
+			local tbl = self.tblEnemyWeapons
+			enemy:Give(tbl[i][1], true)
+			local wpn = enemy:GetWeapon(tbl[i][1])
+			if tbl[i][2][1] ~= -1 then
+			wpn:SetClip1(tbl[i][2][2])
+			end
+			if tbl[i][3][1] ~= -1 then
+			wpn:SetClip2(tbl[i][3][2])
+			end
+		end
+		end
+		for a, c in ipairs(self.tblEnemyAmmo) do
 		enemy:GiveAmmo(c, game.GetAmmoName(a), true)
-	    end
-    end
+		end
+	end
 	net.Start("Charger_RemoveCSEnt")
 		net.WriteString(tostring(self:EntIndex()))
 	net.Broadcast()
-    if IsValid(self.pEnemyRagdoll) then
-        self.pEnemyRagdoll:Remove()
-        self.pEnemyRagdoll = nil
-    end
-    self.pIncapacitatedEnemy = nil
+	if IsValid(self.pEnemyRagdoll) then
+		self.pEnemyRagdoll:Remove()
+		self.pEnemyRagdoll = nil
+	end
+	self.pIncapacitatedEnemy = nil
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-    self.vecLastPos = self:GetPos()
-    if self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
-        self.IsIncapacitating = true
-    else
-        self.IsIncapacitating = false
-    end
-    if self.IsIncapacitating == true then
-    	self.HasMeleeAttack = false
-    elseif self.IsIncapacitating == false then
-    	self.HasMeleeAttack = true
-    end
-    if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
-        self:VJ_ACT_PLAYACTIVITY("Jump", true)   
-    end
-    if IsValid(self.pIncapacitatedEnemy) then
-        local enemy = self.pIncapacitatedEnemy
-        if enemy:Health() <= 0 then
-            self:DismountCharger()
-        end
-        if self.IsIncapacitating == true then
-            if self.HasEnemyIncapacitated == true then
-                if not enemy:GetNoDraw() then
-                    enemy:SetNoDraw(true)
-                end
-                if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-                    enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
-                end   
-                if enemy:IsPlayer() then
-	                enemy:SetLocalPos(Vector(0, 0, 0))
-	            else
-	                self:SetLocalPos(Vector(0, 0, 0))
-	            end         
-            end
-            local dist = self:GetPos():Distance(enemy:GetPos())
-            if dist > self.IncapacitationRange then
-                self:DismountCharger()
-            end
-        else
-            if self.HasEnemyIncapacitated == false then
-                self:DismountCharger()
-            end
-        end
-    else
-        if self.IsIncapacitating == true then
-            net.Start("Charger_RemoveCSEnt")
-            	net.WriteString(tostring(self:EntIndex()))
-            net.Broadcast()
-            self:DismountCharger()
-            self:SetPos(self:GetPos())
-        end
-    end
-    if IsValid(self.pIncapacitatedEnemy) then
-	    if CurTime() >= self.nextIncapSong then
-	    	self:PlayIncapSong()
-	    end
-    else
-        if self.IncapSong ~= nil then
-            self.IncapSong:Stop()
-        end
-    end
+	self.vecLastPos = self:GetPos()
+	if self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
+		self.IsIncapacitating = true
+	else
+		self.IsIncapacitating = false
+	end
+	if self.IsIncapacitating == true then
+		self.HasMeleeAttack = false
+	elseif self.IsIncapacitating == false then
+		self.HasMeleeAttack = true
+	end
+	if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
+		self:VJ_ACT_PLAYACTIVITY("Jump", true)   
+	end
+	if IsValid(self.pIncapacitatedEnemy) then
+		local enemy = self.pIncapacitatedEnemy
+		if enemy:Health() <= 0 then
+			self:DismountCharger()
+		end
+		if self.IsIncapacitating == true then
+			if self.HasEnemyIncapacitated == true then
+				if not enemy:GetNoDraw() then
+					enemy:SetNoDraw(true)
+				end
+				if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+					enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
+				end   
+				if enemy:IsPlayer() then
+					enemy:SetLocalPos(Vector(0, 0, 0))
+				else
+					self:SetLocalPos(Vector(0, 0, 0))
+				end		 
+			end
+			local dist = self:GetPos():Distance(enemy:GetPos())
+			if dist > self.IncapacitationRange then
+				self:DismountCharger()
+			end
+		else
+			if self.HasEnemyIncapacitated == false then
+				self:DismountCharger()
+			end
+		end
+	else
+		if self.IsIncapacitating == true then
+			net.Start("Charger_RemoveCSEnt")
+				net.WriteString(tostring(self:EntIndex()))
+			net.Broadcast()
+			self:DismountCharger()
+			self:SetPos(self:GetPos())
+		end
+	end
+	if IsValid(self.pIncapacitatedEnemy) then
+		if CurTime() >= self.nextIncapSong then
+			self:PlayIncapSong()
+		end
+	else
+		if self.IncapSong ~= nil then
+			self.IncapSong:Stop()
+		end
+	end
 
-    if self.HasEnemyIncapacitated == true then 
-        self.HasMeleeAttack = false
-        self.CombatFaceEnemy = false
-        if self.VJ_IsBeingControlled then
-        	self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
-        end
-        if IsValid(self.pEnemyRagdoll) then
-        	self:SetAngles(Angle(self:GetAngles().x, self.pEnemyRagdoll:GetAngles().y - 180, self:GetAngles().z))
-        	self.pEnemyRagdoll:SetLocalPos(Vector(0,0,0))
-        	if self.pEnemyRagdoll:GetClass() == "prop_ragdoll" then
-        		self.pEnemyRagdoll:Fire("StartRagdollBoogie")
-        		self.pEnemyRagdoll:SetPos(self:GetAttachment(3).Pos)
-        	end
-        end
-        if IsValid(self.pIncapacitatedEnemy) then
-            local enemy = self.pIncapacitatedEnemy
-            if enemy:IsPlayer() then
-                enemy:SetLocalPos(Vector(0, 0, 0))
-            else
-                self:SetLocalPos(Vector(0, 0, 0))
-            end
-            local dist = self:GetPos():Distance(enemy:GetPos())
-            if dist > self.IncapacitationRange then
-                self:DismountCharger()
-            end
-            if enemy:GetNoDraw() == true then 
-            	enemy:SetNoDraw(true)
-            end
-        end
-    else
-        self.HasMeleeAttack = true
-        self.CombatFaceEnemy = true
-    end
-    if CurTime() >= self.nextBacteria then
-        self:PlayBacteria()
-    end
-    self:ManageHUD(self.VJ_TheController)
-    if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
-        if self.IsGhosted == true then
-            self:UnSetGhost(self.VJ_TheController)
-        elseif self.IsGhosted == false then
-            self:SetGhost(self.VJ_TheController)  
-        end
-    end
-    if self.VJ_IsBeingControlled == false then
-        self:DrawShadow(true)
-        self.GodMode = false 
-        self:SetCollisionGroup(COLLISION_GROUP_NONE)
-        self.VJ_NoTarget = false
-        self.DisableMakingSelfEnemyToNPCs = false
-        self:SetRenderMode(RENDERMODE_NORMAL)
-        self.HasSounds = true
-        self.HasLeapAttack = true
-    end
-    if self.VJ_IsBeingControlled == true then
-    	self:CapabilitiesRemove(CAP_MOVE_JUMP)
-    end
+	if self.HasEnemyIncapacitated == true then 
+		self.HasMeleeAttack = false
+		self.CombatFaceEnemy = false
+		if self.VJ_IsBeingControlled then
+			self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
+		end
+		if IsValid(self.pEnemyRagdoll) then
+			self:SetAngles(Angle(self:GetAngles().x, self.pEnemyRagdoll:GetAngles().y - 180, self:GetAngles().z))
+			self.pEnemyRagdoll:SetLocalPos(Vector(0,0,0))
+			if self.pEnemyRagdoll:GetClass() == "prop_ragdoll" then
+				self.pEnemyRagdoll:Fire("StartRagdollBoogie")
+				self.pEnemyRagdoll:SetPos(self:GetAttachment(3).Pos)
+			end
+		end
+		if IsValid(self.pIncapacitatedEnemy) then
+			local enemy = self.pIncapacitatedEnemy
+			if enemy:IsPlayer() then
+				enemy:SetLocalPos(Vector(0, 0, 0))
+			else
+				self:SetLocalPos(Vector(0, 0, 0))
+			end
+			local dist = self:GetPos():Distance(enemy:GetPos())
+			if dist > self.IncapacitationRange then
+				self:DismountCharger()
+			end
+			if enemy:GetNoDraw() == true then 
+				enemy:SetNoDraw(true)
+			end
+		end
+	else
+		self.HasMeleeAttack = true
+		self.CombatFaceEnemy = true
+	end
+	if CurTime() >= self.nextBacteria then
+		self:PlayBacteria()
+	end
+	self:ManageHUD(self.VJ_TheController)
+	if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
+		if self.IsGhosted == true then
+			self:UnSetGhost(self.VJ_TheController)
+		elseif self.IsGhosted == false then
+			self:SetGhost(self.VJ_TheController)  
+		end
+	end
+	if self.VJ_IsBeingControlled == false then
+		self:DrawShadow(true)
+		self.GodMode = false 
+		self:SetCollisionGroup(COLLISION_GROUP_NONE)
+		self.VJ_NoTarget = false
+		self.DisableMakingSelfEnemyToNPCs = false
+		self:SetRenderMode(RENDERMODE_NORMAL)
+		self.HasSounds = true
+		self.HasLeapAttack = true
+	end
+	if self.VJ_IsBeingControlled == true then
+		self:CapabilitiesRemove(CAP_MOVE_JUMP)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
