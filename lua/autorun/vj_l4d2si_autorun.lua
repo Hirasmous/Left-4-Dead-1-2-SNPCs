@@ -6,8 +6,8 @@
 INFO: Used to load autorun file for [VJ] Left 4 Dead 1-2 Special Infected SNPCs
 --------------------------------------------------*/
 -- Addon Information(Important!):
-	local PublicAddonName = "Left 4 Dead 2 SNPCs"
-	local AddonName = "Left 4 Dead 2"
+	local PublicAddonName = "Left 4 Dead 1-2 SNPCs"
+	local AddonName = "Left 4 Dead 1-2"
 	local AddonType = "SNPC"
 -- Don't edit anything below this! ------------------------------------------------
 local VJExists = "lua/autorun/vj_base_autorun.lua"
@@ -24,16 +24,16 @@ if( file.Exists( VJExists, "GAME" ) ) then
     sound.AddSoundOverrides("lua/sound/game_sounds_terror.lua")
     sound.AddSoundOverrides("lua/sound/game_sounds_physics.lua")
 
-	local vCat = "Left 4 Dead 2"
-	VJ.AddNPC("Boomer","npc_vj_l4d2_boomer",vCat) 
-	VJ.AddNPC("Boomette","npc_vj_l4d2_boomette",vCat) 
-	VJ.AddNPC("Smoker","npc_vj_l4d2_smoker",vCat) 
-	VJ.AddNPC("Charger","npc_vj_l4d2_charger",vCat) 
-	VJ.AddNPC("Tank","npc_vj_l4d2_tank",vCat) 
-	VJ.AddNPC("Hunter","npc_vj_l4d2_hunter",vCat)  
-	VJ.AddNPC("Jockey","npc_vj_l4d2_jockey",vCat)  
-	VJ.AddNPC("Witch","sent_vj_l4d2_witch",vCat)  
-	VJ.AddNPC("Spitter","npc_vj_l4d2_spitter",vCat) 
+	local vCatL4D2 = "Left 4 Dead 2"
+	VJ.AddNPC("Boomer","npc_vj_l4d2_boomer",vCatL4D2) 
+	VJ.AddNPC("Boomette","npc_vj_l4d2_boomette",vCatL4D2) 
+	VJ.AddNPC("Smoker","npc_vj_l4d2_smoker",vCatL4D2) 
+	VJ.AddNPC("Charger","npc_vj_l4d2_charger",vCatL4D2) 
+	VJ.AddNPC("Tank","npc_vj_l4d2_tank",vCatL4D2) 
+	VJ.AddNPC("Hunter","npc_vj_l4d2_hunter",vCatL4D2)  
+	VJ.AddNPC("Jockey","npc_vj_l4d2_jockey",vCatL4D2)  
+	VJ.AddNPC("Witch","sent_vj_l4d2_witch",vCatL4D2)  
+	VJ.AddNPC("Spitter","npc_vj_l4d2_spitter",vCatL4D2) 
 
 	local vCatL4D = "Left 4 Dead"
 	VJ.AddNPC("Boomer","npc_vj_l4d_boomer",vCatL4D)  
@@ -79,7 +79,12 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	VJ.AddConVar("vj_l4d2_w_h",1000)
 	VJ.AddConVar("vj_l4d2_w_d",100)
 
-    VJ.AddConVar("vj_l4d2_musictype",0)
+    -- Other 
+    VJ.AddConVar("vj_l4d2_musictype",0) -- Turned off by default
+    VJ.AddConVar("vj_l4d2_npcs_dropweapons",1) -- Turned on by default
+    VJ.AddConVar("vj_l4d2_incapdamage",1) -- Turned on by default
+    VJ.AddConVar("vj_l4d2_goodamage",1) -- Turned on by default
+    VJ.AddConVar("vj_l4d2_gasdamage",1) -- Turned on by default
 end
 
 if CLIENT then
@@ -93,6 +98,10 @@ if CLIENT then
 				end
 			end
 			Panel:AddControl("Checkbox", {Label = "Metalized Music (Tank)", Command = "vj_l4d2_musictype"})
+			Panel:AddControl("Checkbox", {Label = "Should incapped enemies drop their weapons?", Command = "vj_l4d2_npcs_dropweapons"})
+			Panel:AddControl("Checkbox", {Label = "Do incappers do damage to incapped enemies?", Command = "vj_l4d2_incapdamage"})
+			Panel:AddControl("Checkbox", {Label = "Does Smoker's Gas Cloud do damage?", Command = "vj_l4d2_gasdamage"})
+			Panel:AddControl("Checkbox", {Label = "Does Spitter Goo do damage?", Command = "vj_l4d2_goodamage"})
 		end, {})
 	end)
 end
