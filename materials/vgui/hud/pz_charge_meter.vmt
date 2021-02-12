@@ -1,7 +1,7 @@
-UnlitTwoTexture
+UnlitGeneric
 {
 $baseTexture "vgui\hud\PZ_charge_meter"
-$texture2 "vgui\hud\PZ_charge_meter_motion"
+$color "[ 0.8 0 0 ]"
 $translucent 1
 $alpha 1
 $vertexalpha 1
