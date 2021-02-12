@@ -529,7 +529,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
                                 camera:SetRenderMode(RENDERMODE_NONE)
                                 camera:DrawShadow(false)
                                 camera:SetParent(self)
-                                camera:Fire("SetParentAttachment","attach_blur")
+                                camera:Fire("SetParentAttachment","camera_att")
                                 self:DeleteOnRemove(camera)
                                 VJ_CreateSound(v,"player/hunter/hit/tackled_1.wav",75,self:VJ_DecideSoundPitch(100,100))
 				if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
