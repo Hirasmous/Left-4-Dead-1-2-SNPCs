@@ -1,0 +1,12 @@
+VertexLitGeneric
+{
+$baseTexture "models\vj_l4d2\smoker\smoker_tongue"
+$bumpmap "models\vj_l4d2\smoker/smoker_tongue_Normal"
+$phong 1
+$phongboost 6
+
+$halflambert 0
+$phongfresnelranges "[.1 .5 1]"
+$ambientocclusion 1
+$diffuseexp "1.0"
+}

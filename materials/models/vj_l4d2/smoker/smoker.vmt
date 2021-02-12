@@ -1,0 +1,16 @@
+VertexLitGeneric
+{
+$baseTexture "models\vj_l4d2\smoker/Smoker"
+$bumpmap "models\vj_l4d2\smoker/Smoker_Normal"
+$phongexponenttexture "models\vj_l4d2\smoker\smokerexponent"
+$lightwarptexture "models\vj_l4d2\survivors\coach\coach_head_wrp"
+$phong 1
+$phongboost 20
+$phongtint "[0.8 0.85 1]"
+
+$halflambert 0
+$allowdiffusemodulation 0
+$phongfresnelranges "[.1 .5 1]"
+$ambientocclusion 1
+$diffuseexp "1.0"
+}
