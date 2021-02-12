@@ -21,6 +21,26 @@ if CLIENT then
 		local isdeleted = net.ReadBool()
 		local entity = net.ReadEntity()
 
+        local chargemat = Material( "vgui/hud/pz_charge_witch" )
+        local chargemat2 = Material( "vgui/hud/PZ_charge_meter" )
+        local chargemat3 = surface.GetTextureID( "vgui/hud/PZ_charge_bg" )
+
+        hook.Add( "HUDPaint", "WitchChargeHUD", function()
+        	surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetTexture(chargemat3) 
+	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
+	        surface.DisableClipping(false)
+	        
+	        surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetMaterial(chargemat) 
+	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+
+	        surface.SetDrawColor( 255, 255, 255, 255 ) 
+	        surface.SetMaterial(chargemat2) 
+	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+     
+        end)
+        if isdeleted == true then hook.Remove("HUDPaint","WitchChargeHUD") end
 		hook.Add("RenderScreenspaceEffects","L4D2WitchScreen",function()
 			local tab = {
 				["$pp_colour_addr"] = 0.3,
