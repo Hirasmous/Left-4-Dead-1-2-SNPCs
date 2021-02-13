@@ -21,7 +21,7 @@ ENT.PoseParameterLooking_Names = {pitch={"body_pitch"},yaw={"body_yaw"},roll={}}
 ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
 ENT.VJC_Data = {
 	CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
-	ThirdP_Offset = Vector(0, 0, 0), -- The offset for the controller when the camera is in third person
+	ThirdP_Offset = Vector(40,10,-20), -- The offset for the controller when the camera is in third person
 	FirstP_Bone = "bip_head", -- If left empty, the base will attempt to calculate a position for first person
 	FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
@@ -118,7 +118,7 @@ function ENT:CustomOnInitialize()
 	self.nextBacteria = 0
 	self.soundVassal = ""
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayBacteria(bOverwrite)
 	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
 		if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
@@ -148,7 +148,7 @@ function ENT:PlayBacteria(bOverwrite)
 		sound:Stop()
 	end)
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayIncapSong(bOverwrite)
 	if IsValid(self.IncapSong) && self.IncapSong:IsPlaying() then return end
 	if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
@@ -178,6 +178,7 @@ function ENT:PlayIncapSong(bOverwrite)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ResetJockey()
+	self:Pounce_Effects(true)
 	self.HasEnemyIncapacitated = false
 	if self.IncapSong ~= nil then
 		self.IncapSong:Stop()
@@ -232,16 +233,21 @@ function ENT:CustomOnSchedule()
 		end
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CanIncapacitate(ent)
 	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
 		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
 			return false
 		end
 	end
+	for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
+		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
+			return false
+		end
+	end
 	return true
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:IsEntityAlly(ent)
 	if ent:IsNPC() then
 		if ent.IsVJBaseSNPC == true then
@@ -263,7 +269,66 @@ function ENT:IsEntityAlly(ent)
 	end
 	return false
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Pounce_Effects(fadeout)
+	if fadeout == false then
+		self.spotlightpoint = ents.Create("env_projectedtexture")
+		self.spotlightpoint:SetPos( self:GetPos() +self:GetUp()*110)
+		self.spotlightpoint:SetKeyValue('lightcolor', "140 255 0")
+		self.spotlightpoint:SetKeyValue('lightfov', '70')
+		self.spotlightpoint:SetKeyValue('brightnessscale', '8')
+		self.spotlightpoint:SetKeyValue('farz', '612')
+		self.spotlightpoint:SetKeyValue('nearz', '0.1')
+		self.spotlightpoint:SetKeyValue('shadowquality', '1')
+		self.spotlightpoint:SetKeyValue('enableshadows', '1')
+		self.spotlightpoint:SetKeyValue('target', '!player')
+		self.spotlightpoint:SetKeyValue('texturename', 'effects/flashlight/hard')
+		self.spotlightpoint:SetKeyValue('lightonlytarget', 'on')
+		self.spotlightpoint:SetParent(self)
+		self.spotlightpoint:Spawn()
+		self.spotlightpoint:Activate()
+		self:DeleteOnRemove(self.spotlightpoint)
+		self.Light1 = self.spotlightpoint
+		self.spotlightpoint1 = ents.Create("env_projectedtexture")
+		self.spotlightpoint1:SetPos( self:GetPos() +self:GetUp()*110)
+		self.spotlightpoint1:SetKeyValue('lightcolor', "140 255 0")
+		self.spotlightpoint1:SetKeyValue('lightfov', '70')
+		self.spotlightpoint1:SetKeyValue('brightnessscale', '8')
+		self.spotlightpoint1:SetKeyValue('farz', '612')
+		self.spotlightpoint1:SetKeyValue('nearz', '0.1')
+		self.spotlightpoint1:SetKeyValue('shadowquality', '1')
+		self.spotlightpoint1:SetKeyValue('enableshadows', '1')
+		self.spotlightpoint1:SetKeyValue('target', '!player')
+		self.spotlightpoint1:SetKeyValue('texturename', 'effects/flashlight/hard')
+		self.spotlightpoint1:SetKeyValue('lightonlytarget', 'on')
+		self.spotlightpoint1:SetParent(self)
+		self.spotlightpoint1:Spawn()
+		self.spotlightpoint1:Activate()
+		self:DeleteOnRemove(self.spotlightpoint1)
+		self.Light2 = self.spotlightpoint1
+		local glowlight = ents.Create("light_dynamic")
+		glowlight:SetKeyValue("_light","140 255 0")
+		glowlight:SetKeyValue("brightness","5")
+		glowlight:SetKeyValue("distance","107")
+		glowlight:SetKeyValue("style","0")
+		glowlight:SetPos(self:GetPos() +self:GetUp()*95)
+		glowlight:SetParent(self)
+		glowlight:Spawn()
+		glowlight:Activate()
+		--glowlight:Fire("SetParentAttachment","attach_blur")
+		glowlight:Fire("TurnOn","",0)
+		self:DeleteOnRemove(glowlight)
+		self.Light3 = glowlight
+	end
+	if fadeout == true then
+		if IsValid(self.Light1) && IsValid(self.Light2) && IsValid(self.Light3) then
+			self.Light1:Remove()
+			self.Light2:Remove()
+			self.Light3:Remove()
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayVassalationSound(lvl)
 	if IsValid(self.IncapSound) && self.IncapSound:IsPlaying() == true then return end
 	local snd = table.Random(self.SoundTbl_Vassal)
@@ -279,15 +344,17 @@ function ENT:PlayVassalationSound(lvl)
 		end
 	end)
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
 	if self.VJ_IsBeingControlled then
 		timer.Simple(2, function()
-			self:VJ_ACT_PLAYACTIVITY("Pounce", false, 0, false)
+		    if IsValid(self) then
+			    self:VJ_ACT_PLAYACTIVITY("Pounce", false, 0, false)
+			end
 		end)
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self.vecLastPos = self:GetPos()
 
@@ -414,15 +481,27 @@ function ENT:CustomOnThink()
 							end)
 							self.pIncapacitatedEnemy = v
 							self.MovementType = VJ_MOVETYPE_STATIONARY
+							local camera = ents.Create("prop_dynamic")
+							camera:SetModel("models/error.mdl")
+							camera:SetPos(self:GetPos())
+							camera:Spawn()
+						    camera:Activate()
+							camera:SetRenderMode(RENDERMODE_NONE)
+							camera:DrawShadow(false)
+							camera:SetParent(self)
+							camera:Fire("SetParentAttachment","pelvis")
+							self:DeleteOnRemove(camera)
 							v:SetNoDraw(true)
 					        if v:IsNPC() then
 								v:DropWeapon()
 							elseif v:IsPlayer() then
 					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= v then
 					                v:SetObserverMode(OBS_MODE_CHASE)
-					                v:SpectateEntity(self)
+					                v:SpectateEntity(camera)
 					                v:DrawViewModel(false)
 					                v:DrawWorldModel(false)
+					                v:SetFOV(80)
+					                self:Pounce_Effects(false)
 					            end
 							end
 							local ang = v:GetAngles()
