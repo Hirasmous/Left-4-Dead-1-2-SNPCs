@@ -605,6 +605,13 @@ function ENT:CustomOnThink()
     else
         self.IsIncapacitating = false
     end
+   
+        if self.VJ_IsBeingControlled == false then
+        if self.IsTakingCover == true && CurTime() > self.NextRunAway then 
+            self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
+            self.NextRunAway = CurTime() +1
+        end
+    end
 
     if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
         self:VJ_ACT_PLAYACTIVITY("Jump", true)   
