@@ -49,6 +49,7 @@ General:
 -New StripAmmo() function ✅
 -Change material directories ("infected" to "vj_l4d2") ✅
 -Witch HUD ✅
+-Make HUD fit any screen size
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
