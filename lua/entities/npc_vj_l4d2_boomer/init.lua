@@ -102,7 +102,7 @@ ENT.BacteriaSound = nil
 ENT.Vomited_Enemies = {}
 ENT.Attracted_Zombies = {}
 ENT.IsTakingCover = false
-ENT.NextRunAway = CurTime()
+ENT.RunAwayT = CurTime()
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -172,10 +172,16 @@ function ENT:ManageHUD(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	if self.VJ_IsBeingControlled == false then
-        if self.IsTakingCover == true && CurTime() > self.NextRunAway then 
-            self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
-            self.NextRunAway = CurTime() +1
+    if self.VJ_IsBeingControlled == false then
+        if IsValid(self:GetEnemy()) then
+            if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
+                self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
+                self.RunAwayT = CurTime() +1
+                self.DisableChasingEnemy = true
+            end
+        else
+            self.DisableChasingEnemy = false
+            self.IsTakingCover = false
         end
     end
 	self:ManageHUD(self.VJ_TheController)
