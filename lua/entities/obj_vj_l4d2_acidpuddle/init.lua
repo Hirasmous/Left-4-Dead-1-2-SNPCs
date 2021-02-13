@@ -14,6 +14,7 @@ ENT.Damage = 45
 ENT.DamageDistance = 200
 ENT.Dead = false
 ENT.Owner = nil 
+ENT.SoundTbl_Idle = {"player/spitter/swarm/spitter_acid_fadeout.wav","player/spitter/swarm/spitter_acid_fadeout2.wav"}
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	ParticleEffect("spitter_areaofdenial",self:GetPos() +self:GetUp()*2,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil) 
