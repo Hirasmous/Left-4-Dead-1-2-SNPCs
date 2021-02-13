@@ -94,6 +94,8 @@ ENT.BacteriaSound = nil
 ENT.ThemeLoop = nil
 ENT.AcidLoop = nil
 ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/spitterbacteria.wav","vj_l4d2/music/bacteria/spitterbacterias.wav"}
+ENT.IsTakingCover = false
+ENT.NextRunAway = CurTime()
 util.AddNetworkString("L4D2SpitterHUD")
 util.AddNetworkString("L4D2SpitterHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -206,6 +208,12 @@ function ENT:Controller_Initialize(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+    self.IsTakingCover = true
+    timer.Simple(self.NextRangeAttackTime,function()
+        if IsValid(self) then
+            self.IsTakingCover = false
+        end
+    end)
     self:ManageHUD(self.VJ_TheController)
     if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
         if self.IsGhosted == true then
@@ -229,6 +237,15 @@ function ENT:CustomOnThink()
     if CurTime() >= self.nextBacteria then
         self:PlayBacteria()
     end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
+    self.IsTakingCover = true
+    timer.Simple(self.NextRangeAttackTime,function()
+        if IsValid(self) then
+            self.IsTakingCover = false
+        end
+    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayBacteria(bOverwrite)
@@ -279,12 +296,7 @@ function ENT:SpitterAcid(fadeout)
 	    local table_acidtheme = table.Random(self.SoundTbl_SpitterAcidTheme)
 	    self.cspIdleThemeLoop = CreateSound(self, table_acidtheme)
 	    self.cspIdleThemeLoop:SetSoundLevel(70)
-	    self.cspIdleAcidLoop = CreateSound(self, table_acidloop)
-	    self.cspIdleAcidLoop:SetSoundLevel(75)
-	    self.cspIdleThemeLoop:PlayEx(1,100)  
-	    self.cspIdleAcidLoop:PlayEx(1,100) 
-	    self.AcidLoop = self.cspIdleAcidLoop
-	    self.ThemeLoop = self.cspIdleThemeLoop
+	    self.cspIdleThemeLoop:Play(70)
 	end
 	if fadeout == true then
 		if self.Dead == true then
@@ -307,7 +319,7 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
-	self:SpitterAcid(true)
+	self:SpitterAcid(false)
     for i = 1, 5 do
         local acid = ents.Create( "obj_vj_l4d2_acidpuddle" )
         acid:SetPos( self:GetPos() + Vector( math.Rand( -40, 40 ), math.Rand( -40, 40 ), 0 ) )
