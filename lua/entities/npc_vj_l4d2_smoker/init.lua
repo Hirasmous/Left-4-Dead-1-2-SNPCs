@@ -1,9 +1,9 @@
 AddCSLuaFile("shared.lua")
 include('shared.lua')
 /*-----------------------------------------------
-	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
-	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
-	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
+    *** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
+    No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
+    without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
 ENT.Model = {"models/vj_l4d2/smoker.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_s_h")
@@ -19,10 +19,10 @@ ENT.DeathCorpseAlwaysCollide = false -- Should the corpse always collide?
 ENT.CallForHelp = false -- Does the SNPC call for help?
 ENT.PoseParameterLooking_Names = {pitch={"body_pitch"},yaw={"body_yaw"},roll={}} -- Custom pose parameters to use, can put as many as needed
 ENT.VJC_Data = {
-	CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
-	ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
-	FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
-	FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
+    CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
+    ThirdP_Offset = Vector(0, 0, 0), -- The offset for the controller when the camera is in third person
+    FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
+    FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
 ENT.ConstantlyFaceEnemy = true -- Should it face the enemy constantly?
 ENT.ConstantlyFaceEnemy_Postures = "Moving" -- "Both" = Moving or standing | "Moving" = Only when moving | "Standing" = Only when standing
@@ -54,16 +54,16 @@ ENT.FindEnemy_UseSphere = true -- Should the SNPC be able to see all around him?
 ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
 ENT.FootStepTimeRun = 0.3 -- Next foot step sound when it is running
 ENT.FootStepTimeWalk = 0.4 -- Next foot step sound when it is walking
-	-- ====== Flinching Code ====== --
+    -- ====== Flinching Code ====== --
 ENT.CanFlinch = 1 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
 ENT.FlinchChance = 12 -- Chance of it flinching from 1 to x | 1 will make it always flinch
 ENT.NextMoveAfterFlinchTime = "LetBaseDecide" -- How much time until it can move, attack, etc. | Use this for schedules or else the base will set the time 0.6 if it sees it's a schedule!
 ENT.HasHitGroupFlinching = true -- It will flinch when hit in certain hitgroups | It can also have certain animations to play in certain hitgroups
 ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching, should it do the regular flinch if it doesn't hit any of the specified hitgroups?
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward"}}}
-	-- ====== Sound File Paths ====== --
+    -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
-ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.wav","player/footsteps/infected/run/concrete2.wav","player/footsteps/infected/run/concrete3.wav","player/footsteps/infected/run/concrete4.wav"}
+ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.wav","vj_l4d2/footsteps/infected/run/concrete2.wav","vj_l4d2/footsteps/infected/run/concrete3.wav","vj_l4d2/footsteps/infected/run/concrete4.wav"}
 ENT.SoundTbl_Idle = {"SmokerZombie.Breathe"}
 ENT.SoundTbl_Alert = {"SmokerZombie.Recognize","SmokerZombie.Alert"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
@@ -124,8 +124,6 @@ ENT.Light2 = nil
 ENT.Light3 = nil
 ENT.Camera = nil
 
-util.AddNetworkString("smoker_RemoveCSEnt")
-util.AddNetworkString("smoker_PounceEnemy")
 util.AddNetworkString("L4D2SmokerHUD")
 util.AddNetworkString("L4D2SmokerHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -140,43 +138,42 @@ function ENT:CustomOnInitialize()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayBacteria()
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-		if v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-			return
-		end
-	end
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+        if v.BacteriaSound && v.BacteriaSound:IsPlaying() then
+            return
+        end
+    end
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
         if v.BacteriaSound && v.BacteriaSound:IsPlaying() then
             return
         end
     end
     self.nextBacteria = CurTime() + math.random(14, 22)
-	local bacteria = table.Random(self.SoundTbl_Bacteria)
+    local bacteria = table.Random(self.SoundTbl_Bacteria)
     local filter = RecipientFilter()
     filter:AddAllPlayers()
     for k, v in ipairs(ents.FindByClass("player")) do 
-    	for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
-	    	if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
-	    		filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
-	    	end
-	    end
+        for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
+            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
+                filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
+            end
+        end
     end
     self.bacterianoise = CreateSound(self, bacteria, filter)
     self.BacteriaSound = self.bacterianoise
-    print(self.BacteriaSound)
     self.bacterianoise:SetSoundLevel(0)
     self.bacterianoise:Play()
     timer.Simple(SoundDuration(bacteria), function()
-    	if IsValid(self.BacteriaSound) then
-    	    self.BacteriaSound:Stop()
-    	end
-	end)
+        if IsValid(self.BacteriaSound) then
+            self.BacteriaSound:Stop()
+        end
+    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Incap_Effects(fadeout)
-	if IsValid(self.IncapSong) then
-	    self.IncapSong = nil
-	    self.IncapSong:Stop()
+    if IsValid(self.IncapSong) then
+        self.IncapSong = nil
+        self.IncapSong:Stop()
     end
     if fadeout == false then
         self.spotlightpoint = ents.Create("env_projectedtexture")
@@ -218,7 +215,7 @@ function ENT:Incap_Effects(fadeout)
         glowlight:SetKeyValue("brightness","5")
         glowlight:SetKeyValue("distance","107")
         glowlight:SetKeyValue("style","0")
-        glowlight:SetPos(self.pIncapacitatedEnemy:GetPos() +self:GetUp()*65)
+        glowlight:SetPos(self:GetPos() +self:GetUp()*65)
         glowlight:SetParent(self)
         glowlight:Spawn()
         glowlight:Activate()
@@ -241,158 +238,158 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
         self:FootStepSoundCode()
     end
     if key == "event_incap_hit" then
-    	if self.IsEnemyStuck == true || self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
-    		local incapent = self.pIncapacitatedEnemy
-			if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
-				if IsValid(incapent) then
-					local applyDmg = DamageInfo()
-					applyDmg:SetDamage(15)
-					applyDmg:SetDamageType(DMG_SLASH)
-					applyDmg:SetInflictor(incapent)
-					applyDmg:SetAttacker(self)
-					incapent:TakeDamage(2,self,incapent)
-					VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"},65,self:VJ_DecideSoundPitch(100,100))
-				end
-			end
-		end
-	end
-	if key == "event_incap_voice" then
-		VJ_CreateSound(self,self.SoundTbl_BeforeMeleeAttack,75,self:VJ_DecideSoundPitch(100,100))
-	end
+        if self.IsEnemyStuck == true || self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
+            local incapent = self.pIncapacitatedEnemy
+            if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
+                if IsValid(incapent) then
+                    local applyDmg = DamageInfo()
+                    applyDmg:SetDamage(15)
+                    applyDmg:SetDamageType(DMG_SLASH)
+                    applyDmg:SetInflictor(incapent)
+                    applyDmg:SetAttacker(self)
+                    incapent:TakeDamage(2,self,incapent)
+                    VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"},65,self:VJ_DecideSoundPitch(100,100))
+                end
+            end
+        end
+    end
+    if key == "event_incap_voice" then
+        VJ_CreateSound(self,self.SoundTbl_BeforeMeleeAttack,75,self:VJ_DecideSoundPitch(100,100))
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayIncapSong(bOverwrite,fadeout)
-	if fadeout == false then 
-		if self.IncapSong ~= nil && self.IncapSong:IsPlaying() then return end
-		if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
-			for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-				if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy && self.IsChokingEnemy == false then
-					if v ~= self && v.IncapSong && v.IncapSong:IsPlaying() then
-						if bOverwrite == true then
-							v.IncapSong:Stop()
-						else
-							return
-						end
-					end
-				end
-			end
-			local sndIncap = self.SoundTbl_Incapacitation_Tied[1]
-			self.nextIncapSong = CurTime() + math.Round(SoundDuration(sndIncap))
-			local filter = RecipientFilter()
-			filter:AddPlayer(self.pIncapacitatedEnemy)
-			local sound = CreateSound(game.GetWorld(), sndIncap, filter)
-			self.IncapSong = sound
-			sound:SetSoundLevel(0)
-			sound:Play()
-			--timer.Simple(math.Round(SoundDuration(sndIncap)), function()
-				--sound:Stop()
-				--self.IncapSong = nil
-			--end)
-			local id = self:EntIndex()
-			timer.Create("smoker"..id.."_CheckIncapSong", 0.1, math.Round(SoundDuration(sndIncap)) * 10, function()
-				if !IsValid(self) then timer.Stop("smoker"..id.."_CheckIncapSong") end
-				if self.HasEnemyIncapacitated == false then
-					if self.IncapSong ~= nil then
-						self.IncapSong:Play()
-					end
-				end
-			end)
-			self:CallOnRemove("smoker_StopIncapSong", function(ent)
-				if ent.IncapSong ~= nil then
-					ent.IncapSong:Stop()
-				end
-			end)
-		end
-	end
-	if fadeout == true then
-		if self.IncapSong && self.IncapSong:IsPlaying() then
-			self.IncapSong:Stop()
-			self.IncapSong = nil
-		end
+    if fadeout == false then 
+        if self.IncapSong ~= nil && self.IncapSong:IsPlaying() then return end
+        if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
+            for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+                if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy && self.IsChokingEnemy == false then
+                    if v ~= self && v.IncapSong && v.IncapSong:IsPlaying() then
+                        if bOverwrite == true then
+                            v.IncapSong:Stop()
+                        else
+                            return
+                        end
+                    end
+                end
+            end
+            local sndIncap = self.SoundTbl_Incapacitation_Tied[1]
+            self.nextIncapSong = CurTime() + math.Round(SoundDuration(sndIncap))
+            local filter = RecipientFilter()
+            filter:AddPlayer(self.pIncapacitatedEnemy)
+            local sound = CreateSound(game.GetWorld(), sndIncap, filter)
+            self.IncapSong = sound
+            sound:SetSoundLevel(0)
+            sound:Play()
+            --timer.Simple(math.Round(SoundDuration(sndIncap)), function()
+                --sound:Stop()
+                --self.IncapSong = nil
+            --end)
+            local id = self:EntIndex()
+            timer.Create("smoker"..id.."_CheckIncapSong", 0.1, math.Round(SoundDuration(sndIncap)) * 10, function()
+                if !IsValid(self) then timer.Stop("smoker"..id.."_CheckIncapSong") end
+                if self.HasEnemyIncapacitated == false then
+                    if self.IncapSong ~= nil then
+                        self.IncapSong:Play()
+                    end
+                end
+            end)
+            self:CallOnRemove("smoker_StopIncapSong", function(ent)
+                if ent.IncapSong ~= nil then
+                    ent.IncapSong:Stop()
+                end
+            end)
+        end
+    end
+    if fadeout == true then
+        if self.IncapSong && self.IncapSong:IsPlaying() then
+            self.IncapSong:Stop()
+            self.IncapSong = nil
+        end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayIncapSong_Choke(bOverwrite,fadeout)
-	if fadeout == false then 
-		if self.IncapSong2 ~= nil && self.IncapSong2:IsPlaying() then return end
-		if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
-			for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-				if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy && self.IsChokingEnemy == true then
-					if v ~= self && v.IncapSong2 && v.IncapSong2:IsPlaying() then
-						if bOverwrite == true then
-							v.IncapSong2:Stop()
-						else
-							return
-						end
-					end
-				end
-			end
-			for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-				if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy && self.IsChokingEnemy == true then
-					if v ~= self && v.IncapSong2 && v.IncapSong2:IsPlaying() then
-						if bOverwrite == true then
-							v.IncapSong2:Stop()
-						else
-							return
-						end
-					end
-				end
-			end
-			local sndIncap = self.SoundTbl_Incapacitation_Incap[1]
-			self.nextIncapSong2 = CurTime() + math.Round(SoundDuration(sndIncap))
-			local filter = RecipientFilter()
-			filter:AddPlayer(self.pIncapacitatedEnemy)
-			local sound2 = CreateSound(game.GetWorld(), sndIncap, filter)
-			self.IncapSong2 = sound2
-			sound2:SetSoundLevel(0)
-			sound2:Play()
-			local id = self:EntIndex()
-			timer.Create("smoker"..id.."_CheckIncapSong", 0.1, math.Round(SoundDuration(sndIncap)) * 10, function()
-				if !IsValid(self) then timer.Stop("smoker"..id.."_CheckIncapSong") end
-				if self.HasEnemyIncapacitated == false then
-					if self.IncapSong2 ~= nil then
-						self.IncapSong2:Play()
-					end
-				end
-			end)
-			self:CallOnRemove("smoker_StopIncapSong", function(ent)
-				if ent.IncapSong2 ~= nil then
-					ent.IncapSong2:Stop()
-				end
-			end)
-		end
-	end
-	if fadeout == true then
-		if self.IncapSong2 && self.IncapSong2:IsPlaying() then
-			self.IncapSong2:Stop()
-			self.IncapSong2 = nil
-		end
+    if fadeout == false then 
+        if self.IncapSong2 ~= nil && self.IncapSong2:IsPlaying() then return end
+        if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
+            for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+                if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy && self.IsChokingEnemy == true then
+                    if v ~= self && v.IncapSong2 && v.IncapSong2:IsPlaying() then
+                        if bOverwrite == true then
+                            v.IncapSong2:Stop()
+                        else
+                            return
+                        end
+                    end
+                end
+            end
+            for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
+                if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy && self.IsChokingEnemy == true then
+                    if v ~= self && v.IncapSong2 && v.IncapSong2:IsPlaying() then
+                        if bOverwrite == true then
+                            v.IncapSong2:Stop()
+                        else
+                            return
+                        end
+                    end
+                end
+            end
+            local sndIncap = self.SoundTbl_Incapacitation_Incap[1]
+            self.nextIncapSong2 = CurTime() + math.Round(SoundDuration(sndIncap))
+            local filter = RecipientFilter()
+            filter:AddPlayer(self.pIncapacitatedEnemy)
+            local sound2 = CreateSound(game.GetWorld(), sndIncap, filter)
+            self.IncapSong2 = sound2
+            sound2:SetSoundLevel(0)
+            sound2:Play()
+            local id = self:EntIndex()
+            timer.Create("smoker"..id.."_CheckIncapSong", 0.1, math.Round(SoundDuration(sndIncap)) * 10, function()
+                if !IsValid(self) then timer.Stop("smoker"..id.."_CheckIncapSong") end
+                if self.HasEnemyIncapacitated == false then
+                    if self.IncapSong2 ~= nil then
+                        self.IncapSong2:Play()
+                    end
+                end
+            end)
+            self:CallOnRemove("smoker_StopIncapSong", function(ent)
+                if ent.IncapSong2 ~= nil then
+                    ent.IncapSong2:Stop()
+                end
+            end)
+        end
+    end
+    if fadeout == true then
+        if self.IncapSong2 && self.IncapSong2:IsPlaying() then
+            self.IncapSong2:Stop()
+            self.IncapSong2 = nil
+        end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SmokerIncapacitate(ent)
-	local ent = self.pIncapacitatedEnemy
-	if ent then
-		self.pIncapacitatedEnemy = ent 
-		self.HasEnemyIncapacitated = true
-		if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-			ent:AddEFlags(EFL_NO_THINK_FUNCTION)
-		end
-	end
+    local ent = self.pIncapacitatedEnemy
+    if ent then
+        self.pIncapacitatedEnemy = ent 
+        self.HasEnemyIncapacitated = true
+        if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+            ent:AddEFlags(EFL_NO_THINK_FUNCTION)
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CanIncapacitate(ent)
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-			return false
-		end
-	end
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-			return false
-		end
-	end
-	return true
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+        if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
+            return false
+        end
+    end
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
+        if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
+            return false
+        end
+    end
+    return true
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:IsEntityAlly(ent)
@@ -437,17 +434,17 @@ function ENT:StripEnemyWeapons(ent)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnSchedule()
-	local ent = self.pIncapacitatedEnemy
-	if IsValid(ent) then
-		if ent:Health() <= 0 then return end
-		local dist = self:GetPos():Distance(ent:GetPos())
-		if dist <= self.IncapacitationRange then
-			self:VJ_PlaySequence(self.IncapAnimation)
-			self.IsChokingEnemy = true 
-		else
-			self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
-		end
-	end
+    local ent = self.pIncapacitatedEnemy
+    if IsValid(ent) then
+        if ent:Health() <= 0 then return end
+        local dist = self:GetPos():Distance(ent:GetPos())
+        if dist <= self.IncapacitationRange then
+            self:VJ_PlaySequence(self.IncapAnimation)
+            self.IsChokingEnemy = true 
+        else
+            self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
@@ -455,57 +452,57 @@ function ENT:DismountSmoker()
         util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pIncapacitatedEnemy:GetPos(), false, self:EntIndex(), 3)
     end
     self.HasRangeAttack = true
-	self:Incap_Effects(true)
-	self.HasEnemyIncapacitated = false
-	self.IsChokingEnemy = false
-	if self.IncapSong && self.IncapSong:IsPlaying() then
-		self.IncapSong:Stop()
-		self.IncapSong = nil
-	end
-	if self.IncapSong2 && self.IncapSong2:IsPlaying() then
-		self.IncapSong2:Stop()
-		self.IncapSong2 = nil
-	end
-    if self.VJ_IsBeingControlled then
-    	self.AnimTbl_IdleStand = {ACT_IDLE}
+    self:Incap_Effects(true)
+    self.HasEnemyIncapacitated = false
+    self.IsChokingEnemy = false
+    if self.IncapSong && self.IncapSong:IsPlaying() then
+        self.IncapSong:Stop()
+        self.IncapSong = nil
     end
-	self.IsEnemyStuck = false
-	if IsValid(self.pEnemyObj) then
-		self.pEnemyObj:Remove()
-		self.pEnemyObj = nil
-	end
+    if self.IncapSong2 && self.IncapSong2:IsPlaying() then
+        self.IncapSong2:Stop()
+        self.IncapSong2 = nil
+    end
+    if self.VJ_IsBeingControlled then
+        self.AnimTbl_IdleStand = {ACT_IDLE}
+    end
+    self.IsEnemyStuck = false
+    if IsValid(self.pEnemyObj) then
+        self.pEnemyObj:Remove()
+        self.pEnemyObj = nil
+    end
     if IsValid(self.pTongueController) then
         self.pTongueController:Remove()
         self.pTongueController = nil
     end
-	self.MovementType = VJ_MOVETYPE_GROUND
-	self:SetParent(nil)
-	if !IsValid(self.pIncapacitatedEnemy) then return end
-	local enemy = self.pIncapacitatedEnemy
-	if enemy.IsVJBaseSNPC == true then
-		if self.EnemyVJMoveType ~= nil then
-			enemy.MovementType = self.EnemyVJMoveType
-		end
-	end
-	enemy:SetMoveType(self.EnemyMoveType)
-	if enemy:GetNoDraw() == true then
-		enemy:SetNoDraw(false)
-	end
-	if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-		enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-	end
-	if enemy:IsNPC() && GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
-		if IsValid(enemy:GetActiveWeapon()) then
-			enemy:GetActiveWeapon():SetNoDraw(false)
-		end
-	end
-	if enemy:IsPlayer() then
-		enemy:SetParent(nil)
-		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-			enemy:SetObserverMode(0)
-			enemy:DrawViewModel(true)
-			enemy:DrawWorldModel(true)
-		end
+    self.MovementType = VJ_MOVETYPE_GROUND
+    self:SetParent(nil)
+    if !IsValid(self.pIncapacitatedEnemy) then return end
+    local enemy = self.pIncapacitatedEnemy
+    if enemy.IsVJBaseSNPC == true then
+        if self.EnemyVJMoveType ~= nil then
+            enemy.MovementType = self.EnemyVJMoveType
+        end
+    end
+    enemy:SetMoveType(self.EnemyMoveType)
+    if enemy:GetNoDraw() == true then
+        enemy:SetNoDraw(false)
+    end
+    if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+        enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
+    end
+    if enemy:IsNPC() && GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+        if IsValid(enemy:GetActiveWeapon()) then
+            enemy:GetActiveWeapon():SetNoDraw(false)
+        end
+    end
+    if enemy:IsPlayer() then
+        enemy:SetParent(nil)
+        if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+            enemy:SetObserverMode(0)
+            enemy:DrawViewModel(true)
+            enemy:DrawWorldModel(true)
+        end
         if table.Count(self.tblEnemyWeapons) > 0 then
             for i = 1, table.Count(self.tblEnemyWeapons) do
                 local tbl = self.tblEnemyWeapons
@@ -522,150 +519,183 @@ function ENT:DismountSmoker()
         for a, c in ipairs(self.tblEnemyAmmo) do
             enemy:GiveAmmo(c, game.GetAmmoName(a), true)
         end
-	end
-	net.Start("smoker_RemoveCSEnt")
-		net.WriteString(tostring(self:EntIndex()))
-	net.Broadcast()
-	if IsValid(self.pEnemyRagdoll) then
-		self.pEnemyRagdoll:Remove()
-		self.pEnemyRagdoll = nil
     end
-	self.pIncapacitatedEnemy = nil
+    net.Start("infected_RemoveCSEnt")
+        net.WriteString(tostring(self:EntIndex()))
+    net.Broadcast()
+    if IsValid(self.pEnemyRagdoll) then
+        self.pEnemyRagdoll:Remove()
+        self.pEnemyRagdoll = nil
+    end
+    self.pIncapacitatedEnemy = nil
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self.vecLastPos = self:GetPos()
+    self.vecLastPos = self:GetPos()
 
-	local function FaceTarget(ent, tgt, bBack)
-		local spos = ent:GetPos()
-		local ang = ent:GetAngles()
-		local tpos = tgt:GetPos()
-		local quadrants = {
-			[1] = Vector(spos.x + 45, spos.y - 45, spos.z),
-			[2] = Vector(spos.x + 45, spos.y + 45, spos.z),
-			[3] = Vector(spos.x - 45, spos.y + 45, spos.z),
-			[4] = Vector(spos.x - 45, spos.y - 45, spos.z)
-		}
-		local distX = math.max(spos.x, tpos.x) - math.min(spos.x, tpos.x)
-		local distY = math.max(spos.y, tpos.y) - math.min(spos.y, tpos.y)
-		local deg = math.deg(math.atan(distY / distX))
-		local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
-		if math.floor(tpos:Distance(quadrants[1])) == math.floor(quad) then
-			deg = -deg
-		elseif math.floor(tpos:Distance(quadrants[2])) == math.floor(quad) then
-			deg = deg
-		elseif math.floor(tpos:Distance(quadrants[3])) == math.floor(quad) then
-			deg = 180 - deg
-		elseif math.floor(tpos:Distance(quadrants[4])) == math.floor(quad) then
-			deg = -180 + deg
-		end
-		if bBack == true then
-			deg = deg + 180
-		end
-		if ent:IsPlayer() then
-			ent:SetEyeAngles(Angle(ang.x, deg, ang.z))
-		else
-			ent:SetAngles(Angle(ang.x, deg, ang.z))
-		end
-	end
+    local function FaceTarget(ent, tgt, bBack)
+        local spos = ent:GetPos()
+        local ang = ent:GetAngles()
+        local tpos = tgt:GetPos()
+        local quadrants = {
+            [1] = Vector(spos.x + 45, spos.y - 45, spos.z),
+            [2] = Vector(spos.x + 45, spos.y + 45, spos.z),
+            [3] = Vector(spos.x - 45, spos.y + 45, spos.z),
+            [4] = Vector(spos.x - 45, spos.y - 45, spos.z)
+        }
+        local distX = math.max(spos.x, tpos.x) - math.min(spos.x, tpos.x)
+        local distY = math.max(spos.y, tpos.y) - math.min(spos.y, tpos.y)
+        local deg = math.deg(math.atan(distY / distX))
+        local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
+        if math.floor(tpos:Distance(quadrants[1])) == math.floor(quad) then
+            deg = -deg
+        elseif math.floor(tpos:Distance(quadrants[2])) == math.floor(quad) then
+            deg = deg
+        elseif math.floor(tpos:Distance(quadrants[3])) == math.floor(quad) then
+            deg = 180 - deg
+        elseif math.floor(tpos:Distance(quadrants[4])) == math.floor(quad) then
+            deg = -180 + deg
+        end
+        if bBack == true then
+            deg = deg + 180
+        end
+        if ent:IsPlayer() then
+            ent:SetEyeAngles(Angle(ang.x, deg, ang.z))
+        else
+            ent:SetAngles(Angle(ang.x, deg, ang.z))
+        end
+    end
 
-	--Incapacitating check
-	if self:GetSequence() == self:LookupSequence(self.IncapAnimation) || self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
-		self.IsIncapacitating = true
-	else
-		self.IsIncapacitating = false
-	end
+    local function SetPitch(ent, poseName, tgt)
+        local spos = ent:GetPos()
+        local bpos = spos + ent:OBBCenter()
+        local tblPos = {
+            [1] = Vector(bpos.x, bpos.y, bpos.z + 1),
+            [2] = Vector(bpos.x, bpos.y, bpos.z - 1)
+        }
+        local quadrants = {
+            [1] = Vector(spos.x + 45, spos.y, spos.z),
+            [2] = Vector(spos.x - 45, spos.y, spos.z),
+            [3] = Vector(spos.x, spos.y + 45, spos.z),
+            [4] = Vector(spos.x, spos.y - 45, spos.z)
+        }
+        tgt = tgt or self
+        local tpos = tgt:GetPos()
+        local distX = math.max(bpos.x, tpos.x) - math.min(bpos.x, tpos.x)
+        local distY = math.max(bpos.y, tpos.y) - math.min(bpos.y, tpos.y)
+        local distZ = math.max(bpos.z, tpos.z) - math.min(bpos.z, tpos.z)
+        local degX = math.deg(math.atan(distZ / distX))
+        local degY = math.deg(math.atan(distZ / distY))
+        local pos = math.min(tpos:Distance(tblPos[1]), tpos:Distance(tblPos[2]))
+        local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
+        if quad == tpos:Distance(quadrants[1]) || quad == tpos:Distance(quadrants[2]) then
+            degX = math.Round(degX)
+            ent:SetPoseParameter(poseName, math.Remap(degX, 0, 90, 0, 1))
+        elseif quad == tpos:Distance(quadrants[3]) || quad == tpos:Distance(quadrants[4]) then
+            degY = math.Round(degY)
+            ent:SetPoseParameter(poseName, math.Remap(degY, 0, 90, 0, 1))
+        end
+    end
 
-	if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
-		self:VJ_ACT_PLAYACTIVITY("Jump", true)   
-	end
+    --Incapacitating check
+    if self:GetSequence() == self:LookupSequence(self.IncapAnimation) || self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
+        self.IsIncapacitating = true
+    else
+        self.IsIncapacitating = false
+    end
 
-	if self.HasEnemyIncapacitated == true then 
-		self.HasIdleSounds = false
-		self.HasMeleeAttack = false
-		self.HasRangeAttack = false    
-		if IsValid(self.pIncapacitatedEnemy) then
-			local enemy = self.pIncapacitatedEnemy
+    if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
+        self:VJ_ACT_PLAYACTIVITY("Jump", true)   
+    end
 
-			local function FacePos(ent, ePos, tPos, deg)
-				local pos = ePos
-				local ang = ent:GetAngles()
-				local deg = deg or 0
-				local tblPos = {
-					[1] = Vector(pos.x, pos.y, pos.z + 1),
-					[2] = Vector(pos.x, pos.y, pos.z - 1)
-				}
-				local quadrants = {
-					[1] = Vector(pos.x + 45, pos.y, pos.z),
-					[2] = Vector(pos.x - 45, pos.y, pos.z),
-					[3] = Vector(pos.x, pos.y + 45, pos.z),
-					[4] = Vector(pos.x, pos.y - 45, pos.z)
-				}
-				local distX = math.max(pos.x, tPos.x) - math.min(pos.x, tPos.x)
-				local distY = math.max(pos.y, tPos.y) - math.min(pos.y, tPos.y)
-				local distZ = math.max(pos.z, tPos.z) - math.min(pos.z, tPos.z)
-				local degX = math.deg(math.atan(distZ / distX))
-				local degY = math.deg(math.atan(distZ / distY))
-				local pos = math.min(tPos:Distance(tblPos[1]), tPos:Distance(tblPos[2]))
-				local quad = math.min(tPos:Distance(quadrants[1]), tPos:Distance(quadrants[2]), tPos:Distance(quadrants[3]), tPos:Distance(quadrants[4]))
-				if quad == tPos:Distance(quadrants[1]) || quad == tPos:Distance(quadrants[2]) then
-					if pos == tPos:Distance(tblPos[1]) then
-						ent:SetAngles(Angle(-degX + deg, ang.y, ang.z))
-					elseif pos == tPos:Distance(tblPos[2]) then
-						ent:SetAngles(Angle(degX + deg, ang.y, ang.z))
-					end
-				elseif quad == tPos:Distance(quadrants[3]) || quad == tPos:Distance(quadrants[4]) then
-					if pos == tPos:Distance(tblPos[1]) then
-						ent:SetAngles(Angle(-degY + deg, ang.y, ang.z))
-					elseif pos == tPos:Distance(tblPos[2]) then
-						ent:SetAngles(Angle(degY + deg, ang.y, ang.z))
-					end
-				end
-			end
+    if self.HasEnemyIncapacitated == true then 
+        self.HasIdleSounds = false
+        self.HasMeleeAttack = false
+        self.HasRangeAttack = false    
+        if IsValid(self.pIncapacitatedEnemy) then
+            local enemy = self.pIncapacitatedEnemy
 
-			if IsValid(self.pTongueController) then
-				local tCtrl = self.pTongueController
-				tCtrl:SetPos(self:GetAttachment(3).Pos)
-				FacePos(tCtrl, tCtrl:GetPos(), enemy:GetPos() + enemy:OBBCenter())
-				FaceTarget(tCtrl, enemy)
-			end
+            local function FacePos(ent, ePos, tPos, deg)
+                local pos = ePos
+                local ang = ent:GetAngles()
+                local deg = deg or 0
+                local tblPos = {
+                    [1] = Vector(pos.x, pos.y, pos.z + 1),
+                    [2] = Vector(pos.x, pos.y, pos.z - 1)
+                }
+                local quadrants = {
+                    [1] = Vector(pos.x + 45, pos.y, pos.z),
+                    [2] = Vector(pos.x - 45, pos.y, pos.z),
+                    [3] = Vector(pos.x, pos.y + 45, pos.z),
+                    [4] = Vector(pos.x, pos.y - 45, pos.z)
+                }
+                local distX = math.max(pos.x, tPos.x) - math.min(pos.x, tPos.x)
+                local distY = math.max(pos.y, tPos.y) - math.min(pos.y, tPos.y)
+                local distZ = math.max(pos.z, tPos.z) - math.min(pos.z, tPos.z)
+                local degX = math.deg(math.atan(distZ / distX))
+                local degY = math.deg(math.atan(distZ / distY))
+                local pos = math.min(tPos:Distance(tblPos[1]), tPos:Distance(tblPos[2]))
+                local quad = math.min(tPos:Distance(quadrants[1]), tPos:Distance(quadrants[2]), tPos:Distance(quadrants[3]), tPos:Distance(quadrants[4]))
+                if quad == tPos:Distance(quadrants[1]) || quad == tPos:Distance(quadrants[2]) then
+                    if pos == tPos:Distance(tblPos[1]) then
+                        ent:SetAngles(Angle(-degX + deg, ang.y, ang.z))
+                    elseif pos == tPos:Distance(tblPos[2]) then
+                        ent:SetAngles(Angle(degX + deg, ang.y, ang.z))
+                    end
+                elseif quad == tPos:Distance(quadrants[3]) || quad == tPos:Distance(quadrants[4]) then
+                    if pos == tPos:Distance(tblPos[1]) then
+                        ent:SetAngles(Angle(-degY + deg, ang.y, ang.z))
+                    elseif pos == tPos:Distance(tblPos[2]) then
+                        ent:SetAngles(Angle(degY + deg, ang.y, ang.z))
+                    end
+                end
+            end
 
-			if CurTime() >= self.nextSegmentCreation then
-				local flDistance = self:GetAttachment(3).Pos:Distance((enemy:GetPos() + enemy:OBBCenter()))
-				local instances = 0
-				local pos = self:GetAttachment(3).Pos
-				local ang = self:GetAngles()
-				local dSeg = 15
-				if flDistance >= dSeg then
-					math.Round(flDistance, 1)
-					instances = flDistance / dSeg
-				end
-				local iteration = dSeg
-				if instances > 0 then
-					for i = 1, instances do
-						if !IsValid(self) then return end
-						local seg = ents.Create("obj_vj_l4d2_tongue_collision")
-						seg:SetPos(pos + self.pTongueController:GetForward() * iteration)
-						seg:SetAngles(ang)
-						seg:Spawn()
-						seg:SetOwner(self)
-						FacePos(seg, seg:GetPos(), enemy:GetPos() + enemy:OBBCenter())
-						timer.Simple(1, function()
-							if !IsValid(seg) then return end
-							seg:Remove()
-						end)
-						iteration = iteration + dSeg
-					end
-				end
+            SetPitch(self.pEnemyRagdoll, "tongue_angle", self)
 
-				self.nextSegmentCreation = CurTime() + 1
-			end
+            if IsValid(self.pTongueController) then
+                local tCtrl = self.pTongueController
+                tCtrl:SetPos(self:GetAttachment(3).Pos)
+                FacePos(tCtrl, tCtrl:GetPos(), enemy:GetPos() + enemy:OBBCenter())
+                FaceTarget(tCtrl, enemy)
+            end
 
-			if enemy:Health() <= 0 then self:DismountSmoker() return end
+            if CurTime() >= self.nextSegmentCreation then
+                local flDistance = self:GetAttachment(3).Pos:Distance((enemy:GetPos() + enemy:OBBCenter()))
+                local instances = 0
+                local pos = self:GetAttachment(3).Pos
+                local ang = self:GetAngles()
+                local dSeg = 15
+                if flDistance >= dSeg then
+                    math.Round(flDistance, 1)
+                    instances = flDistance / dSeg
+                end
+                local iteration = dSeg
+                if instances > 0 then
+                    for i = 1, instances do
+                        if !IsValid(self) then return end
+                        local seg = ents.Create("obj_vj_l4d2_tongue_collision")
+                        seg:SetPos(pos + self.pTongueController:GetForward() * iteration)
+                        seg:SetAngles(ang)
+                        seg:Spawn()
+                        seg:SetOwner(self)
+                        FacePos(seg, seg:GetPos(), enemy:GetPos() + enemy:OBBCenter())
+                        timer.Simple(1, function()
+                            if !IsValid(seg) then return end
+                            seg:Remove()
+                        end)
+                        iteration = iteration + dSeg
+                    end
+                end
 
-			if self.HasEnemyIncapacitated == false then return end
+                self.nextSegmentCreation = CurTime() + 1
+            end
 
-			--create tongue
+            if enemy:Health() <= 0 then self:DismountSmoker() return end
+
+            if self.HasEnemyIncapacitated == false then return end
+
+            --create tongue
             if CurTime() > self.NextTongueSpawn then
                 if self.IsChokingEnemy == true then
                     util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() +enemy:OBBCenter(), false, self:EntIndex(), 3)
@@ -676,229 +706,227 @@ function ENT:CustomOnThink()
                 end
             end
 
-			local dist = self:GetPos():Distance(enemy:GetPos())  
+            local dist = self:GetPos():Distance(enemy:GetPos())  
 
-			--add anim support for player control    
-			if self.VJ_IsBeingControlled then
-				if dist <= self.IncapacitationRange then
-					self.CombatFaceEnemy = true
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
-					--self:VJ_PlaySequence(self.IncapAnimation)
-				else
-					self.CombatFaceEnemy = false
-					self:SetAngles(self.incapAngles)
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle"))}
-					--self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
-				end
-			end	
+            --add anim support for player control    
+            if self.VJ_IsBeingControlled then
+                if dist <= self.IncapacitationRange then
+                    self.CombatFaceEnemy = true
+                    self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
+                else
+                    self.CombatFaceEnemy = false
+                    self:SetAngles(self.incapAngles)
+                    self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle"))}
+                end
+            end 
 
-			if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
-				if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
-					self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
-					self.IsChokingEnemy = true 							
-					self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
-					self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
-					for k, v in ipairs(ents.FindByClass("player")) do
-					    if enemy:IsNPC() then
-					    	VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.wav",95,self:VJ_DecideSoundPitch(100,100))
-					    end
-					end
-					if enemy:IsPlayer() then
-				        self:Incap_Effects(false)
-				        self:PlayIncapSong(false,true)
-				        self:PlayIncapSong_Choke(false,false)
+            if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
+                if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
+                    self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
+                    self.IsChokingEnemy = true                          
+                    self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
+                    self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
+                    for k, v in ipairs(ents.FindByClass("player")) do
+                        if enemy:IsNPC() then
+                            VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.wav",95,self:VJ_DecideSoundPitch(100,100))
+                        end
+                    end
+                    if enemy:IsPlayer() then
+                        self:Incap_Effects(false)
+                        self:PlayIncapSong(false,true)
+                        self:PlayIncapSong_Choke(false,false)
                         enemy:SpectateEntity(self.Camera)
                         enemy:SetFOV(80)
-				    end
-				end
-			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
-				if dist > self.IncapacitationRange then
-					self:VJ_ACT_PLAYACTIVITY("Tongue_Attack_Drag_Survivor_Idle", true)   
-				end
-			end
+                    end
+                end
+            elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
+                if dist > self.IncapacitationRange then
+                    self:VJ_ACT_PLAYACTIVITY("Tongue_Attack_Drag_Survivor_Idle", true)   
+                end
+            end
 
-			local ene = self.pIncapacitatedEnemy
+            local ene = self.pIncapacitatedEnemy
 
-			--check enemy type           
-			if enemy:IsPlayer() then
-				enemy = self.pEnemyObj
-				ene:SetPos(enemy:GetPos())
-			else
-				if IsValid(self.pEnemyObj) then
-					self.pEnemyObj:Remove()
-				end
-			end
+            --check enemy type           
+            if enemy:IsPlayer() then
+                enemy = self.pEnemyObj
+                ene:SetPos(enemy:GetPos())
+            else
+                if IsValid(self.pEnemyObj) then
+                    self.pEnemyObj:Remove()
+                end
+            end
 
-			--make enemy face opposite
-			FaceTarget(enemy, self, true)
+            --make enemy face opposite
+            FaceTarget(enemy, self, true)
 
-			--check if path to us is blocked
-			local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			--check if enemy is on ground
-			local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 15, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			
-			--call if enemy is stuck
-			local function FreezeEnemy()
-				if ene:IsPlayer() then
-					enemy:GetPhysicsObject():Sleep()
-					enemy:GetPhysicsObject():EnableMotion(false)
-				end
-				enemy:SetPos(enemy:GetPos())
-				enemy:SetLocalVelocity(Vector(0, 0, 0))
-				self.IsEnemyStuck = true
-				self.nextDamageTime = CurTime()
-			end
+            --check if path to us is blocked
+            local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+            --check if enemy is on ground
+            local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 15, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+            
+            --call if enemy is stuck
+            local function FreezeEnemy()
+                if ene:IsPlayer() then
+                    enemy:GetPhysicsObject():Sleep()
+                    enemy:GetPhysicsObject():EnableMotion(false)
+                end
+                enemy:SetPos(enemy:GetPos())
+                enemy:SetLocalVelocity(Vector(0, 0, 0))
+                self.IsEnemyStuck = true
+                self.nextDamageTime = CurTime()
+            end
 
-			local function ResetEnemyEFlags()
-				if not ene:IsPlayer() then
-	                enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-	                timer.Simple(0.2, function()
-	                	if !IsValid(enemy) then return end
-	                	if ene ~= enemy then return end
-	                	enemy:StopMoving()
-	                	enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
-	                end)
-	                self.lastEFlagsReset = CurTime() + 2
-	            end
-			end
+            local function ResetEnemyEFlags()
+                if not ene:IsPlayer() then
+                    enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
+                    timer.Simple(0.2, function()
+                        if !IsValid(enemy) then return end
+                        if ene ~= enemy then return end
+                        enemy:StopMoving()
+                        enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
+                    end)
+                    self.lastEFlagsReset = CurTime() + 2
+                end
+            end
 
-			local function CheckPath()
-				if enemy:GetPos().z > self:GetPos().z then
-					if tr2.Hit == true then
-						--on ledge
-						self.IsEnemyFloating = false
-						enemy:SetMoveType(MOVETYPE_FLY)
-						if tr1.Hit == false then
-							enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
-						end
-					else
-						--floating
-						self.IsEnemyFloating = true
-						if not ene:IsPlayer() then
-							enemy:SetMoveType(self.EnemyMoveType)
-						else
-							enemy:SetMoveType(MOVETYPE_FLY)
-							enemy:SetLocalVelocity(- enemy:GetUp() * 100)
-						end
-					end
-				else
-					self.IsEnemyFloating = false
-					enemy:SetMoveType(MOVETYPE_FLY)
-					if tr1.Hit == true then
-						enemy:SetLocalVelocity(-enemy:GetForward() * 50 + enemy:GetUp() * 50)
-					else
-						enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
-					end
-				end
-			end
+            local function CheckPath()
+                if enemy:GetPos().z > self:GetPos().z then
+                    if tr2.Hit == true then
+                        --on ledge
+                        self.IsEnemyFloating = false
+                        enemy:SetMoveType(MOVETYPE_FLY)
+                        if tr1.Hit == false then
+                            enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+                        end
+                    else
+                        --floating
+                        self.IsEnemyFloating = true
+                        if not ene:IsPlayer() then
+                            enemy:SetMoveType(self.EnemyMoveType)
+                        else
+                            enemy:SetMoveType(MOVETYPE_FLY)
+                            enemy:SetLocalVelocity(- enemy:GetUp() * 100)
+                        end
+                    end
+                else
+                    self.IsEnemyFloating = false
+                    enemy:SetMoveType(MOVETYPE_FLY)
+                    if tr1.Hit == true then
+                        enemy:SetLocalVelocity(-enemy:GetForward() * 50 + enemy:GetUp() * 50)
+                    else
+                        enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+                    end
+                end
+            end
 
-			--tracks terrestrial status
-			if self.IsEnemyFloating == true then
-				self.lastEnemyFloat = CurTime()
-			else
-				self.lastEnemyGround = CurTime()
-			end
+            --tracks terrestrial status
+            if self.IsEnemyFloating == true then
+                self.lastEnemyFloat = CurTime()
+            else
+                self.lastEnemyGround = CurTime()
+            end
 
-			--reset if t status changes
-			local timeDiff = math.abs(self.lastEnemyFloat - self.lastEnemyGround)
-			if timeDiff > 0.45 && timeDiff < 0.55 then
-				ResetEnemyEFlags()
-			end
+            --reset if t status changes
+            local timeDiff = math.abs(self.lastEnemyFloat - self.lastEnemyGround)
+            if timeDiff > 0.45 && timeDiff < 0.55 then
+                ResetEnemyEFlags()
+            end
 
-			if self.IsEnemyStuck == false then
-				--check if enemy is stuck
-				if CurTime() >= self.nextEnemyPosCheck then
-					if self.vecEnemyPos:Distance(enemy:GetPos()) < 10 then
-						FreezeEnemy()
-					end
-					self.vecEnemyPos = enemy:GetPos()
-					self.nextEnemyPosCheck = CurTime() + 2
-				end
-				--if enemy is too far to be clawed
-				if dist > self.IncapacitationRange then
-					CheckPath()
-					if enemy:IsPlayer() then
-						enemy:GetPhysicsObject():EnableMotion(true)
-					end
-				else
-					FreezeEnemy()
-				end
-			else
-				enemy:SetLocalVelocity(Vector(0, 0, 0))
-			end
-		else
-			self:DismountSmoker()
-		end
-	else
-		--fail-safe
-		if self.IsIncapacitating == true then
-			net.Start("smoker_RemoveCSEnt")
-				net.WriteString(tostring(self:EntIndex()))
-			net.Broadcast()
-			self:DismountSmoker()
-			self:SetPos(self:GetPos())
-		end
-		if self.IncapSound ~= nil then
-			self.IncapSound:Stop()
-		end
-		self.HasIdleSounds = true
-		self.HasMeleeAttack = true
-		self.HasRangeAttack = true
-		self.CombatFaceEnemy = true
-	end
+            if self.IsEnemyStuck == false then
+                --check if enemy is stuck
+                if CurTime() >= self.nextEnemyPosCheck then
+                    if self.vecEnemyPos:Distance(enemy:GetPos()) < 10 then
+                        FreezeEnemy()
+                    end
+                    self.vecEnemyPos = enemy:GetPos()
+                    self.nextEnemyPosCheck = CurTime() + 2
+                end
+                --if enemy is too far to be clawed
+                if dist > self.IncapacitationRange then
+                    CheckPath()
+                    if enemy:IsPlayer() then
+                        enemy:GetPhysicsObject():EnableMotion(true)
+                    end
+                else
+                    FreezeEnemy()
+                end
+            else
+                enemy:SetLocalVelocity(Vector(0, 0, 0))
+            end
+        else
+            self:DismountSmoker()
+        end
+    else
+        --fail-safe
+        if self.IsIncapacitating == true then
+            net.Start("infected_RemoveCSEnt")
+                net.WriteString(tostring(self:EntIndex()))
+            net.Broadcast()
+            self:DismountSmoker()
+            self:SetPos(self:GetPos())
+        end
+        if self.IncapSound ~= nil then
+            self.IncapSound:Stop()
+        end
+        self.HasIdleSounds = true
+        self.HasMeleeAttack = true
+        self.HasRangeAttack = true
+        self.CombatFaceEnemy = true
+    end
 
-	--Sounds
-	if CurTime() >= self.nextBacteria then
-		self:PlayBacteria()
-	end
-	if IsValid(self.pIncapacitatedEnemy) then
-		if CurTime() >= self.nextIncapSong && self.IsChokingEnemy == false then
-			self:PlayIncapSong(false,false)
-		end
-	else
-		if self.IncapSong ~= nil then
-			self.IncapSong:Stop()
-		end
-		if self.IncapSong2 ~= nil then
-			self.IncapSong2:Stop()
-		end
-	end
+    --Sounds
+    if CurTime() >= self.nextBacteria then
+        self:PlayBacteria()
+    end
+    if IsValid(self.pIncapacitatedEnemy) then
+        if CurTime() >= self.nextIncapSong && self.IsChokingEnemy == false then
+            self:PlayIncapSong(false,false)
+        end
+    else
+        if self.IncapSong ~= nil then
+            self.IncapSong:Stop()
+        end
+        if self.IncapSong2 ~= nil then
+            self.IncapSong2:Stop()
+        end
+    end
 
-	self:ManageHUD(self.VJ_TheController)
-	if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
-		if self.IsGhosted == true then
-			self:UnSetGhost(self.VJ_TheController)
-		elseif self.IsGhosted == false then
-			self:SetGhost(self.VJ_TheController)  
-		end
-	end
-	if self.VJ_IsBeingControlled == false then
-		self.TimeUntilRangeAttackProjectileRelease = 2
+    self:ManageHUD(self.VJ_TheController)
+    if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
+        if self.IsGhosted == true then
+            self:UnSetGhost(self.VJ_TheController)
+        elseif self.IsGhosted == false then
+            self:SetGhost(self.VJ_TheController)  
+        end
+    end
+    if self.VJ_IsBeingControlled == false then
+        self.TimeUntilRangeAttackProjectileRelease = 2
         self.RangeAttackAnimationDelay = 2
         self.HasBeforeRangeAttackSound = true
     elseif self.VJ_IsBeingControlled == true then
-		self.TimeUntilRangeAttackProjectileRelease = 0
+        self.TimeUntilRangeAttackProjectileRelease = 0
         self.RangeAttackAnimationDelay = 0
         self.HasBeforeRangeAttackSound = false
     end
 
-	if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "smoker_Dismount", function(ply, key)
-			if self.HasEnemyIncapacitated then
-				if self.VJ_TheController == ply then
-					if key == IN_JUMP then
-						self.HasEnemyIncapacitated = false
-						self:VJ_ACT_PLAYACTIVITY("Jump", true, 0, false)
-						self:SetVelocity(self:GetUp() * 200 - self:GetForward() * 400)
-						timer.Simple(2, function()
-							if !IsValid(self) then return end
-							self:DismountSmoker()
-						end)
-					end
-				end
-			end
-		end)
-	end
+    if self.VJ_IsBeingControlled == true then
+        hook.Add("KeyPress", "smoker_Dismount", function(ply, key)
+            if self.HasEnemyIncapacitated then
+                if self.VJ_TheController == ply then
+                    if key == IN_JUMP then
+                        self.HasEnemyIncapacitated = false
+                        self:VJ_ACT_PLAYACTIVITY("Jump", true, 0, false)
+                        self:SetVelocity(self:GetUp() * 200 - self:GetForward() * 400)
+                        timer.Simple(2, function()
+                            if !IsValid(self) then return end
+                            self:DismountSmoker()
+                        end)
+                    end
+                end
+            end
+        end)
+    end
 end 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:UnSetGhost(bool)
@@ -1018,11 +1046,11 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, corpseEnt)
             PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
         end
     end
-	self:DismountSmoker()
+    self:DismountSmoker()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_BeforeStartTimer(seed) 
-	if self.VJ_IsBeingControlled == false then
+    if self.VJ_IsBeingControlled == false then
         self:VJ_ACT_PLAYACTIVITY("vjseq_Tongue_Attack_Antic",false,VJ_GetSequenceDuration(self,"vjseq_Tongue_Attack_Antic"),false)
     end
 end
@@ -1031,14 +1059,14 @@ function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
     timer.Simple(0.5,function() if IsValid(self) then VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/smoker/miss/smoker_reeltonguein_01.wav","player/smoker/miss/smoker_reeltonguein_02.wav","player/smoker/miss/smoker_reeltonguein_03.wav","player/smoker/miss/smoker_reeltonguein_04.wav","player/smoker/miss/smoker_reeltonguein_05.wav"}),self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100)) end end)
     timer.Simple(1,function() 
         if IsValid(self) && !IsValid(self.pIncapacitatedEnemy) then 
-    	   if self:GetClass() == "npc_vj_l4d2_smoker" then
-	    	    self:SetBodygroup(2,0) 
-	        end
-	    elseif IsValid(self) && !IsValid(self.pIncapacitatedEnemy) then 
+           if self:GetClass() == "npc_vj_l4d2_smoker" then
+                self:SetBodygroup(2,0) 
+            end
+        elseif IsValid(self) && !IsValid(self.pIncapacitatedEnemy) then 
             if self:GetClass() == "npc_vj_l4d_smoker" then
-	    	    self:SetBodygroup(1,0) 
-	        end
-	    end
+                self:SetBodygroup(1,0) 
+            end
+        end
     end) 
     if self:GetClass() == "npc_vj_l4d2_smoker" then
         self:SetBodygroup(2,1)  
@@ -1053,19 +1081,19 @@ function ENT:RangeAttackCode_GetShootPos(projectile)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
-	local randattack = math.random(1,2)
-	if randattack == 1 then
-		self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
-		self.TimeUntilMeleeAttackDamage = 0.4
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_s_d")
-	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
-		self.TimeUntilMeleeAttackDamage = 0.4
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_s_d")
-	end
+    local randattack = math.random(1,2)
+    if randattack == 1 then
+        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
+        self.TimeUntilMeleeAttackDamage = 0.4
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_s_d")
+    elseif randattack == 2 then
+        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
+        self.TimeUntilMeleeAttackDamage = 0.4
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_s_d")
+    end
 end
 /*-----------------------------------------------
-	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
-	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
-	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
+    *** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
+    No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
+    without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
