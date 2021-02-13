@@ -20,7 +20,7 @@ ENT.CallForHelp = false -- Does the SNPC call for help?
 ENT.PoseParameterLooking_Names = {pitch={"body_pitch"},yaw={"body_yaw"},roll={}} -- Custom pose parameters to use, can put as many as needed
 ENT.VJC_Data = {
     CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
-    ThirdP_Offset = Vector(0, 0, 0), -- The offset for the controller when the camera is in third person
+    ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
     FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
     FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
@@ -124,7 +124,7 @@ ENT.Light2 = nil
 ENT.Light3 = nil
 ENT.Camera = nil
 ENT.IsTakingCover = false
-ENT.NextRunAway = CurTime()
+ENT.RunAwayT = CurTime()
 
 util.AddNetworkString("L4D2SmokerHUD")
 util.AddNetworkString("L4D2SmokerHUDGhost")
@@ -596,6 +596,19 @@ function ENT:CustomOnThink()
         elseif quad == tpos:Distance(quadrants[3]) || quad == tpos:Distance(quadrants[4]) then
             degY = math.Round(degY)
             ent:SetPoseParameter(poseName, math.Remap(degY, 0, 90, 0, 1))
+        end
+    end
+   
+    if self.VJ_IsBeingControlled == false then
+        if IsValid(self:GetEnemy()) then
+            if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
+                self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
+                self.RunAwayT = CurTime() +1
+                self.DisableChasingEnemy = true
+            end
+        else
+            self.DisableChasingEnemy = false
+            self.IsTakingCover = false
         end
     end
 
