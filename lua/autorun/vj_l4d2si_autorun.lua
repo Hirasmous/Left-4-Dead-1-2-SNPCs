@@ -87,6 +87,11 @@ if( file.Exists( VJExists, "GAME" ) ) then
     VJ.AddConVar("vj_l4d2_gasdamage",1) -- Turned on by default
 end
 
+if SERVER then
+    util.AddNetworkString("infected_PounceEnemy")
+	util.AddNetworkString("infected_RemoveCSEnt")
+end
+
 if CLIENT then
 	hook.Add("PopulateToolMenu", "VJ_L4D2_MENU", function()	
 		spawnmenu.AddToolMenuOption("DrVrej", "SNPC Configures", "Left 4 Dead 1/2 ", "Left 4 Dead 1/2 Special Infected SNPCs", "", "", function(Panel)
