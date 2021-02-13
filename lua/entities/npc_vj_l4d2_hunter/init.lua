@@ -22,7 +22,7 @@ ENT.CallForHelp = false -- Does the SNPC call for help?
 ENT.PoseParameterLooking_Names = {pitch={"body_pitch"},yaw={"body_yaw"},roll={}} -- Custom pose parameters to use, can put as many as needed
 ENT.VJC_Data = {
     CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
-    ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
+    ThirdP_Offset = Vector(0, 0, 0), -- The offset for the controller when the camera is in third person
     FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
     FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
@@ -65,7 +65,8 @@ ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward_01"}}}
     -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
-ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.wav","player/footsteps/infected/run/concrete2.wav","player/footsteps/infected/run/concrete3.wav","player/footsteps/infected/run/concrete4.wav"}
+--ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.wav","player/footsteps/infected/run/concrete2.wav","player/footsteps/infected/run/concrete3.wav","player/footsteps/infected/run/concrete4.wav"}
+ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.wav","vj_l4d2/footsteps/infected/run/concrete2.wav","vj_l4d2/footsteps/infected/run/concrete3.wav","vj_l4d2/footsteps/infected/run/concrete4.wav"}
 ENT.SoundTbl_Idle = {"HunterZombie.Voice","HunterZombie.Growl"}
 ENT.SoundTbl_Alert = {"HunterZombie.Alert"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
@@ -119,8 +120,6 @@ ENT.tblEnemyAmmo = {}
 
 util.AddNetworkString("L4D2HunterHUD")
 util.AddNetworkString("L4D2HunterHUDGhost")
-util.AddNetworkString("hunter_RemoveCSEnt")
-util.AddNetworkString("hunter_PounceEnemy")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_BeforeStartTimer() 
     self:EmitSound("HunterZombie.Warn")
@@ -553,7 +552,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 					                    enemy:SetNoDraw(true)
 					                    local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
 					                    if IsValid(self.pEnemyRagdoll) then
-											net.Start("hunter_RemoveCSEnt")
+											net.Start("infected_RemoveCSEnt")
 												net.WriteString(tostring(self:EntIndex()))
 											net.Broadcast()
 					                    	self.pEnemyRagdoll:Remove()
@@ -588,7 +587,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 						                    mdl:SetLocalPos(Vector(0, 0, 0))
 						                    timer.Simple(0.15, function()
 						                    	if !IsValid(self) then return end
-							                    net.Start("hunter_PounceEnemy")
+							                    net.Start("infected_PounceEnemy")
 							                    	net.WriteString(tostring(self:EntIndex()))
 							                        net.WriteEntity(mdl)
 							                        net.WriteString(enemy:GetModel())
@@ -620,7 +619,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 					                        end
 					                    end)
 					                    self:CallOnRemove("hunter_OnRemove", function(ent)
-											net.Start("hunter_RemoveCSEnt")
+											net.Start("infected_RemoveCSEnt")
 												net.WriteString(tostring(ent:EntIndex()))
 											net.Broadcast()
 					                        local enemy = ent.pIncapacitatedEnemy
@@ -748,7 +747,7 @@ function ENT:DismountHunter()
             enemy:GiveAmmo(c, game.GetAmmoName(a), true)
 	    end
     end
-	net.Start("hunter_RemoveCSEnt")
+	net.Start("infected_RemoveCSEnt")
 		net.WriteString(tostring(self:EntIndex()))
 	net.Broadcast()
     if IsValid(self.pEnemyRagdoll) then
@@ -793,7 +792,7 @@ function ENT:CustomOnThink()
         end
     else
         if self.IsIncapacitating == true then
-            net.Start("hunter_RemoveCSEnt")
+            net.Start("infected_RemoveCSEnt")
             	net.WriteString(tostring(self:EntIndex()))
             net.Broadcast()
             self:DismountHunter()
