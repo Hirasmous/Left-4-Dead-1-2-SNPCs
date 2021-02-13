@@ -95,7 +95,7 @@ ENT.ThemeLoop = nil
 ENT.AcidLoop = nil
 ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/spitterbacteria.wav","vj_l4d2/music/bacteria/spitterbacterias.wav"}
 ENT.IsTakingCover = false
-ENT.NextRunAway = CurTime()
+ENT.RunAwayT = CurTime()
 util.AddNetworkString("L4D2SpitterHUD")
 util.AddNetworkString("L4D2SpitterHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -208,12 +208,18 @@ function ENT:Controller_Initialize(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-    self.IsTakingCover = true
-    timer.Simple(self.NextRangeAttackTime,function()
-        if IsValid(self) then
+    if self.VJ_IsBeingControlled == false then
+        if IsValid(self:GetEnemy()) then
+            if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
+                self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
+                self.RunAwayT = CurTime() +1
+                self.DisableChasingEnemy = true
+            end
+        else
+            self.DisableChasingEnemy = false
             self.IsTakingCover = false
         end
-    end)
+    end
     self:ManageHUD(self.VJ_TheController)
     if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
         if self.IsGhosted == true then
@@ -319,20 +325,14 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
-	self:SpitterAcid(false)
-    for i = 1, 5 do
-        local acid = ents.Create( "obj_vj_l4d2_acidpuddle" )
-        acid:SetPos( self:GetPos() + Vector( math.Rand( -40, 40 ), math.Rand( -40, 40 ), 0 ) )
-        acid:SetKeyValue( "firesize", "64" )
-        acid:SetKeyValue( "damagescale", "20" )
-        acid:SetOwner( self )
-        acid:Spawn()
-        timer.Simple( 7, function()
-            if IsValid( acid ) then
-                acid:Remove()   
-            end                            
-        end) 
-    end    
+	--self:SpitterAcid(true)
+    local acid = ents.Create("obj_vj_l4d2_spit")
+    acid:SetPos(self:GetPos() +Vector(0,0,13))
+    acid:SetAngles(self:GetAngles())
+    acid.AcidCount = 5
+    acid:Activate()
+    acid:Spawn()  
+    acid:SetNoDraw(true)  
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
