@@ -25,6 +25,7 @@ ENT.SoundTbl_SpitterAcid = Sound("SpitterZombie.Acid")
 ENT.SoundTbl_SpitterAcidTheme = Sound("vj_l4d2/music/terror/pileobile.wav")
 ENT.SoundTbl_Idle = {"player/spitter/swarm/spitter_acid_fadeout.wav","player/spitter/swarm/spitter_acid_fadeout2.wav"}
 ENT.Owner = nil
+ENT.AcidCount = 20
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:SetModel("models/spitball_medium.mdl")
@@ -58,7 +59,7 @@ function ENT:CustomPhysicsObjectOnInitialize(phys)
 	phys:AddAngleVelocity( Vector( math.random(0,-1200,0)))
 	phys:EnableDrag(false)	
 	if phys:IsValid() then
-		phys:EnableGravity(false) 
+		phys:EnableGravity(true) 
 		phys:Wake()
 	end
 end
@@ -87,49 +88,28 @@ function ENT:PhysicsCollide(data,physobj,entity)
 	self:EmitSound( self.TouchSound,self.TouchSoundv,math.random(80,100))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:DeathEffects()
+function ENT:DeathEffects(data,phys)
     self.cspIdleAcidLoop = CreateSound(self, "vj_l4d2/music/terror/pileobile.wav")
     self.cspIdleAcidLoop:SetSoundLevel(70)  
-    self.cspIdleAcidLoop:PlayEx(1,100)    
-    timer.Simple(0.1,function()
-        if IsValid(self) then
-		    for i = 1, 5 do
+    self.cspIdleAcidLoop:PlayEx(1,100)  
+    for i = 1,self.AcidCount do
+        timer.Simple(i *0.2,function()
+	        if IsValid(self) then
 		        local acid = ents.Create( "obj_vj_l4d2_acidpuddle" )
-		        acid:SetPos( self:GetPos() + Vector( math.Rand( -94, 86 ), math.Rand( -124, 39 ), 0 ) )
+		        if self.AcidCount == 5 then
+		            acid:SetPos( self:GetPos() + Vector( math.Rand( -27, 27 ), math.Rand( -29, 29 ), 0 ) )
+		        elseif self.AcidCount == 20 then
+		            acid:SetPos( self:GetPos() + Vector( math.Rand( -57, 57 ), math.Rand( -59, 59 ), 0 ) )
+		        end
 		        acid:SetKeyValue( "firesize", "64" )
 		        acid:SetKeyValue( "damagescale", "20" )
 		        acid:SetKeyValue( "spawnflags", "2" )
 		        acid:SetOwner( self.Owner )
 		        acid:Spawn()
-		    end  
-		end
-    end)   
-    timer.Simple(0.7,function()
-        if IsValid(self) then
-		    for i = 1, 5 do
-		        local acid = ents.Create( "obj_vj_l4d2_acidpuddle" )
-		        acid:SetPos( self:GetPos() + Vector( math.Rand( -94, 86 ), math.Rand( -124, 39 ), 0 ) )
-		        acid:SetKeyValue( "firesize", "64" )
-		        acid:SetKeyValue( "damagescale", "20" )
-		        acid:SetKeyValue( "spawnflags", "2" )
-		        acid:SetOwner( self.Owner )
-		        acid:Spawn()
-		    end  
-		end
-    end) 
-    timer.Simple(1.2,function()
-        if IsValid(self) then
-		    for i = 1, 10 do
-		        local acid = ents.Create( "obj_vj_l4d2_acidpuddle" )
-		        acid:SetPos( self:GetPos() + Vector( math.Rand( -94, 86 ), math.Rand( -124, 39 ), 0 ) )
-		        acid:SetKeyValue( "firesize", "64" )
-		        acid:SetKeyValue( "damagescale", "20" )
-		        acid:SetKeyValue( "spawnflags", "2" )
-		        acid:SetOwner( self.Owner )
-		        acid:Spawn()
-		    end  
-		end
-    end) 
+		        acid:DropToFloor()
+			end
+		end)
+    end 
     timer.Simple(6,function()
         if IsValid(acid) then
             acid:Remove()
