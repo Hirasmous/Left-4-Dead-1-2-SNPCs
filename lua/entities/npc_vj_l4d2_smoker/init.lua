@@ -123,6 +123,8 @@ ENT.Light1 = nil
 ENT.Light2 = nil
 ENT.Light3 = nil
 ENT.Camera = nil
+ENT.IsTakingCover = false
+ENT.NextRunAway = CurTime()
 
 util.AddNetworkString("L4D2SmokerHUD")
 util.AddNetworkString("L4D2SmokerHUDGhost")
