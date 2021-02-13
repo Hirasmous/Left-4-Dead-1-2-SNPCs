@@ -1,15 +1,18 @@
 AddCSLuaFile()
 
-ENT.Base = "base_entity"
+--Shared
+ENT.Base = "base_anim"
 ENT.Type = "anim"
 ENT.RenderGroup = RENDERGROUP_BOTH
 
 ENT.AutomaticFrameAdvance = true
 
+--Server
 ENT.Model = "models/survivors/L4D2_Human_base.mdl"
+ENT.Owner = nil
 
-ENT.veloX = 0
-ENT.veloY = 0
+ENT.moveX = 0
+ENT.moveY = 0
 
 ENT.bodyX = 0
 ENT.bodyY = 0
@@ -19,28 +22,22 @@ ENT.bIsBeingPounced = false
 ENT.bIsBeingPounded = false
 ENT.bIsBeingShredded = false
 
-ENT.nextAnimTime = -1
-
 if SERVER then
     function ENT:Initialize()
-        self.nextAnimTime = CurTime()
+        self:SetRenderMode(1)
+        self:SetColor(Color(0, 0, 0, 0))
+        self.Owner = self:GetOwner()
     end
 
     function ENT:Think()
         if self.bIsBeingPounced then
-            self:SetPoseParameter("move_x", self.veloX)
-            self:SetPoseParameter("move_y", self.veloY)
+            self:SetPoseParameter("move_x", math.Round(self.moveX))
+            self:SetPoseParameter("move_y", math.Round(self.moveY))
+            self:SetPoseParameter("jockey_x", math.Round(self.moveX))
+            self:SetPoseParameter("jockey_y", math.Round(self.moveY))
         end
 
-        if self.bIsBeingDragged then
-            if self.nextAnimTime >= CurTime() then
-                self:ResetSequence(self:LookupSequence("Idle_Tongued_Dragging_Ground"))
-                self:ResetSequenceInfo()
-                self:SetCycle(0)
-                self.nextAnimTime = CurTime() + self:SequenceDuration(self:LookupSequence("Idle_Tongued_Dragging_Ground"))
-            end
-        end
-
-        self:NextThink(0.01)
+        self:NextThink(CurTime())
+        return true
     end
 end
