@@ -101,6 +101,8 @@ ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/boomerbacteria.wav","vj_l4d2/mu
 ENT.BacteriaSound = nil
 ENT.Vomited_Enemies = {}
 ENT.Attracted_Zombies = {}
+ENT.IsTakingCover = false
+ENT.NextRunAway = CurTime()
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -170,6 +172,12 @@ function ENT:ManageHUD(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+	if self.VJ_IsBeingControlled == false then
+        if self.IsTakingCover == true && CurTime() > self.NextRunAway then 
+            self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
+            self.NextRunAway = CurTime() +1
+        end
+    end
 	self:ManageHUD(self.VJ_TheController)
     if self.VJ_IsBeingControlled == true then
     	if self.VJ_TheController:KeyDownLast(IN_USE) then
@@ -380,6 +388,16 @@ function ENT:VomitEnemy(v)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode()
+    timer.Simple(1,function()
+        if IsValid(self) then
+            self.IsTakingCover = true
+        end
+    end)
+	timer.Simple(self.NextRangeAttackTime,function()
+		if IsValid(self) then
+			self.IsTakingCover = false
+		end
+	end)
     for _, x in ipairs(ents.FindInSphere(self:GetPos(),445)) do
         if IsValid(x) && IsValid(self) then
             table.insert(self.Vomited_Enemies,x)
