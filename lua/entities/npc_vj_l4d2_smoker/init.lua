@@ -63,11 +63,11 @@ ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward"}}}
     -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
-ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.wav","vj_l4d2/footsteps/infected/run/concrete2.wav","vj_l4d2/footsteps/infected/run/concrete3.wav","vj_l4d2/footsteps/infected/run/concrete4.wav"}
+ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.mp3","vj_l4d2/footsteps/infected/run/concrete2.mp3","vj_l4d2/footsteps/infected/run/concrete3.mp3","vj_l4d2/footsteps/infected/run/concrete4.mp3"}
 ENT.SoundTbl_Idle = {"SmokerZombie.Breathe"}
 ENT.SoundTbl_Alert = {"SmokerZombie.Recognize","SmokerZombie.Alert"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
-ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.wav","vj_l4d2/pz/hit/claw_hit_flesh_2.wav","vj_l4d2/pz/hit/claw_hit_flesh_3.wav","vj_l4d2/pz/hit/claw_hit_flesh_4.wav"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
+ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.mp3","vj_l4d2/pz/hit/claw_hit_flesh_2.mp3","vj_l4d2/pz/hit/claw_hit_flesh_3.mp3","vj_l4d2/pz/hit/claw_hit_flesh_4.mp3"}
 ENT.SoundTbl_BeforeMeleeAttack = {"SmokerZombie.Attack"}
 ENT.SoundTbl_RangeAttack= {"SmokerZombie.TongueAttack"}
 ENT.SoundTbl_BeforeRangeAttack = {"SmokerZombie.Warn","SmokerZombie.Recognize"}
@@ -95,7 +95,7 @@ ENT.UseTheSameGeneralSoundPitch = false
 -- Custom --
 ENT.IsGhosted = false
 ENT.BacteriaSound = nil
-ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/smokerbacteria.wav","vj_l4d2/music/bacteria/smokerbacterias.wav"}
+ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/smokerbacteria.mp3","vj_l4d2/music/bacteria/smokerbacterias.mp3"}
 ENT.nEntityIndex = -1 --this is for identifying timers unique to each hunter in the world
 ENT.IncapacitationRange = 50 --how close can he be to incapacitate his enemies?
 ENT.HasEnemyIncapacitated = false --is he in range of being incapacitated?
@@ -113,8 +113,8 @@ ENT.IsEnemyStuck = false
 ENT.IsEnemyFloating = false
 ENT.pEnemyCamera = nil
 ENT.NextTongueSpawn = CurTime()
-ENT.SoundTbl_Incapacitation_Tied = {"vj_l4d2/music/terror/tonguetied.wav"}
-ENT.SoundTbl_Incapacitation_Incap = {"vj_l4d2/music/special_attacks/asphyxiation.wav"} 
+ENT.SoundTbl_Incapacitation_Tied = {"vj_l4d2/music/terror/tonguetied.mp3"}
+ENT.SoundTbl_Incapacitation_Incap = {"vj_l4d2/music/special_attacks/asphyxiation.mp3"} 
 ENT.BacteriaSound = nil
 ENT.IncapSong = nil
 ENT.IncapSong2 = nil
@@ -250,7 +250,7 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
                     applyDmg:SetInflictor(incapent)
                     applyDmg:SetAttacker(self)
                     incapent:TakeDamage(2,self,incapent)
-                    VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"},65,self:VJ_DecideSoundPitch(100,100))
+                    VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"},65,self:VJ_DecideSoundPitch(100,100))
                 end
             end
         end
@@ -743,7 +743,7 @@ function ENT:CustomOnThink()
                     self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
                     for k, v in ipairs(ents.FindByClass("player")) do
                         if enemy:IsNPC() then
-                            VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.wav",95,self:VJ_DecideSoundPitch(100,100))
+                            VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
                         end
                     end
                     if enemy:IsPlayer() then
@@ -957,7 +957,7 @@ function ENT:UnSetGhost(bool)
     self.VJ_NoTarget = false
     self.DisableMakingSelfEnemyToNPCs = false
     self:SetRenderMode(RENDERMODE_NORMAL)
-    self:EmitSound("ui/pickup_guitarriff10.wav")
+    self:EmitSound("ui/pickup_guitarriff10.mp3")
     self.HasSounds = true
     self.HasMeleeAttack = true
     self.HasRangeAttack = true
@@ -972,7 +972,7 @@ function ENT:SetGhost(bool)
     self.VJ_NoTarget = true
     self.DisableMakingSelfEnemyToNPCs = true
     self:SetRenderMode(RENDERMODE_NONE)
-    self:EmitSound("ui/menu_horror01.wav")
+    self:EmitSound("ui/menu_horror01.mp3")
     self.HasSounds = false
     self.HasMeleeAttack = false
     self.HasRangeAttack = false
@@ -1071,7 +1071,7 @@ function ENT:CustomOnRangeAttack_BeforeStartTimer(seed)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
-    timer.Simple(0.5,function() if IsValid(self) then VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/smoker/miss/smoker_reeltonguein_01.wav","player/smoker/miss/smoker_reeltonguein_02.wav","player/smoker/miss/smoker_reeltonguein_03.wav","player/smoker/miss/smoker_reeltonguein_04.wav","player/smoker/miss/smoker_reeltonguein_05.wav"}),self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100)) end end)
+    timer.Simple(0.5,function() if IsValid(self) then VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/smoker/miss/smoker_reeltonguein_01.mp3","player/smoker/miss/smoker_reeltonguein_02.mp3","player/smoker/miss/smoker_reeltonguein_03.mp3","player/smoker/miss/smoker_reeltonguein_04.mp3","player/smoker/miss/smoker_reeltonguein_05.mp3"}),self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100)) end end)
     timer.Simple(1,function() 
         if IsValid(self) && !IsValid(self.pIncapacitatedEnemy) then 
            if self:GetClass() == "npc_vj_l4d2_smoker" then
