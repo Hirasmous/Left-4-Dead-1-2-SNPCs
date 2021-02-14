@@ -14,7 +14,7 @@ ENT.Damage = 45
 ENT.DamageDistance = 200
 ENT.Dead = false
 ENT.Owner = nil 
-ENT.SoundTbl_Idle = {"player/spitter/swarm/spitter_acid_fadeout.wav","player/spitter/swarm/spitter_acid_fadeout2.wav"}
+ENT.SoundTbl_Idle = {"player/spitter/swarm/spitter_acid_fadeout.mp3","player/spitter/swarm/spitter_acid_fadeout2.mp3"}
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	ParticleEffect("spitter_areaofdenial",self:GetPos() +self:GetUp()*2,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil) 
@@ -39,7 +39,7 @@ function ENT:CustomOnThink()
 			if v:IsNPC() || v:IsNextBot() || (v:IsPlayer() && v:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0) then
 				if v:IsNPC() && (v:Classify() == CLASS_ZOMBIE || v.IsVJBaseSNPC && table.HasValue(v.VJ_NPC_Class, "CLASS_ZOMBIE")) then return end
 		    if math.random(1,5) == 5 then
-			    VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"}),65,math.random(100,100))
+			    VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"}),65,math.random(100,100))
 			    v:TakeDamage(math.random(5, 10), self:GetOwner() or self, self:GetOwner() or self)
 			end
 		end
