@@ -59,7 +59,7 @@ Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
 - You have to click IN_USE many times before ghosting turns on ✅
 - Smoker doesn't stop incapping after the enemy dies ✅
-- Too many smoker_tongue_fall particles spawn when smoker misses or is killed after incapping
+- Too many smoker_tongue_fall particles spawn when smoker misses or is killed while incapping
 
 ConVars:
 -Should incapped NPC enemies drop their weapons? ✅
