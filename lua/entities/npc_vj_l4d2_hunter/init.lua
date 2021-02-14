@@ -65,21 +65,21 @@ ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward_01"}}}
     -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
---ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.wav","player/footsteps/infected/run/concrete2.wav","player/footsteps/infected/run/concrete3.wav","player/footsteps/infected/run/concrete4.wav"}
-ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.wav","vj_l4d2/footsteps/infected/run/concrete2.wav","vj_l4d2/footsteps/infected/run/concrete3.wav","vj_l4d2/footsteps/infected/run/concrete4.wav"}
+--ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.mp3","player/footsteps/infected/run/concrete2.mp3","player/footsteps/infected/run/concrete3.mp3","player/footsteps/infected/run/concrete4.mp3"}
+ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.mp3","vj_l4d2/footsteps/infected/run/concrete2.mp3","vj_l4d2/footsteps/infected/run/concrete3.mp3","vj_l4d2/footsteps/infected/run/concrete4.mp3"}
 ENT.SoundTbl_Idle = {"HunterZombie.Voice","HunterZombie.Growl"}
 ENT.SoundTbl_Alert = {"HunterZombie.Alert"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
-ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.wav","vj_l4d2/pz/hit/claw_hit_flesh_2.wav","vj_l4d2/pz/hit/claw_hit_flesh_3.wav","vj_l4d2/pz/hit/claw_hit_flesh_4.wav"}
-ENT.SoundTbl_BeforeMeleeAttack = {"player/pz/voice/attack/zombiedog_attack1.wav","player/pz/voice/attack/zombiedog_attack2.wav","player/pz/voice/attack/zombiedog_attack3.wav"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
+ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.mp3","vj_l4d2/pz/hit/claw_hit_flesh_2.mp3","vj_l4d2/pz/hit/claw_hit_flesh_3.mp3","vj_l4d2/pz/hit/claw_hit_flesh_4.mp3"}
+ENT.SoundTbl_BeforeMeleeAttack = {"player/pz/voice/attack/zombiedog_attack1.mp3","player/pz/voice/attack/zombiedog_attack2.mp3","player/pz/voice/attack/zombiedog_attack3.mp3"}
 ENT.SoundTbl_BeforeLeapAttack = {"HunterZombie.Warn"}
 ENT.SoundTbl_LeapAttackDamageMiss = {"HunterZombie.Pounce.Miss"}
 ENT.SoundTbl_LeapAttackJump = {"HunterZombie.Pounce"}
-ENT.SoundTbl_LeapAttackDamage = {"player/hunter/hit/tackled_1.wav"}
+ENT.SoundTbl_LeapAttackDamage = {"player/hunter/hit/tackled_1.mp3"}
 ENT.SoundTbl_Pain = {"HunterZombie.Pain"}
 ENT.SoundTbl_Death = {"HunterZombie.Death"}
 ENT.SoundTbl_HunterPounceMiss = {"HunterZombie.Pounce.Miss"}
-ENT.SoundTbl_Shred = {"player/hunter/voice/attack/hunter_shred_01.wav", "player/hunter/voice/attack/hunter_shred_02.wav", "player/hunter/voice/attack/hunter_shred_03.wav", "player/hunter/voice/attack/hunter_shred_04.wav", "player/hunter/voice/attack/hunter_shred_05.wav", "player/hunter/voice/attack/hunter_shred_06.wav", "player/hunter/voice/attack/hunter_shred_07.wav", "player/hunter/voice/attack/hunter_shred_08.wav", "player/hunter/voice/attack/hunter_shred_09.wav", "player/hunter/voice/attack/hunter_shred_10.wav", "player/hunter/voice/attack/hunter_shred_11.wav", "player/hunter/voice/attack/hunter_shred_12.wav"}
+ENT.SoundTbl_Shred = {"player/hunter/voice/attack/hunter_shred_01.mp3", "player/hunter/voice/attack/hunter_shred_02.mp3", "player/hunter/voice/attack/hunter_shred_03.mp3", "player/hunter/voice/attack/hunter_shred_04.mp3", "player/hunter/voice/attack/hunter_shred_05.mp3", "player/hunter/voice/attack/hunter_shred_06.mp3", "player/hunter/voice/attack/hunter_shred_07.mp3", "player/hunter/voice/attack/hunter_shred_08.mp3", "player/hunter/voice/attack/hunter_shred_09.mp3", "player/hunter/voice/attack/hunter_shred_10.mp3", "player/hunter/voice/attack/hunter_shred_11.mp3", "player/hunter/voice/attack/hunter_shred_12.mp3"}
 ENT.NextSoundTime_Idle1 = 1
 ENT.NextSoundTime_Idle2 = 2
 ENT.IdleSoundChance = 2
@@ -110,8 +110,8 @@ ENT.pIncapacitatedEnemy = nil --the enemy that is incapacitated
 ENT.pEnemyRagdoll = nil --the incapacitated enemy's ragdoll
 ENT.IncapAnimation = "Melee_Pounce"
 ENT.vecLastPos = Vector(0, 0, 0)
-ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/hunterbacteria.wav","vj_l4d2/music/bacteria/hunterbacterias.wav"}
-ENT.SoundTbl_Incapacitation = {"vj_l4d2/music/special_attacks/exenteration.wav"}
+ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/hunterbacteria.mp3","vj_l4d2/music/bacteria/hunterbacterias.mp3"}
+ENT.SoundTbl_Incapacitation = {"vj_l4d2/music/special_attacks/exenteration.mp3"}
 ENT.BacteriaSound = nil
 ENT.IncapSong = nil
 ENT.IsGhosted = false
@@ -285,7 +285,7 @@ function ENT:UnSetGhost(bool)
     self.VJ_NoTarget = false
     self.DisableMakingSelfEnemyToNPCs = false
     self:SetRenderMode(RENDERMODE_NORMAL)
-    self:EmitSound("ui/pickup_guitarriff10.wav")
+    self:EmitSound("ui/pickup_guitarriff10.mp3")
     self.HasSounds = true
     self.HasMeleeAttack = true
 end
@@ -298,7 +298,7 @@ function ENT:SetGhost(bool)
     self.VJ_NoTarget = true
     self.DisableMakingSelfEnemyToNPCs = true
     self:SetRenderMode(RENDERMODE_NONE)
-    self:EmitSound("ui/menu_horror01.wav")
+    self:EmitSound("ui/menu_horror01.mp3")
     self.HasSounds = false
     self.HasMeleeAttack = false
 end
@@ -516,7 +516,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
                                 camera:SetParent(self)
                                 camera:Fire("SetParentAttachment","camera_att")
                                 self:DeleteOnRemove(camera)
-                                VJ_CreateSound(v,"player/hunter/hit/tackled_1.wav",75,self:VJ_DecideSoundPitch(100,100))
+                                VJ_CreateSound(v,"player/hunter/hit/tackled_1.mp3",75,self:VJ_DecideSoundPitch(100,100))
                 				if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
                 				    local dist = self:GetPos():Distance(enemy:GetPos())
                 				    if dist <= self.IncapacitationRange then
@@ -659,7 +659,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 					                    end)
 					                    for k, v in ipairs(ents.FindByClass("player")) do
 										    if enemy:IsNPC() then
-										    	VJ_CreateSound(v,"vj_l4d2/music/tags/exenterationhit.wav",95,self:VJ_DecideSoundPitch(100,100))
+										    	VJ_CreateSound(v,"vj_l4d2/music/tags/exenterationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
 										    end
 										end
 					                end
