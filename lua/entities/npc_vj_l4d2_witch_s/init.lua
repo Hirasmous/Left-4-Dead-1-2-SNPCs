@@ -58,14 +58,14 @@ ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shove
 ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkLeft","Boomer.Concrete.WalkRight"}
 ENT.SoundTbl_Idle = {"WitchZombie.Despair"}
 -- ENT.SoundTbl_Breath = {
-    -- "music/witch/lost_little_witch_01a.mp3",
-    -- "music/witch/lost_little_witch_01b.mp3",
-    -- "music/witch/lost_little_witch_02a.mp3",
-    -- "music/witch/lost_little_witch_02b.mp3",
-    -- "music/witch/lost_little_witch_03a.mp3",
-    -- "music/witch/lost_little_witch_03b.mp3",
-    -- "music/witch/lost_little_witch_04a.mp3",
-    -- "music/witch/lost_little_witch_04b.mp3",
+    -- "vj_l4d2/music/witch/lost_little_witch_01a.mp3",
+    -- "vj_l4d2/music/witch/lost_little_witch_01b.mp3",
+    -- "vj_l4d2/music/witch/lost_little_witch_02a.mp3",
+    -- "vj_l4d2/music/witch/lost_little_witch_02b.mp3",
+    -- "vj_l4d2/music/witch/lost_little_witch_03a.mp3",
+    -- "vj_l4d2/music/witch/lost_little_witch_03b.mp3",
+    -- "vj_l4d2/music/witch/lost_little_witch_04a.mp3",
+    -- "vj_l4d2/music/witch/lost_little_witch_04b.mp3",
 -- }
 ENT.SoundTbl_CombatIdle = {"WitchZombie.Rage"}
 ENT.SoundTbl_Alert = {
@@ -107,9 +107,9 @@ ENT.UseTheSameGeneralSoundPitch = false
 --- Custom ---
 ENT.Witch_CanGroan = true
 ENT.Witch_State = 2 --- (1 - Wander) (2 - Sitting)
-ENT.SoundTrack = {"music/witch/witchencroacher.mp3"}
-ENT.SoundTrack_Chase = {"music/witch/psychowitch.mp3"}
-ENT.SoundTrack_Burning = {"music/witch/witchroast.mp3"}
+ENT.SoundTrack = {"vj_l4d2/music/witch/witchencroacher.mp3"}
+ENT.SoundTrack_Chase = {"vj_l4d2/music/witch/psychowitch.mp3"}
+ENT.SoundTrack_Burning = {"vj_l4d2/music/witch/witchroast.mp3"}
 
 util.AddNetworkString("L4D2WitchHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -119,13 +119,13 @@ function ENT:CustomOnInitialize()
     self.IsGroaningLow = false
     self.IsGroaningMedium = false
     self.IsGroaningHigh = false
-    self.soundtrack = CreateSound(self, "music/witch/witchencroacher.mp3") 
+    self.soundtrack = CreateSound(self, "vj_l4d2/music/witch/witchencroacher.mp3") 
     self.soundtrack:SetSoundLevel(75)
     self.soundtrack:Play()
     for _, x in ipairs(player.GetAll()) do
-        self.soundtrack_chase = CreateSound(x, "music/witch/psychowitch.mp3") 
+        self.soundtrack_chase = CreateSound(x, "vj_l4d2/music/witch/psychowitch.mp3") 
         self.soundtrack_chase:SetSoundLevel(100)
-        self.soundtrack_burning = CreateSound(x, "music/witch/witchroast.mp3") 
+        self.soundtrack_burning = CreateSound(x, "vj_l4d2/music/witch/witchroast.mp3") 
         self.soundtrack_burning:SetSoundLevel(100)
     end
 end
