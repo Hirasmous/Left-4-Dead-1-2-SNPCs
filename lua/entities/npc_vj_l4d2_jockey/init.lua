@@ -312,8 +312,10 @@ function ENT:CustomOnThink()
 	end
 	if self.IsGhosted then
         self.CanIncap = false
+        self.HasLeapAttack = false
     else
         self.CanIncap = true
+	self.HasLeapAttack = true
     end
 
 	self.vecLastPos = self:GetPos()
