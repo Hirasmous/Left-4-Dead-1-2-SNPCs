@@ -6,8 +6,8 @@ include("shared.lua")
 	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
 	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
-ENT.TouchSound = Sound("player/smoker/hit/tongue_hit_1.wav")
-ENT.SoundTbl_Idle = {"player/smoker/attack/tongue_fly_loop.wav"}
+ENT.TouchSound = Sound("player/smoker/hit/tongue_hit_1.mp3")
+ENT.SoundTbl_Idle = {"player/smoker/attack/tongue_fly_loop.mp3"}
 ENT.TouchSoundv = 80
 ENT.DeathIdleSoundv = 90
 ENT.Decal = "vj_acidslime1"
@@ -61,7 +61,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 
     if IsValid(self) then
         if IsValid(data.HitEntity) then
-            VJ_CreateSound(data.HitEntity,VJ_PICKRANDOMTABLE({"player/smoker/voice/attack/smoker_tonguehit_01.wav","player/smoker/voice/attack/smoker_tonguehit_02.wav"}),95,owner:VJ_DecideSoundPitch(100,100))
+            VJ_CreateSound(data.HitEntity,VJ_PICKRANDOMTABLE({"player/smoker/voice/attack/smoker_tonguehit_01.mp3","player/smoker/voice/attack/smoker_tonguehit_02.mp3"}),95,owner:VJ_DecideSoundPitch(100,100))
         elseif !IsValid(data.HitEntity) then
 	    if owner.HasEnemyIncapacitated == false then
                 owner.IsTakingCover = true
@@ -77,7 +77,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                 end)
             end
             util.ParticleTracerEx("smoker_tongue_new_fall", owner:GetPos(), self:GetPos(), false, owner:EntIndex(), 3)
-            VJ_CreateSound(self,VJ_PICKRANDOMTABLE({"player/smoker/hit/tongue_hit_1.wav"}),95,owner:VJ_DecideSoundPitch(100,100))
+            VJ_CreateSound(self,VJ_PICKRANDOMTABLE({"player/smoker/hit/tongue_hit_1.mp3"}),95,owner:VJ_DecideSoundPitch(100,100))
         end
     end
     -- Removes
@@ -144,7 +144,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 
                     for k, v in ipairs(ents.FindByClass("player")) do
                         if data.HitEntity:IsNPC() then
-                            VJ_CreateSound(v,"vj_l4d2/music/tags/tonguetiedhit.wav",95,owner:VJ_DecideSoundPitch(100,100))
+                            VJ_CreateSound(v,"vj_l4d2/music/tags/tonguetiedhit.mp3",95,owner:VJ_DecideSoundPitch(100,100))
                         end
                     end
                     local camera = ents.Create("prop_dynamic")
