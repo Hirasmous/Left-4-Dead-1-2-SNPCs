@@ -54,6 +54,7 @@ General:
 -Witch HUD ✅
 -Make HUD fit any screen size
 -Bacteria cuts short for some specials (jockey & hunter for sure)
+-Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops)
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
