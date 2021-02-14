@@ -25,7 +25,7 @@ Jockey:
 -Disable sounds when incapping
 
 Smoker:
--Incapped enemy pose params
+-Incapped enemy pose params ✅
 -Collision for tongue (lerp mouth att pos & enemy pos) ✅
 -Fix Cloud smoke damaging Smoker
 -Fix cant incap when being controlled ✅
