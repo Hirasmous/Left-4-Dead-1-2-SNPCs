@@ -114,6 +114,7 @@ ENT.GhostRunAwayT = CurTime()
 ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
+ENT.CanIncap = true
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
@@ -310,9 +311,9 @@ function ENT:CustomOnThink()
 		self:Ghost()
 	end
 	if self.IsGhosted then
-        self.HasLeapAttack = false
+        self.CanIncap = false
     else
-        self.HasLeapAttack = true
+        self.CanIncap = true
     end
 
 	self.vecLastPos = self:GetPos()
@@ -422,7 +423,7 @@ function ENT:CustomOnThink()
 		self:ResetJockey()
 	end
 
-	if self.IsPouncing == true && self.HasEnemyIncapacitated == false then
+	if self.IsPouncing == true && self.HasEnemyIncapacitated == false && self.CanIncap then
 		for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
 			if IsValid(v) then
 				if (v:IsPlayer() && v:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0) or (v:IsNPC() && v ~= self) then
