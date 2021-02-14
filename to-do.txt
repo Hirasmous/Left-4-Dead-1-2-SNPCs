@@ -38,6 +38,7 @@ Smoker:
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
 -Don't play spitter goo music for players that are controlling specials
+-Don't play spitter goo music for goo that spawns on spitter's death
 
 Tank:
 -Fix textures not being applied to model ✅
