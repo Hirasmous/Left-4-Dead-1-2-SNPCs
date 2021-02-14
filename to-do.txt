@@ -17,9 +17,10 @@ Hunter:
 -Not make boomer bile damage enemy
 
 Jockey:
--Directional movement for incapped mdl
--Add updated IsEntityAlly() func
--Add updated StripEnemyWeapons() func
+-Directional movement for incapped mdl ✅
+-Add updated IsEntityAlly() func ✅
+-Add updated StripEnemyWeapons() func ✅
+-Player's view is zoomed in after jockey stops incapping
 
 Smoker:
 -Incapped enemy pose params
@@ -62,3 +63,7 @@ ConVars:
 -Spitter goo damage ✅
 -Other incap damage ✅
 
+Before release:
+-Make HUD fit any screen size
+-Better jockey control
+-Improve witch (i.e. add special pose params)
