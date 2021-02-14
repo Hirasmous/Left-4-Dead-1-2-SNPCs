@@ -21,6 +21,7 @@ Jockey:
 -Add updated IsEntityAlly() func ✅
 -Add updated StripEnemyWeapons() func ✅
 -Player's view is zoomed in after jockey stops incapping
+-Disable sounds when incapping
 
 Smoker:
 -Incapped enemy pose params
