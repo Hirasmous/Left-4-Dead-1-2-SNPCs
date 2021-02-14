@@ -94,7 +94,7 @@ ENT.UseTheSameGeneralSoundPitch = false
 -- Custom --
 ENT.IsGhosted = false
 ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/jockeybacteria.mp3","vj_l4d2/music/bacteria/jockeybacterias.mp3"}
-ENT.SoundTbl_Incapacitation = {"music/pzattack/vassalation.mp3"}
+ENT.SoundTbl_Incapacitation = {"vj_l4d2/music/pzattack/vassalation.mp3"}
 ENT.SoundTbl_Vassal = {"player/jockey/voice/attack/jockey_attackloop01.mp3", "player/jockey/voice/attack/jockey_attackloop02.mp3", "player/jockey/voice/attack/jockey_attackloop03.mp3", "player/jockey/voice/attack/jockey_attackloop04.mp3"}
 ENT.BacteriaSound = nil
 ENT.IncapSong = nil
