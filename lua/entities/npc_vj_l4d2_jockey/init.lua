@@ -67,11 +67,11 @@ ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shove
 ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkLeft","Boomer.Concrete.WalkRight"}
 ENT.SoundTbl_Idle = {"JockeyZombie.Recognize"}
 ENT.SoundTbl_Alert = {"JockeyZombie.Alert","JockeyZombie.Warn"}
-ENT.SoundTbl_LeapAttackDamage = {"player/pz/hit/zombie_slice_1.wav","player/pz/hit/zombie_slice_2.wav","player/pz/hit/zombie_slice_3.wav","player/pz/hit/zombie_slice_4.wav","player/pz/hit/zombie_slice_5.wav","player/pz/hit/zombie_slice_6.wav"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
-ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.wav","vj_l4d2/pz/hit/claw_hit_flesh_2.wav","vj_l4d2/pz/hit/claw_hit_flesh_3.wav","vj_l4d2/pz/hit/claw_hit_flesh_4.wav"}
+ENT.SoundTbl_LeapAttackDamage = {"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
+ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.mp3","vj_l4d2/pz/hit/claw_hit_flesh_2.mp3","vj_l4d2/pz/hit/claw_hit_flesh_3.mp3","vj_l4d2/pz/hit/claw_hit_flesh_4.mp3"}
 ENT.SoundTbl_LeapAttackJump = {"JockeyZombie.Alert","JockeyZombie.Warn"}
-ENT.SoundTbl_LeapAttackDamageMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
+ENT.SoundTbl_LeapAttackDamageMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
 ENT.SoundTbl_Pain = {"JockeyZombie.Pain"}
 ENT.SoundTbl_Death = {"JockeyZombie.Death"}
 
@@ -93,9 +93,9 @@ ENT.UseTheSameGeneralSoundPitch = false
 
 -- Custom --
 ENT.IsGhosted = false
-ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/jockeybacteria.wav","vj_l4d2/music/bacteria/jockeybacterias.wav"}
-ENT.SoundTbl_Incapacitation = {"music/pzattack/vassalation.wav"}
-ENT.SoundTbl_Vassal = {"player/jockey/voice/attack/jockey_attackloop01.wav", "player/jockey/voice/attack/jockey_attackloop02.wav", "player/jockey/voice/attack/jockey_attackloop03.wav", "player/jockey/voice/attack/jockey_attackloop04.wav"}
+ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/jockeybacteria.mp3","vj_l4d2/music/bacteria/jockeybacterias.mp3"}
+ENT.SoundTbl_Incapacitation = {"music/pzattack/vassalation.mp3"}
+ENT.SoundTbl_Vassal = {"player/jockey/voice/attack/jockey_attackloop01.mp3", "player/jockey/voice/attack/jockey_attackloop02.mp3", "player/jockey/voice/attack/jockey_attackloop03.mp3", "player/jockey/voice/attack/jockey_attackloop04.mp3"}
 ENT.BacteriaSound = nil
 ENT.IncapSong = nil
 ENT.CanPlayIncapSong = true
@@ -872,7 +872,7 @@ function ENT:UnSetGhost(bool)
     self.VJ_NoTarget = false
     self.DisableMakingSelfEnemyToNPCs = false
     self:SetRenderMode(RENDERMODE_NORMAL)
-    self:EmitSound("ui/pickup_guitarriff10.wav")
+    self:EmitSound("ui/pickup_guitarriff10.mp3")
     self.HasSounds = true
     self.HasMeleeAttack = true
     self.HasLeapAttack = true
@@ -886,7 +886,7 @@ function ENT:SetGhost(bool)
     self.VJ_NoTarget = true
     self.DisableMakingSelfEnemyToNPCs = true
     self:SetRenderMode(RENDERMODE_NONE)
-    self:EmitSound("ui/menu_horror01.wav")
+    self:EmitSound("ui/menu_horror01.mp3")
     self.HasSounds = false
     self.HasMeleeAttack = false
     self.HasLeapAttack = false
