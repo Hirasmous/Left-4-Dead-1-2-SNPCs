@@ -32,6 +32,7 @@ Smoker:
 -Drag enemies off of ledges
 -Reset recharge after DismountSmoker() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 -Prevent smoke cloud from damaging altogether; add smoke overlay  effect
+-Add dangling animations for incapped enemy when it's off ground
 
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
@@ -58,6 +59,7 @@ Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
 - You have to click IN_USE many times before ghosting turns on ✅
 - Smoker doesn't stop incapping after the enemy dies ✅
+- Too many smoker_tongue_fall particles spawn when smoker misses or is killed after incapping
 
 ConVars:
 -Should incapped NPC enemies drop their weapons? ✅
