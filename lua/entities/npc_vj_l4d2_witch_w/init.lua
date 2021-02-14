@@ -55,23 +55,23 @@ ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shove
 ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkLeft","Boomer.Concrete.WalkRight"}
 ENT.SoundTbl_Idle = {"WanderWitchZombie.Despair"}
 ENT.SoundTbl_Breath = {
-    "music/witch/lost_little_witch_01a.wav",
-    "music/witch/lost_little_witch_01b.wav",
-    "music/witch/lost_little_witch_02a.wav",
-    "music/witch/lost_little_witch_02b.wav",
-    "music/witch/lost_little_witch_03a.wav",
-    "music/witch/lost_little_witch_03b.wav",
-    "music/witch/lost_little_witch_04a.wav",
-    "music/witch/lost_little_witch_04b.wav",
+    "music/witch/lost_little_witch_01a.mp3",
+    "music/witch/lost_little_witch_01b.mp3",
+    "music/witch/lost_little_witch_02a.mp3",
+    "music/witch/lost_little_witch_02b.mp3",
+    "music/witch/lost_little_witch_03a.mp3",
+    "music/witch/lost_little_witch_03b.mp3",
+    "music/witch/lost_little_witch_04a.mp3",
+    "music/witch/lost_little_witch_04b.mp3",
 }
 ENT.SoundTbl_CombatIdle = {"WitchZombie.Rage"}
 ENT.SoundTbl_Alert = {
-	"npc/witch/voice/attack/female_distantscream1.wav",
-	"npc/witch/voice/attack/female_distantscream2.wav",
+	"npc/witch/voice/attack/female_distantscream1.mp3",
+	"npc/witch/voice/attack/female_distantscream2.mp3",
 }
 ENT.SoundTbl_Surprised = {"WitchZombie.Surprised"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
-ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.wav","vj_l4d2/pz/hit/claw_hit_flesh_2.wav","vj_l4d2/pz/hit/claw_hit_flesh_3.wav","vj_l4d2/pz/hit/claw_hit_flesh_4.wav"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
+ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.mp3","vj_l4d2/pz/hit/claw_hit_flesh_2.mp3","vj_l4d2/pz/hit/claw_hit_flesh_3.mp3","vj_l4d2/pz/hit/claw_hit_flesh_4.mp3"}
 ENT.SoundTbl_BeforeMeleeAttack = {"WitchZombie.Rage"}
 ENT.SoundTbl_Pain = {"WitchZombie.Pain"}
 ENT.SoundTbl_KilledEnemy = {"WitchZombie.RetreatHorror"}
@@ -106,9 +106,9 @@ ENT.UseTheSameGeneralSoundPitch = false
 --- Custom ---
 ENT.Witch_CanGroan = true
 ENT.Witch_State = 1 --- (1 - Wander) (2 - Sitting)
-ENT.SoundTrack = {"music/witch/witchencroacher.wav"}
-ENT.SoundTrack_Chase = {"music/witch/psychowitch.wav"}
-ENT.SoundTrack_Burning = {"music/witch/witchroast.wav"}
+ENT.SoundTrack = {"music/witch/witchencroacher.mp3"}
+ENT.SoundTrack_Chase = {"music/witch/psychowitch.mp3"}
+ENT.SoundTrack_Burning = {"music/witch/witchroast.mp3"}
 
 util.AddNetworkString("L4D2WitchHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -119,16 +119,16 @@ function ENT:CustomOnInitialize()
     self.IsGroaningMedium = false
     self.IsGroaningHigh = false
     for _, x in ipairs(player.GetAll()) do
-        self.soundtrack_chase = CreateSound(x, "music/witch/psychowitch.wav") 
+        self.soundtrack_chase = CreateSound(x, "music/witch/psychowitch.mp3") 
         self.soundtrack_chase:SetSoundLevel(100)
-        self.soundtrack_burning = CreateSound(x, "music/witch/witchroast.wav") 
+        self.soundtrack_burning = CreateSound(x, "music/witch/witchroast.mp3") 
         self.soundtrack_burning:SetSoundLevel(100)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    ply:EmitSound("ui/menu_horror01.wav")
-    ply:EmitSound("ui/pickup_guitarriff10.wav")
+    ply:EmitSound("ui/menu_horror01.mp3")
+    ply:EmitSound("ui/pickup_guitarriff10.mp3")
     net.Start("L4D2WitchHUD")
         net.WriteBool(false)
         net.WriteEntity(self)
@@ -273,7 +273,7 @@ function ENT:CustomOnThink()
         self.Alerted = false
         self.Behavior = VJ_BEHAVIOR_NEUTRAL
         self.VJ_NoTarget = true
-        self.SoundTbl_Breath = {"music/witch/lost_little_witch_01a.wav","music/witch/lost_little_witch_01b.wav","music/witch/lost_little_witch_02a.wav","music/witch/lost_little_witch_02b.wav","music/witch/lost_little_witch_03a.wav","music/witch/lost_little_witch_03b.wav","music/witch/lost_little_witch_04a.wav","music/witch/lost_little_witch_04b.wav"}
+        self.SoundTbl_Breath = {"music/witch/lost_little_witch_01a.mp3","music/witch/lost_little_witch_01b.mp3","music/witch/lost_little_witch_02a.mp3","music/witch/lost_little_witch_02b.mp3","music/witch/lost_little_witch_03a.mp3","music/witch/lost_little_witch_03b.mp3","music/witch/lost_little_witch_04a.mp3","music/witch/lost_little_witch_04b.mp3"}
     end
     if self:IsOnFire() && self.Immune_Fire == false then
     	self.SoundTbl_Breath = {}
@@ -294,7 +294,7 @@ function ENT:CustomOnThink()
             self.SoundTbl_Breath = {}
         else
             VJ_STOPSOUND(self.soundtrack_chase)
-            self.SoundTbl_Breath = {"music/witch/lost_little_witch_01a.wav","music/witch/lost_little_witch_01b.wav","music/witch/lost_little_witch_02a.wav","music/witch/lost_little_witch_02b.wav","music/witch/lost_little_witch_03a.wav","music/witch/lost_little_witch_03b.wav","music/witch/lost_little_witch_04a.wav","music/witch/lost_little_witch_04b.wav"}
+            self.SoundTbl_Breath = {"music/witch/lost_little_witch_01a.mp3","music/witch/lost_little_witch_01b.mp3","music/witch/lost_little_witch_02a.mp3","music/witch/lost_little_witch_02b.mp3","music/witch/lost_little_witch_03a.mp3","music/witch/lost_little_witch_03b.mp3","music/witch/lost_little_witch_04a.mp3","music/witch/lost_little_witch_04b.mp3"}
         end
     end
     for k, x in ipairs(ents.FindInSphere(self:GetPos(),150)) do
