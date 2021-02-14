@@ -4,7 +4,7 @@ Boomette:
 Charger:
 -Add shove code to repo ✅
 -Keep charging until he hits a wall or travels certain dist ✅
--Can pound the bullseye entity when being controlled (is this fixed?)
+-Can pound the bullseye entity when being controlled (is this fixed?) ✅
 -Make the recharge for pounding less time?
 -Make it carry players until it hits a wall or travels a certain distance
 -Charger doesn't incap player if player is moving backwards (sometimes)
@@ -15,7 +15,7 @@ Hunter:
 -Properly implement shove anims ✅
 -Proper crouch charging 
 -Gets stuck in incapped enemy when shoved off
--Not make boomer bile damage enemy
+-Not make boomer bile damage enemy ✅
 
 Jockey:
 -Directional movement for incapped mdl ✅
