@@ -10,7 +10,7 @@ ENT.StartHealth = GetConVarNumber("vj_l4d2_c_h")
 ENT.HullType = HULL_HUMAN
 ENT.HasBloodPool = false -- Does it have a blood pool?
 ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
--- ENT.Bacterias = {"bacteria/chargerbacteria.wav","bacteria/chargerbacterias.wav"}
+-- ENT.Bacterias = {"bacteria/chargerbacteria.mp3","bacteria/chargerbacterias.mp3"}
 ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through walls and objects? | Can be useful if you want to make it know where the enemy is at all times
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
@@ -71,7 +71,7 @@ ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shove
 ENT.SoundTbl_FootStep = {"Charger.Default.RunLeft","Charger.Default.RunRight"}
 ENT.SoundTbl_Idle = {"ChargerZombie.Voice","ChargerZombie.Growl"}
 ENT.SoundTbl_Alert = {"ChargerZombie.Alert","ChargerZombie.Recognize"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
 ENT.SoundTbl_MeleeAttack = {"ChargerZombie.Smash"}
 ENT.SoundTbl_LeapAttackJump = {"ChargerZombie.Charge"}
 ENT.SoundTbl_LeapAttackDamage = {}
@@ -109,8 +109,8 @@ ENT.pIncapacitatedEnemy = nil --the enemy that is incapacitated
 ENT.pEnemyRagdoll = nil --the incapacitated enemy's ragdoll
 ENT.IncapAnimation = "Charger_Pound"
 ENT.vecLastPos = Vector(0, 0, 0)
-ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/chargerbacteria.wav","vj_l4d2/music/bacteria/chargerbacterias.wav"}
-ENT.SoundTbl_Incapacitation = {"vj_l4d2/music/special_attacks/mortification.wav"}
+ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/chargerbacteria.mp3","vj_l4d2/music/bacteria/chargerbacterias.mp3"}
+ENT.SoundTbl_Incapacitation = {"vj_l4d2/music/special_attacks/mortification.mp3"}
 ENT.BacteriaSound = nil
 ENT.IncapSong = nil
 ENT.Light1 = nil
@@ -223,7 +223,7 @@ function ENT:UnSetGhost(bool)
 	self.VJ_NoTarget = false
 	self.DisableMakingSelfEnemyToNPCs = false
 	self:SetRenderMode(RENDERMODE_NORMAL)
-	self:EmitSound("ui/pickup_guitarriff10.wav")
+	self:EmitSound("ui/pickup_guitarriff10.mp3")
 	self.HasSounds = true
 	self.HasLeapAttack = true
 end
@@ -236,7 +236,7 @@ function ENT:SetGhost(bool)
 	self.VJ_NoTarget = true
 	self.DisableMakingSelfEnemyToNPCs = true
 	self:SetRenderMode(RENDERMODE_NONE)
-	self:EmitSound("ui/menu_horror01.wav")
+	self:EmitSound("ui/menu_horror01.mp3")
 	self.HasSounds = false
 	self.HasLeapAttack = false
 end
@@ -272,9 +272,9 @@ function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
 	self:PummelEnemy(TheHitEntity)
 	for k, v in ipairs(ents.FindByClass("player")) do
 		if TheHitEntity:IsPlayer() then
-			VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.wav",90,self:VJ_DecideSoundPitch(100,100))
+			VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.mp3",90,self:VJ_DecideSoundPitch(100,100))
 		elseif TheHitEntity:IsNPC() then
-			VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.wav",90,self:VJ_DecideSoundPitch(100,100))
+			VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
 		end
 	end
 end
@@ -538,7 +538,7 @@ function ENT:PummelEnemy(v)
 					        enemy:SetLocalVelocity(self:GetForward() * 0)
 					        if enemy:IsNPC() then
 					        	for k, v in ipairs(ents.FindByClass("player")) do
-					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.wav",90,self:VJ_DecideSoundPitch(100,100))
+					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
 					            end
 					            if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
 					            	enemy:GetActiveWeapon():SetNoDraw(true)
