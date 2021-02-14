@@ -56,16 +56,16 @@ ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward"}}}
 	-- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
-ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.wav","player/footsteps/infected/run/concrete2.wav","player/footsteps/infected/run/concrete3.wav","player/footsteps/infected/run/concrete4.wav"}
+ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.mp3","player/footsteps/infected/run/concrete2.mp3","player/footsteps/infected/run/concrete3.mp3","player/footsteps/infected/run/concrete4.mp3"}
 ENT.SoundTbl_Idle = {"SpitterZombie.Voice"}
 ENT.SoundTbl_Alert = {"SpitterZombie.Alert","SpitterZombie.Recognize"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
-ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.wav","vj_l4d2/pz/hit/claw_hit_flesh_2.wav","vj_l4d2/pz/hit/claw_hit_flesh_3.wav","vj_l4d2/pz/hit/claw_hit_flesh_4.wav"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
+ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.mp3","vj_l4d2/pz/hit/claw_hit_flesh_2.mp3","vj_l4d2/pz/hit/claw_hit_flesh_3.mp3","vj_l4d2/pz/hit/claw_hit_flesh_4.mp3"}
 ENT.SoundTbl_BeforeRangeAttack= {"SpitterZombie.Spit"}
 ENT.SoundTbl_Pain = {"SpitterZombie.Pain","SpitterZombie.PainShort"}
 ENT.SoundTbl_Death = {"SpitterZombie.Death"}
-ENT.SoundTbl_SpitterAcid = {"player/spitter/swarm/spitter_acid_loop_01.wav","player/spitter/swarm/spitter_acid_loop_02.wav"}
-ENT.SoundTbl_SpitterAcidTheme = {"vj_l4d2/music/terror/pileobile.wav"}
+ENT.SoundTbl_SpitterAcid = {"player/spitter/swarm/spitter_acid_loop_01.mp3","player/spitter/swarm/spitter_acid_loop_02.mp3"}
+ENT.SoundTbl_SpitterAcidTheme = {"vj_l4d2/music/terror/pileobile.mp3"}
 
 ENT.PainSoundChance = 1
 ENT.NextSoundTime_Pain1 = 0.5
@@ -93,7 +93,7 @@ ENT.IsGhosted = false
 ENT.BacteriaSound = nil
 ENT.ThemeLoop = nil
 ENT.AcidLoop = nil
-ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/spitterbacteria.wav","vj_l4d2/music/bacteria/spitterbacterias.wav"}
+ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/spitterbacteria.mp3","vj_l4d2/music/bacteria/spitterbacterias.mp3"}
 ENT.IsTakingCover = false
 ENT.RunAwayT = CurTime()
 util.AddNetworkString("L4D2SpitterHUD")
@@ -163,7 +163,7 @@ function ENT:UnSetGhost(bool)
     self.VJ_NoTarget = false
     self.DisableMakingSelfEnemyToNPCs = false
     self:SetRenderMode(RENDERMODE_NORMAL)
-    self:EmitSound("ui/pickup_guitarriff10.wav")
+    self:EmitSound("ui/pickup_guitarriff10.mp3")
     self.HasSounds = true
     self.HasMeleeAttack = true
     self.HasRangeAttack = true
@@ -178,7 +178,7 @@ function ENT:SetGhost(bool)
     self.VJ_NoTarget = true
     self.DisableMakingSelfEnemyToNPCs = true
     self:SetRenderMode(RENDERMODE_NONE)
-    self:EmitSound("ui/menu_horror01.wav")
+    self:EmitSound("ui/menu_horror01.mp3")
     self.HasSounds = false
     self.HasMeleeAttack = false
     self.HasRangeAttack = false
