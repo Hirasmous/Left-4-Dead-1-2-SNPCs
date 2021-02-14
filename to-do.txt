@@ -55,9 +55,10 @@ General:
 -New StripAmmo() function ✅
 -Change material directories ("infected" to "vj_l4d2") ✅
 -Witch HUD ✅
--Make HUD fit any screen size
--Bacteria cuts short for some specials (jockey & hunter for sure)
+-Make HUD fit any screen size ✅
+-Bacteria cuts short for some specials (jockey & hunter for sure) ✅
 -Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops)
+-Make infected unghost ✅
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
@@ -71,6 +72,6 @@ ConVars:
 -Other incap damage ✅
 
 Before release:
--Make HUD fit any screen size
+-Make HUD fit any screen size ✅
 -Better jockey control
 -Improve witch (i.e. add special pose params)
