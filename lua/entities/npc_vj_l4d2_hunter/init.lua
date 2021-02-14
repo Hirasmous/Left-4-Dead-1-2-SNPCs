@@ -117,12 +117,16 @@ ENT.IncapSong = nil
 ENT.IsGhosted = false
 ENT.tblEnemyWeapons = {}
 ENT.tblEnemyAmmo = {}
+ENT.GhostRunAwayT = CurTime()
+ENT.CanSpawnWhileGhosted = false
+ENT.HasSpawned = false
+ENT.IsGhosted = false
 
 util.AddNetworkString("L4D2HunterHUD")
 util.AddNetworkString("L4D2HunterHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_BeforeStartTimer() 
-    self:EmitSound("HunterZombie.Warn")
+    VJ_CreateSound(self,"HunterZombie.Warn",85,self:VJ_DecideSoundPitch(100,100))
     if self.VJ_IsBeingControlled == false then
 	    self.AnimTbl_Run = {ACT_RUN_CROUCH}
 	    self.AnimTbl_Walk = {ACT_RUN_CROUCH}  
@@ -132,91 +136,7 @@ end
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
     self.nextBacteria = 0
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayBacteria(bOverwrite)
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            if bOverwrite == true then
-                v.BacteriaSound:Stop()
-            else
-                return
-            end
-        end
-    end
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            if bOverwrite == true then
-                v.BacteriaSound:Stop()
-            else
-                return
-            end
-        end
-    end
-    self.nextBacteria = CurTime() + math.random(14, 22)
-    local bacteria = table.Random(self.SoundTbl_Bacteria)
-    local filter = RecipientFilter()
-    filter:AddAllPlayers()
-    for k, v in ipairs(ents.FindByClass("player")) do 
-        for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
-            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
-                filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
-            end
-            if IsValid(w.pIncapacitatedEnemy) && w.pIncapacitatedEnemy == v then
-                filter:RemovePlayer(v)
-            end
-        end
-    end
-    local bacterianoise = CreateSound(game.GetWorld(), bacteria, filter)
-    self.BacteriaSound = bacterianoise
-    bacterianoise:SetSoundLevel(0)
-    bacterianoise:Play()
-    timer.Simple(math.Round(SoundDuration(bacteria)), function()
-        bacterianoise:Stop()
-    end)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayIncapSong(bOverwrite)
-    if self.IncapSong ~= nil && self.IncapSong:IsPlaying() then return end
-    if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
-        for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-            if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy then
-                if v ~= self && v.IncapSong && v.IncapSong:IsPlaying() then
-                    if bOverwrite == true then
-                        v.IncapSong:Stop()
-                    else
-                        return
-                    end
-                end
-            end
-        end
-        local sndIncap = self.SoundTbl_Incapacitation[1]
-        self.nextIncapSong = CurTime() + math.Round(SoundDuration(sndIncap))
-        local filter = RecipientFilter()
-        filter:AddPlayer(self.pIncapacitatedEnemy)
-        local sound = CreateSound(game.GetWorld(), sndIncap, filter)
-        self.IncapSong = sound
-        sound:SetSoundLevel(0)
-        sound:Play()
-        timer.Simple(math.Round(SoundDuration(sndIncap)), function()
-            sound:Stop()
-            self.IncapSong = nil
-        end)
-        local id = self:EntIndex()
-        timer.Create("hunter"..id.."_CheckIncapSong", 0.1, math.Round(SoundDuration(sndIncap)) * 10, function()
-            if !IsValid(self) then timer.Stop("hunter"..id.."_CheckIncapSong") end
-            if self.HasEnemyIncapacitated == false then
-                if self.IncapSong ~= nil then
-                    self.IncapSong:Stop()
-                end
-            end
-        end)
-        self:CallOnRemove("hunter_StopIncapSong", function(ent)
-            if ent.IncapSong ~= nil then
-                ent.IncapSong:Stop()
-            end
-        end)
-    end
+    self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -261,8 +181,7 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    self:SetGhost()
-    self.HasLeapAttack = false
+    self:SetGhost(true)
     function self.VJ_TheControllerEntity:CustomOnStopControlling()
         net.Start("L4D2HunterHUD")
             net.WriteBool(true)
@@ -275,32 +194,6 @@ function ENT:Controller_Initialize(ply)
             net.WriteEntity(ply)
         net.Send(ply)
     end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:UnSetGhost(bool)
-    self.IsGhosted = false
-    self:DrawShadow(true)
-    self.GodMode = false 
-    self:SetCollisionGroup(COLLISION_GROUP_NONE)
-    self.VJ_NoTarget = false
-    self.DisableMakingSelfEnemyToNPCs = false
-    self:SetRenderMode(RENDERMODE_NORMAL)
-    self:EmitSound("ui/pickup_guitarriff10.mp3")
-    self.HasSounds = true
-    self.HasMeleeAttack = true
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:SetGhost(bool)
-    self.IsGhosted = true
-    self:DrawShadow(false)
-    self.GodMode = true 
-    self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-    self.VJ_NoTarget = true
-    self.DisableMakingSelfEnemyToNPCs = true
-    self:SetRenderMode(RENDERMODE_NONE)
-    self:EmitSound("ui/menu_horror01.mp3")
-    self.HasSounds = false
-    self.HasMeleeAttack = false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
@@ -472,6 +365,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
     self.nEntityIndex = self:EntIndex()
+    self:SetNW2Int("PounceT",CurTime() +self.NextLeapAttackTime)
     timer.Simple(1.7,function() 
         if IsValid(self) && IsValid(self:GetEnemy()) then 
             self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true)           
@@ -758,6 +652,14 @@ function ENT:DismountHunter()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+    if self.IsGhosted then
+        self:Ghost()
+    end
+    if self.IsGhosted then
+        self.HasLeapAttack = false
+    else
+        self.HasLeapAttack = true
+    end
     self.vecLastPos = self:GetPos()
     if self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
         self.IsIncapacitating = true
@@ -804,7 +706,7 @@ function ENT:CustomOnThink()
     end
     if IsValid(self.pIncapacitatedEnemy) then
 	    if CurTime() >= self.nextIncapSong then
-	    	self:PlayIncapSong()
+	    	self:Hunter_PlayIncapSong(true,false)
 	    end
     else
         if self.IncapSong ~= nil then
@@ -849,18 +751,22 @@ function ENT:CustomOnThink()
     end
 
     self:ManageHUD(self.VJ_TheController)
-    if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
-        if self.IsGhosted == true then
-            self:UnSetGhost(self.VJ_TheController)
-        elseif self.IsGhosted == false then
-            self:SetGhost(self.VJ_TheController)  
+    hook.Add("KeyPress", "Ghosting", function(ply, key)
+        if self.VJ_IsBeingControlled then
+            if key == IN_USE then
+        	    if self.IsGhosted == true then
+        	        self:SetGhost(false)
+        	    elseif self.IsGhosted == false then
+        	        self:SetGhost(true)  
+        	    end
+            end
         end
-        if self.VJ_IsBeingControlled == false then self:UnSetGhost(self.VJ_TheController) end
-    end
+    end)
+    
     if self.VJ_IsBeingControlled == true then
     	self:CapabilitiesRemove(CAP_MOVE_JUMP)
     	hook.Add("KeyPress", "hunter_Crouch", function(ply, key)
-    		if self.VJ_TheController == ply then
+    		if self.VJ_TheController == ply && !self.IsGhosted then
     			if key == IN_DUCK then
 		    	 	self.HasLeapAttack = true
 		    	 	self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Idle_Crouching_01"))}
@@ -870,7 +776,7 @@ function ENT:CustomOnThink()
     		end
     	end)
     	hook.Add("KeyRelease", "hunter_CrouchRelease", function(ply, key)
-    		if self.VJ_TheController == ply then
+    		if self.VJ_TheController == ply && !self.IsGhosted then
     			if key == IN_DUCK then
 		    	 	self.HasLeapAttack = false
 		    	 	self.AnimTbl_IdleStand = {ACT_IDLE}

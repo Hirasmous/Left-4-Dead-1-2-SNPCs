@@ -38,22 +38,30 @@ if CLIENT then
 		if isdeleted == true then hook.Remove("RenderScreenspaceEffects","L4D2SmokerScreen") end
 		local chargemat = Material( "vgui/hud/pz_charge_smoker" )
         local chargemat2 = Material( "vgui/hud/PZ_charge_meter" )
-        local chargemat3 = surface.GetTextureID( "vgui/hud/PZ_charge_bg" )
+        local chargemat3 = Material( "vgui/hud/PZ_charge_bg" )
+        local nextattack = IsValid(entity) && entity:GetNW2Int("TongueT") -CurTime() or 0
+		if IsValid(entity) && entity:GetNW2Int("TongueT") < CurTime() then nextattack = 1 end
 
         hook.Add( "HUDPaint", "SmokerChargeHUD", function()
         	surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetTexture(chargemat3) 
-	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
-	        surface.DisableClipping(false)
+	        surface.SetMaterial(chargemat3) 
+	        surface.DrawTexturedRect( ScrW() / 1.173, ScrH() / 1.37, ScrW() / 7.8, ScrH() / 4 ) 
 	        
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
 	        surface.SetMaterial(chargemat) 
-	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+	        surface.DrawTexturedRect( ScrW() / 1.15, ScrH() / 1.28, ScrW() / 10.4, ScrH() / 6 )
+	        if nextattack != 1 then
+				surface.SetDrawColor(255,255,255,255 /nextattack)
+			else
+				surface.SetDrawColor(255,255,255,math.abs(math.sin(CurTime() *3) *255))
+			end
 
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
 	        surface.SetMaterial(chargemat2) 
-	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
-     
+	        surface.DrawTexturedRect( ScrW() / 1.15, ScrH() / 1.28, ScrW() / 10.4, ScrH() / 6 )  
+	        if nextattack != 1 then
+				surface.SetDrawColor(255,255,255,255 /nextattack)
+			else
+				surface.SetDrawColor(255,255,255,math.abs(math.sin(CurTime() *3) *255))
+			end
         end)
         if isdeleted == true then hook.Remove("HUDPaint","SmokerChargeHUD") end
 		hook.Add("PreDrawHalos","L4D2SmokerHalo",function()
@@ -82,8 +90,8 @@ if CLIENT then
 		hook.Add("RenderScreenspaceEffects","GhostL4D2SmokerScreen",function()
 			local tab = {
 				["$pp_colour_addr"] = 0,
-				["$pp_colour_addg"] = 0,
-				["$pp_colour_addb"] = 0.4,
+				["$pp_colour_addg"] = 0.3,
+				["$pp_colour_addb"] = 0.5,
 				["$pp_colour_brightness"] = -0.2,
 				["$pp_colour_contrast"] = 0.6,
 				["$pp_colour_colour"] = 2,
@@ -96,21 +104,20 @@ if CLIENT then
 		if isdeleted == true then hook.Remove("RenderScreenspaceEffects","GhostL4D2SmokerScreen") end
 		local chargemat = Material( "vgui/hud/pz_charge_smoker" )
         local chargemat2 = Material( "vgui/hud/PZ_charge_meter" )
-        local chargemat3 = surface.GetTextureID( "vgui/hud/PZ_charge_bg" )
+        local chargemat3 = Material( "vgui/hud/PZ_charge_bg" )
 
         hook.Add( "HUDPaint", "GhostSmokerChargeHUD", function()
         	surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetTexture(chargemat3) 
-	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
-	        surface.DisableClipping(false)
-	        
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial(chargemat) 
-	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+			surface.SetMaterial(chargemat3) 
+			surface.DrawTexturedRect( ScrW() / 1.173, ScrH() / 1.37, ScrW() / 7.8, ScrH() / 4 )
 
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial(chargemat2) 
-	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+			surface.SetDrawColor( 255, 255, 255, 255 ) 
+			surface.SetMaterial(chargemat) 
+			surface.DrawTexturedRect( ScrW() / 1.15, ScrH() / 1.28, ScrW() / 10.4, ScrH() / 6 )
+
+			surface.SetDrawColor( 255, 255, 255, 255 ) 
+			surface.SetMaterial(chargemat2) 
+			surface.DrawTexturedRect( ScrW() / 1.15, ScrH() / 1.28, ScrW() / 10.4, ScrH() / 6 ) 
      
         end)
         if isdeleted == true then hook.Remove("HUDPaint","GhostSmokerChargeHUD") end

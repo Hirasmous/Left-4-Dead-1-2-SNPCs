@@ -110,6 +110,10 @@ ENT.IncapAnimation = "Jockey_Ride"
 ENT.vecLastPos = Vector(0, 0, 0)
 ENT.tblEnemyAmmo = {}
 ENT.tblEnemyWeapons = {}
+ENT.GhostRunAwayT = CurTime()
+ENT.CanSpawnWhileGhosted = false
+ENT.HasSpawned = false
+ENT.IsGhosted = false
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
@@ -119,67 +123,11 @@ function ENT:CustomOnInitialize()
 	self:SetCollisionBounds(Vector(-13, -13, 0), Vector(13, 13, 40))
 	self.nextBacteria = 0
 	self.soundVassal = ""
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayBacteria(bOverwrite)
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-		if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-			if bOverwrite == true then
-				v.BacteriaSound:Stop()
-			else
-				return
-			end
-		end
-	end
-	self.nextBacteria = CurTime() + math.random(14, 22)
-	local bacteria = table.Random(self.SoundTbl_Bacteria)
-	local filter = RecipientFilter()
-	filter:AddAllPlayers()
-	for k, v in ipairs(ents.FindByClass("player")) do 
-		for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-			if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then
-				filter:RemovePlayer(v)
-			end
-		end
-	end
-	local sound = CreateSound(self, bacteria, filter)
-	self.BacteriaSound = sound
-	sound:SetSoundLevel(0)
-	sound:Play()
-	timer.Simple(SoundDuration(bacteria) + 0.1, function()
-		sound:Stop()
-	end)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayIncapSong(bOverwrite)
-	if IsValid(self.IncapSong) && self.IncapSong:IsPlaying() then return end
-	if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:IsPlayer() then
-		for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-			if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy then
-				if v ~= self && v.IncapSong && v.IncapSong:IsPlaying() then
-					if bOverwrite == true then
-						v.IncapSong:Stop()
-					else
-						return
-					end
-				end
-			end
-		end
-		local sndIncap = self.SoundTbl_Incapacitation[1]
-		self.nextIncapSong = CurTime() + math.Round(SoundDuration(sndIncap))
-		local filter = RecipientFilter()
-		filter:AddPlayer(self.pIncapacitatedEnemy)
-		local sound = CreateSound(game.GetWorld(), sndIncap, filter)
-		self.IncapSong = sound
-		sound:SetSoundLevel(0)
-		sound:Play()
-		timer.Simple(math.Round(SoundDuration(sndIncap)), function()
-			sound:Stop()
-		end)
-	end
+	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ResetJockey()
+	local enemy = self.pIncapacitatedEnemy
 	self:Pounce_Effects(true)
 	self.HasEnemyIncapacitated = false
 	if self.IncapSong ~= nil then
@@ -192,7 +140,6 @@ function ENT:ResetJockey()
 	self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, self:OBBMaxs().z / 2))
 	self:SetPos(self:GetPos() + self:GetUp() * self:OBBMaxs().z)
 	if !IsValid(self.pIncapacitatedEnemy) then return end
-	local enemy = self.pIncapacitatedEnemy
 	hook.Add("ShouldCollide", "Jockey_EnableCollisions", function(ent1, ent2)
 		if (ent1 == self and ent2 == enemy) then return true end
 	end)
@@ -348,6 +295,7 @@ function ENT:PlayVassalationSound(lvl)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
+	self:SetNW2Int("PounceT",CurTime() +self.NextLeapAttackTime)
 	if self.VJ_IsBeingControlled then
 		timer.Simple(2, function()
 		    if IsValid(self) then
@@ -358,6 +306,15 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+	if self.IsGhosted then
+		self:Ghost()
+	end
+	if self.IsGhosted then
+        self.HasLeapAttack = false
+    else
+        self.HasLeapAttack = true
+    end
+
 	self.vecLastPos = self:GetPos()
 
 	if IsValid(self.pEnemyRagdoll) then
@@ -445,7 +402,7 @@ function ENT:CustomOnThink()
 
 	if IsValid(self.pIncapacitatedEnemy) then
 		if CurTime() >= self.nextIncapSong then
-			self:PlayIncapSong()
+			self:Jockey_PlayIncapSong(true,false)
 		end
 	end
 
@@ -495,14 +452,21 @@ function ENT:CustomOnThink()
 							self:DeleteOnRemove(camera)
 							v:SetNoDraw(true)
 					        if v:IsNPC() then
-								v:DropWeapon()
+					        	for k, x in ipairs(ents.FindByClass("player")) do
+					        	    VJ_CreateSound(x,"vj_l4d2/music/tags/vassalationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
+					            end
+								if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+					            	v:GetActiveWeapon():SetNoDraw(true)
+					            else
+									v:DropWeapon()
+								end
 							elseif v:IsPlayer() then
 					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= v then
 					                v:SetObserverMode(OBS_MODE_CHASE)
 					                v:SpectateEntity(camera)
 					                v:DrawViewModel(false)
 					                v:DrawWorldModel(false)
-					                v:SetFOV(80)
+					                v:SetFOV(85)
 					                self:Pounce_Effects(false)
 					            end
 							end
@@ -743,13 +707,18 @@ function ENT:CustomOnThink()
 	end
 
 	self:ManageHUD(self.VJ_TheController)
-	if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
-		if self.IsGhosted == true then
-			self:UnSetGhost(self.VJ_TheController)
-		elseif self.IsGhosted == false then
-			self:SetGhost(self.VJ_TheController)  
-		end
-	end
+	hook.Add("KeyPress", "Ghosting", function(ply, key)
+        if self.VJ_IsBeingControlled then
+            if key == IN_USE then
+        	    if self.IsGhosted == true then
+        	        self:SetGhost(false)
+        	    elseif self.IsGhosted == false then
+        	        self:SetGhost(true)  
+        	    end
+            end
+        end
+    end)
+    
 	if self.VJ_IsBeingControlled == true then
 		hook.Add("KeyPress", "jockey_Crouch", function(ply, key)
 			if self.VJ_TheController == ply then
@@ -821,7 +790,7 @@ function ENT:CustomOnRemove()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    self:SetGhost()
+    self:SetGhost(true)
     function self.VJ_TheControllerEntity:CustomOnStopControlling()
         net.Start("L4D2JockeyHUD")
             net.WriteBool(true)
@@ -862,34 +831,6 @@ function ENT:ManageHUD(ply)
             net.Send(ply)
         end
     end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:UnSetGhost(bool)
-    self.IsGhosted = false
-    self:DrawShadow(true)
-    self.GodMode = false 
-    self:SetCollisionGroup(COLLISION_GROUP_NONE)
-    self.VJ_NoTarget = false
-    self.DisableMakingSelfEnemyToNPCs = false
-    self:SetRenderMode(RENDERMODE_NORMAL)
-    self:EmitSound("ui/pickup_guitarriff10.mp3")
-    self.HasSounds = true
-    self.HasMeleeAttack = true
-    self.HasLeapAttack = true
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:SetGhost(bool)
-    self.IsGhosted = true
-    self:DrawShadow(false)
-    self.GodMode = true 
-    self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-    self.VJ_NoTarget = true
-    self.DisableMakingSelfEnemyToNPCs = true
-    self:SetRenderMode(RENDERMODE_NONE)
-    self:EmitSound("ui/menu_horror01.mp3")
-    self.HasSounds = false
-    self.HasMeleeAttack = false
-    self.HasLeapAttack = false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)

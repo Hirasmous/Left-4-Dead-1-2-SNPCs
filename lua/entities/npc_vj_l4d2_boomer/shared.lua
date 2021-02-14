@@ -46,29 +46,47 @@ if CLIENT then
 			DrawColorModify(tab)
 		end)
 		if isdeleted == true then hook.Remove("RenderScreenspaceEffects","L4D2BoomerScreen") end
-		local chargemat = Material( "vgui/hud/pz_charge_boomer" )
-        local chargemat2 = Material( "vgui/hud/PZ_charge_meter" )
+		local chargemat = surface.GetTextureID( "vgui/hud/pz_charge_boomer" )
+        local chargemat2 = surface.GetTextureID( "vgui/hud/PZ_charge_meter" )
         local chargemat3 = surface.GetTextureID( "vgui/hud/PZ_charge_bg" )
+        local chargemat4 = surface.GetTextureID( "vgui/hud/PZ_charge_boomer_fill" )
+        local nextattack = IsValid(entity) && entity:GetNW2Int("VomitT") -CurTime() or 0
+		if IsValid(entity) && entity:GetNW2Int("VomitT") < CurTime() then nextattack = 1 end
 
         hook.Add( "HUDPaint", "BoomerChargeHUD", function()
         	surface.SetDrawColor( 255, 255, 255, 255 ) 
 	        surface.SetTexture(chargemat3) 
-	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
-	        surface.DisableClipping(false)
+	        surface.DrawTexturedRect( ScrW() / 1.173, ScrH() / 1.37, ScrW() / 7.8, ScrH() / 4 ) 
 	        
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial(chargemat) 
-	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+	        surface.SetTexture(chargemat) 
+	        surface.DrawTexturedRect( ScrW() / 1.15, ScrH() / 1.28, ScrW() / 10.4, ScrH() / 6 )
+	        if nextattack != 1 then
+				surface.SetDrawColor(255,255,255,255 /nextattack)
+			else
+				surface.SetDrawColor(255,255,255,math.abs(math.sin(CurTime() *3) *255))
+			end
 
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial(chargemat2) 
-	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
-     
+			surface.SetTexture(chargemat4) 
+	        surface.DrawTexturedRect( ScrW() / 1.2, ScrH() / 1.1, ScrW() / 22.4, ScrH() / 12.5 ) 
+	        if nextattack != 1 then
+				surface.SetDrawColor(255,255,255,255 /nextattack)
+			else
+				surface.SetDrawColor(255,255,255,math.abs(math.sin(CurTime() *3) *255))
+			end
+
+	        surface.SetTexture(chargemat2) 
+	        surface.DrawTexturedRect( ScrW() / 1.15, ScrH() / 1.28, ScrW() / 10.4, ScrH() / 6 )  
+	        if nextattack != 1 then
+				surface.SetDrawColor(255,255,255,255 /nextattack)
+			else
+				surface.SetDrawColor(255,255,255,math.abs(math.sin(CurTime() *3) *255))
+			end
         end)
         if isdeleted == true then hook.Remove("HUDPaint","BoomerChargeHUD") end
 		hook.Add("PreDrawHalos","L4D2BoomerHalo",function()
 			local tbL4D2Infected = {}
 			local tbL4D2Survivors = {}
+			local tbL4D2IncappedEnemies = {}
 			for _,v in pairs(ents.GetAll()) do
 				if v:IsNPC() or v:IsPlayer() then
 					if string.find(v:GetClass(),"npc_vj_l4d*") then
@@ -92,8 +110,8 @@ if CLIENT then
 		hook.Add("RenderScreenspaceEffects","GhostL4D2BoomerScreen",function()
 			local tab = {
 				["$pp_colour_addr"] = 0,
-				["$pp_colour_addg"] = 0,
-				["$pp_colour_addb"] = 0.4,
+				["$pp_colour_addg"] = 0.3,
+				["$pp_colour_addb"] = 0.5,
 				["$pp_colour_brightness"] = -0.2,
 				["$pp_colour_contrast"] = 0.6,
 				["$pp_colour_colour"] = 2,
@@ -107,20 +125,23 @@ if CLIENT then
 		local chargemat = Material( "vgui/hud/pz_charge_boomer" )
         local chargemat2 = Material( "vgui/hud/PZ_charge_meter" )
         local chargemat3 = surface.GetTextureID( "vgui/hud/PZ_charge_bg" )
+        local chargemat4 = surface.GetTextureID( "vgui/hud/PZ_charge_boomer_fill" )
 
         hook.Add( "HUDPaint", "GhostBoomerChargeHUD", function()
         	surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetTexture(chargemat3) 
-	        surface.DrawTexturedRect( 1600, 800, 265, 265 ) 
-	        surface.DisableClipping(false)
+			surface.SetTexture(chargemat3) 
+			surface.DrawTexturedRect( ScrW() / 1.173, ScrH() / 1.37, ScrW() / 7.8, ScrH() / 4 )
 
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial(chargemat) 
-	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+			surface.SetDrawColor( 255, 255, 255, 255 ) 
+			surface.SetMaterial(chargemat) 
+			surface.DrawTexturedRect( ScrW() / 1.15, ScrH() / 1.28, ScrW() / 10.4, ScrH() / 6 )
 
-	        surface.SetDrawColor( 255, 255, 255, 255 ) 
-	        surface.SetMaterial(chargemat2) 
-	        surface.DrawTexturedRect( 1640, 850, 185, 185 ) 
+			surface.SetDrawColor( 255, 255, 255, 255 ) 
+			surface.SetMaterial(chargemat2) 
+			surface.DrawTexturedRect( ScrW() / 1.15, ScrH() / 1.28, ScrW() / 10.4, ScrH() / 6 ) 
+
+	        surface.SetTexture(chargemat4) 
+	        surface.DrawTexturedRect( ScrW() / 1.2, ScrH() / 1.1, ScrW() / 22.4, ScrH() / 12.5 )
      
         end)
         if isdeleted == true then hook.Remove("HUDPaint","GhostBoomerChargeHUD") end

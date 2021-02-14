@@ -253,7 +253,8 @@ function ENT:Tank_Soundtrack(fadeout)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRangeAttack_BeforeStartTimer() 
+function ENT:CustomOnRangeAttack_AfterStartTimer() 
+	self:SetNW2Int("RockT",CurTime() +self.NextRangeAttackTime)
 	timer.Simple(0.7,function()
 		if IsValid(self) then
 		    ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward"))              

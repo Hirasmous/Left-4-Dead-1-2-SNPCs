@@ -83,7 +83,7 @@ ENT.IdleSoundChance = 1.8
 ENT.PainSoundChance = 1
 ENT.NextSoundTime_Pain1 = 0.5
 ENT.NextSoundTime_Pain2 = 1
-ENT.BeforeMeleeAttackSoundChance = 6
+ENT.BeforeMeleeAttackSoundChance = 2
 ENT.FootStepSoundLevel = 80
 ENT.AlertSoundLevel = 75
 ENT.IdleSoundLevel = 75
@@ -96,51 +96,27 @@ ENT.UseTheSameGeneralSoundPitch = false
 -- Custom --
 ENT.Boomer_IsVomiting = false
 ENT.Enemy_IsPuked = true
-ENT.IsGhosted = false
 ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/boomerbacteria.mp3","vj_l4d2/music/bacteria/boomerbacterias.mp3"}
 ENT.BacteriaSound = nil
 ENT.Vomited_Enemies = {}
 ENT.Attracted_Zombies = {}
 ENT.IsTakingCover = false
 ENT.RunAwayT = CurTime()
+ENT.GhostRunAwayT = CurTime()
+ENT.CanSpawnWhileGhosted = false
+ENT.HasSpawned = false
+ENT.IsGhosted = false
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
     self.nextBacteria = 0  
+    self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_AfterStartTimer()
     self:StopMoving()
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:UnSetGhost(bool)
-	self.IsGhosted = false
-	self:DrawShadow(true)
-	self.GodMode = false 
-	self:SetCollisionGroup(COLLISION_GROUP_NONE)
-	self.VJ_NoTarget = false
-	self.DisableMakingSelfEnemyToNPCs = false
-	self:SetRenderMode(RENDERMODE_NORMAL)
-	self:EmitSound("ui/pickup_guitarriff10.mp3")
-	self.HasSounds = true
-	self.HasMeleeAttack = true
-	self.HasRangeAttack = true
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:SetGhost(bool)
-	self.IsGhosted = true
-	self:DrawShadow(false)
-	self.GodMode = true 
-	self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-	self.VJ_NoTarget = true
-	self.DisableMakingSelfEnemyToNPCs = true
-	self:SetRenderMode(RENDERMODE_NONE)
-	self:EmitSound("ui/menu_horror01.mp3")
-	self.HasSounds = false
-	self.HasMeleeAttack = false
-	self.HasRangeAttack = false
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
@@ -172,8 +148,9 @@ function ENT:ManageHUD(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-    if self.VJ_IsBeingControlled == false then
-        if IsValid(self:GetEnemy()) then
+	local ent = self:GetEnemy()
+	if self.VJ_IsBeingControlled == false then
+        if IsValid(ent) then
             if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
                 self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
                 self.RunAwayT = CurTime() +1
@@ -184,86 +161,46 @@ function ENT:CustomOnThink()
             self.IsTakingCover = false
         end
     end
-	self:ManageHUD(self.VJ_TheController)
-    if self.VJ_IsBeingControlled == true then
-    	if self.VJ_TheController:KeyDownLast(IN_USE) then
-    	    if self.IsGhosted == true then
-    	        self:UnSetGhost(self.VJ_TheController)
-    	    elseif self.IsGhosted == false then
-    	        self:SetGhost(self.VJ_TheController)  
-    	    end
-    	end
+    if self.IsGhosted then
+        self:Ghost()
     end
+    if self.IsGhosted then
+        self.HasRangeAttack = false
+    else
+        self.HasRangeAttack = true
+    end
+
+	self:ManageHUD(self.VJ_TheController)
+    hook.Add("KeyPress", "Ghosting", function(ply, key)
+        if self.VJ_IsBeingControlled then
+            if key == IN_USE then
+        	    if self.IsGhosted == true then
+        	        self:SetGhost(false)
+        	    elseif self.IsGhosted == false then
+        	        self:SetGhost(true)  
+        	    end
+            end
+        end
+    end)
+        
     if self.VJ_IsBeingControlled == false then
-    	self:DrawShadow(true)
-	    self.GodMode = false 
-	    self:SetCollisionGroup(COLLISION_GROUP_NONE)
-	    self.VJ_NoTarget = false
-	    self.DisableMakingSelfEnemyToNPCs = false
-	    self:SetRenderMode(RENDERMODE_NORMAL)
-	    self.HasSounds = true
-	    self.HasMeleeAttack = true
-	    self.HasRangeAttack = true
 	    self.TimeUntilRangeAttackProjectileRelease = 1.5
 	    self.HasBeforeRangeAttackSound = true 
 	    self.RangeAttackAnimationDelay = 1.5
-	end 
-	if self.VJ_IsBeingControlled == true then
+	elseif self.VJ_IsBeingControlled == true then
 	    self.TimeUntilRangeAttackProjectileRelease = 0
 	    self.HasBeforeRangeAttackSound = false
 	    self.RangeAttackAnimationDelay = 0
-	end 	        
+	end 
+
     self:SetBodygroup(1,1)
 	if CurTime() >= self.nextBacteria then
 	    self:PlayBacteria()
 	end
-	
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayBacteria(bOverwrite)
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            if bOverwrite == true then
-                v.BacteriaSound:Stop()
-            else
-                return
-            end
-        end
-    end
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            if bOverwrite == true then
-                v.BacteriaSound:Stop()
-            else
-                return
-            end
-        end
-    end
-    self.nextBacteria = CurTime() + math.random(14, 22)
-    local bacteria = table.Random(self.SoundTbl_Bacteria)
-    local filter = RecipientFilter()
-    filter:AddAllPlayers()
-    for k, v in ipairs(ents.FindByClass("player")) do 
-        for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
-            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
-                filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
-            end
-            if IsValid(w.pIncapacitatedEnemy) && w.pIncapacitatedEnemy == v then
-                filter:RemovePlayer(v)
-            end
-        end
-    end
-    local bacterianoise = CreateSound(game.GetWorld(), bacteria, filter)
-    self.BacteriaSound = bacterianoise
-    bacterianoise:SetSoundLevel(0)
-    bacterianoise:Play()
-    timer.Simple(math.Round(SoundDuration(bacteria)), function()
-        bacterianoise:Stop()
-    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-	self:SetGhost()
+	self:SetGhost(true)
 	function self.VJ_TheControllerEntity:CustomOnStopControlling()
 		net.Start("L4D2BoomerHUD")
 			net.WriteBool(true)
@@ -394,7 +331,7 @@ function ENT:VomitEnemy(v)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode()
-    timer.Simple(1,function()
+	timer.Simple(1,function()
         if IsValid(self) then
             self.IsTakingCover = true
         end
@@ -410,7 +347,8 @@ function ENT:CustomRangeAttackCode()
             self:VomitEnemy(x)
             self.Enemy_IsPuked = true
         end
-    end         
+    end     
+    self:SetNW2Int("VomitT",CurTime() +self.NextRangeAttackTime)    
     ParticleEffectAttach("boomer_vomit",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))         
     timer.Simple(0,function() if IsValid(self) then self:VomitBile(75) end end)         
     timer.Simple(0.1,function() if IsValid(self) then self:VomitBile(75) end end) 

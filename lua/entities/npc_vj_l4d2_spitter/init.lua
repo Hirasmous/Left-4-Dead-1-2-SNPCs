@@ -24,6 +24,8 @@ ENT.VJC_Data = {
 	FirstP_Bone = "bip_head", -- If left empty, the base will attempt to calculate a position for first person
 	FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
+ENT.ConstantlyFaceEnemy = true -- Should it face the enemy constantly?
+ENT.ConstantlyFaceEnemy_Postures = "Moving" -- "Both" = Moving or standing | "Moving" = Only when moving | "Standing" = Only when standing
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ENT.HasBloodPool = false -- Does it have a blood pool?
 ENT.VJ_NPC_Class = {"CLASS_ZOMBIE"} -- NPCs with the same class with be allied to each other
@@ -42,7 +44,7 @@ ENT.RangeAttackAnimationFaceEnemy = false -- Should it face the enemy while play
 ENT.RangeUseAttachmentForPos = true -- Should the projectile spawn on a attachment?
 ENT.RangeUseAttachmentForPosID = "mouth" -- The attachment used on the range attack if RangeUseAttachmentForPos is set to true
 ENT.RangeDistance = 650 -- This is how far away it can shoot
-ENT.RangeToMeleeDistance = 250 -- How close does it have to be until it uses melee? -- This is how far away it can shoot
+ENT.RangeToMeleeDistance = 50 -- How close does it have to be until it uses melee? -- This is how far away it can shoot
 ENT.NextRangeAttackTime = 25 -- How much time until it can use a range attack?
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
 ENT.FindEnemy_UseSphere = true -- Should the SNPC be able to see all around him? (360) | Objects and walls can still block its sight!
@@ -56,7 +58,7 @@ ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward"}}}
 	-- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
-ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.mp3","player/footsteps/infected/run/concrete2.mp3","player/footsteps/infected/run/concrete3.mp3","player/footsteps/infected/run/concrete4.mp3"}
+ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.mp3","vj_l4d2/footsteps/infected/run/concrete2.mp3","vj_l4d2/footsteps/infected/run/concrete3.mp3","vj_l4d2/footsteps/infected/run/concrete4.mp3"}
 ENT.SoundTbl_Idle = {"SpitterZombie.Voice"}
 ENT.SoundTbl_Alert = {"SpitterZombie.Alert","SpitterZombie.Recognize"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
@@ -96,26 +98,33 @@ ENT.AcidLoop = nil
 ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/spitterbacteria.mp3","vj_l4d2/music/bacteria/spitterbacterias.mp3"}
 ENT.IsTakingCover = false
 ENT.RunAwayT = CurTime()
+ENT.GhostRunAwayT = CurTime()
+ENT.CanSpawnWhileGhosted = false
+ENT.HasSpawned = false
+ENT.IsGhosted = false
 util.AddNetworkString("L4D2SpitterHUD")
 util.AddNetworkString("L4D2SpitterHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
     self.nextBacteria = 0
-    ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
-    ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
-    local glowlight = ents.Create("light_dynamic")
-	glowlight:SetKeyValue("_light","110 230 0 255")
-	glowlight:SetKeyValue("brightness","0.1")
-	glowlight:SetKeyValue("distance","150")
-	glowlight:SetKeyValue("style","0")
-	glowlight:SetPos(self:GetPos())
-	glowlight:SetParent(self)
-	glowlight:Spawn()
-	glowlight:Activate()
-	glowlight:Fire("SetParentAttachment","mouth")
-	glowlight:Fire("TurnOn","",0)
-	glowlight:DeleteOnRemove(self)
+    if !self.IsGhosted then
+        ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
+        ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
+        local glowlight = ents.Create("light_dynamic")
+    	glowlight:SetKeyValue("_light","110 230 0 255")
+    	glowlight:SetKeyValue("brightness","0.1")
+    	glowlight:SetKeyValue("distance","150")
+    	glowlight:SetKeyValue("style","0")
+    	glowlight:SetPos(self:GetPos())
+    	glowlight:SetParent(self)
+    	glowlight:Spawn()
+    	glowlight:Activate()
+    	glowlight:Fire("SetParentAttachment","mouth")
+    	glowlight:Fire("TurnOn","",0)
+    	glowlight:DeleteOnRemove(self)
+    end
+    self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -153,37 +162,6 @@ function ENT:ManageHUD(ply)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:UnSetGhost(bool)
-    ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
-    ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
-    self.IsGhosted = false
-    self:DrawShadow(true)
-    self.GodMode = false 
-    self:SetCollisionGroup(COLLISION_GROUP_NONE)
-    self.VJ_NoTarget = false
-    self.DisableMakingSelfEnemyToNPCs = false
-    self:SetRenderMode(RENDERMODE_NORMAL)
-    self:EmitSound("ui/pickup_guitarriff10.mp3")
-    self.HasSounds = true
-    self.HasMeleeAttack = true
-    self.HasRangeAttack = true
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:SetGhost(bool)
-    self:StopParticles()
-    self.IsGhosted = true
-    self:DrawShadow(false)
-    self.GodMode = true 
-    self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-    self.VJ_NoTarget = true
-    self.DisableMakingSelfEnemyToNPCs = true
-    self:SetRenderMode(RENDERMODE_NONE)
-    self:EmitSound("ui/menu_horror01.mp3")
-    self.HasSounds = false
-    self.HasMeleeAttack = false
-    self.HasRangeAttack = false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
     local anims = VJ_PICK{"Shoved_BackWard","Shoved_Leftward","Shoved_Rightward"}
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
@@ -192,7 +170,7 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    self:SetGhost()
+    self:SetGhost(true)
     function self.VJ_TheControllerEntity:CustomOnStopControlling()
         net.Start("L4D2SpitterHUD")
             net.WriteBool(true)
@@ -208,6 +186,16 @@ function ENT:Controller_Initialize(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+    if self.IsGhosted then
+        self:Ghost()
+    end
+    if self.IsGhosted then
+        self.HasRangeAttack = false
+        self:StopParticles()
+    else
+        self.HasRangeAttack = true
+    end
+
     if self.VJ_IsBeingControlled == false then
         if IsValid(self:GetEnemy()) then
             if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
@@ -218,27 +206,22 @@ function ENT:CustomOnThink()
         else
             self.DisableChasingEnemy = false
             self.IsTakingCover = false
+            self.RunAwayT = CurTime() 
         end
     end
     self:ManageHUD(self.VJ_TheController)
-    if self.VJ_IsBeingControlled == true && self.VJ_TheController:KeyDownLast(IN_USE) then
-        if self.IsGhosted == true then
-            self:UnSetGhost(self.VJ_TheController)
-        elseif self.IsGhosted == false then
-            self:SetGhost(self.VJ_TheController)  
+    hook.Add("KeyPress", "Ghosting", function(ply, key)
+        if self.VJ_IsBeingControlled then
+            if key == IN_USE then
+        	    if self.IsGhosted == true then
+        	        self:SetGhost(false)
+        	    elseif self.IsGhosted == false then
+        	        self:SetGhost(true)  
+        	    end
+            end
         end
-    end
-    if self.VJ_IsBeingControlled == false then
-        self:DrawShadow(true)
-        self.GodMode = false 
-        self:SetCollisionGroup(COLLISION_GROUP_NONE)
-        self.VJ_NoTarget = false
-        self.DisableMakingSelfEnemyToNPCs = false
-        self:SetRenderMode(RENDERMODE_NORMAL)
-        self.HasSounds = true
-        self.HasMeleeAttack = true
-        self.HasRangeAttack = true
-    end
+    end)
+    
     self:SetBodygroup(1,1)
     if CurTime() >= self.nextBacteria then
         self:PlayBacteria()
@@ -246,53 +229,12 @@ function ENT:CustomOnThink()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
+    self:SetNW2Int("SpitT",CurTime() +self.NextRangeAttackTime)
     self.IsTakingCover = true
     timer.Simple(self.NextRangeAttackTime,function()
         if IsValid(self) then
             self.IsTakingCover = false
         end
-    end)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:PlayBacteria(bOverwrite)
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            if bOverwrite == true then
-                v.BacteriaSound:Stop()
-            else
-                return
-            end
-        end
-    end
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying() then
-            if bOverwrite == true then
-                v.BacteriaSound:Stop()
-            else
-                return
-            end
-        end
-    end
-    self.nextBacteria = CurTime() + math.random(14, 22)
-    local bacteria = table.Random(self.SoundTbl_Bacteria)
-    local filter = RecipientFilter()
-    filter:AddAllPlayers()
-    for k, v in ipairs(ents.FindByClass("player")) do 
-        for l, w in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do --for every entity that is another infected
-            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then --if the player, v, is controlling the infected then
-                filter:RemovePlayer(v) --remove the player v from being able to hear the bacteria 
-            end
-            if IsValid(w.pIncapacitatedEnemy) && w.pIncapacitatedEnemy == v then
-                filter:RemovePlayer(v)
-            end
-        end
-    end
-    local bacterianoise = CreateSound(game.GetWorld(), bacteria, filter)
-    self.BacteriaSound = bacterianoise
-    bacterianoise:SetSoundLevel(0)
-    bacterianoise:Play()
-    timer.Simple(math.Round(SoundDuration(bacteria)), function()
-        bacterianoise:Stop()
     end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
