@@ -194,7 +194,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     mdl:SetLocalAngles(Angle(0, 0, 0))
                     timer.Simple(0.15, function()
                         if !IsValid(owner) then return end
-                        net.Start("smoker_PounceEnemy")
+                        net.Start("infected_PounceEnemy")
                             net.WriteString(tostring(owner:EntIndex()))
                             net.WriteEntity(mdl)
                             net.WriteString(enemy:GetModel())
@@ -236,7 +236,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     enemy:CallOnRemove("smoker_ClearParent", function(ent)
                         if IsValid(owner.pIncapacitatedEnemy) && owner.pIncapacitatedEnemy == ent then
                             owner:SetParent(nil)
-                            net.Start("smoker_RemoveCSEnt")
+                            net.Start("infected_RemoveCSEnt")
                                 net.WriteString(tostring(owner:EntIndex()))
                             net.Broadcast()
                         end
@@ -255,7 +255,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     end)
 
                     owner:CallOnRemove("smoker_OnRemove", function(ent)
-                        net.Start("smoker_RemoveCSEnt")
+                        net.Start("infected_RemoveCSEnt")
                             net.WriteString(tostring(ent:EntIndex()))
                         net.Broadcast()
                         if ent.IncapSong ~= nil then
