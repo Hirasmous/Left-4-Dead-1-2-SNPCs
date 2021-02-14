@@ -15,6 +15,7 @@ local VJExists = "lua/autorun/vj_base_autorun.lua"
 if( file.Exists( VJExists, "GAME" ) ) then
 	include('autorun/vj_controls.lua')
 	AddCSLuaFile("autorun/vj_l4d2si_autorun.lua")
+	AddCSLuaFile("autorun/vj_l4d2si_features.lua")
 	VJ.AddAddonProperty(AddonName,AddonType)
 
     sound.AddSoundOverrides("lua/sound/game_sounds_infected_special.lua")
@@ -85,6 +86,7 @@ if( file.Exists( VJExists, "GAME" ) ) then
     VJ.AddConVar("vj_l4d2_incapdamage",1) -- Turned on by default
     VJ.AddConVar("vj_l4d2_goodamage",1) -- Turned on by default
     VJ.AddConVar("vj_l4d2_gasdamage",1) -- Turned on by default
+    VJ.AddConVar("vj_l4d2_ghosted",0) -- Turned off by default
 end
 
 if SERVER then
@@ -107,6 +109,7 @@ if CLIENT then
 			Panel:AddControl("Checkbox", {Label = "Do incappers do damage to incapped enemies?", Command = "vj_l4d2_incapdamage"})
 			Panel:AddControl("Checkbox", {Label = "Does Smoker's Gas Cloud do damage?", Command = "vj_l4d2_gasdamage"})
 			Panel:AddControl("Checkbox", {Label = "Does Spitter Goo do damage?", Command = "vj_l4d2_goodamage"})
+			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
 		end, {})
 	end)
 end
