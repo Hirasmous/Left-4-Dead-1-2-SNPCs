@@ -22,8 +22,8 @@ ENT.RadiusDamageForce_Up = false -- How much up force should it have? | false = 
 ENT.RadiusDamageDisableVisibilityCheck = false -- Should it disable the visibility check? | true = Disables the visibility check
 
 ENT.SoundTbl_SpitterAcid = Sound("SpitterZombie.Acid")
-ENT.SoundTbl_SpitterAcidTheme = Sound("vj_l4d2/music/terror/pileobile.wav")
-ENT.SoundTbl_Idle = {"player/spitter/swarm/spitter_acid_fadeout.wav","player/spitter/swarm/spitter_acid_fadeout2.wav"}
+ENT.SoundTbl_SpitterAcidTheme = Sound("vj_l4d2/music/terror/pileobile.mp3")
+ENT.SoundTbl_Idle = {"player/spitter/swarm/spitter_acid_fadeout.mp3","player/spitter/swarm/spitter_acid_fadeout2.mp3"}
 ENT.Owner = nil
 ENT.AcidCount = 20
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ function ENT:PhysicsCollide(data,physobj,entity)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DeathEffects(data,phys)
-    self.cspIdleAcidLoop = CreateSound(self, "vj_l4d2/music/terror/pileobile.wav")
+    self.cspIdleAcidLoop = CreateSound(self, "vj_l4d2/music/terror/pileobile.mp3")
     self.cspIdleAcidLoop:SetSoundLevel(70)  
     self.cspIdleAcidLoop:PlayEx(1,100)  
     for i = 1,self.AcidCount do
