@@ -82,9 +82,9 @@ ENT.SoundTbl_FootStep = {"Tank.Default.RunRight","Tank.Default.RunLeft"}
 ENT.SoundTbl_Idle = {"HulkZombie.Voice","HulkZombie.Breathe","HulkZombie.Growl"}
 ENT.SoundTbl_CombatIdle = {"HulkZombie.Yell","HulkZombie.Voice","HulkZombie.Breathe","HulkZombie.Growl"}
 ENT.SoundTbl_MeleeAttack = {"HulkZombie.Punch"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
 ENT.SoundTbl_BeforeMeleeAttack = {"HulkZombie.Attack"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/miss/claw_miss_1.wav","vj_l4d2/miss/claw_miss_2.wav"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/miss/claw_miss_1.mp3","vj_l4d2/miss/claw_miss_2.mp3"}
 ENT.SoundTbl_Pain = {"HulkZombie.Pain"}
 ENT.SoundTbl_BeforeRangeAttack = {"HulkZombie.Throw.Pickup"}
 ENT.SoundTbl_RangeAttack = {"HulkZombie.Throw"}
@@ -114,12 +114,12 @@ ENT.Climbing = false
 ENT.NextClimb = 0
 ENT.AllowClimbing = true
 ENT.SoundTracks = nil
-ENT.SoundTrack = {"vj_l4d2/music/tank/taank.wav","vj_l4d2/music/tank/tank.wav"}
+ENT.SoundTrack = {"vj_l4d2/music/tank/taank.mp3","vj_l4d2/music/tank/tank.mp3"}
 util.AddNetworkString("L4D2TankHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
-    if GetConVarNumber("vj_l4d2_musictype") == 1 then self.SoundTrack = {"vj_l4d2/music/tank/tank_metal.wav","vj_l4d2/music/tank/taank_metal.wav"} end
+    if GetConVarNumber("vj_l4d2_musictype") == 1 then self.SoundTrack = {"vj_l4d2/music/tank/tank_metal.mp3","vj_l4d2/music/tank/taank_metal.mp3"} end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RangeAttackCode_OverrideProjectilePos(TheProjectile)
@@ -131,8 +131,8 @@ function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    ply:EmitSound("ui/menu_horror01.wav")
-    ply:EmitSound("ui/pickup_guitarriff10.wav")
+    ply:EmitSound("ui/menu_horror01.mp3")
+    ply:EmitSound("ui/pickup_guitarriff10.mp3")
     net.Start("L4D2TankHUD")
         net.WriteBool(false)
         net.WriteEntity(self)
