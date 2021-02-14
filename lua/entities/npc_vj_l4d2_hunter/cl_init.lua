@@ -1,7 +1,7 @@
 include("shared.lua")
 
 local CSModels = {}
-net.Receive("hunter_PounceEnemy", function()
+net.Receive("infected_PounceEnemy", function()
     local id = net.ReadString()
     local ent = net.ReadEntity()
     CSModels[id] = {}
@@ -23,7 +23,7 @@ function ENT:Think()
 	end
 end
 
-net.Receive("hunter_RemoveCSEnt", function()
+net.Receive("infected_RemoveCSEnt", function()
 	local id = net.ReadString()
     if table.Count(CSModels) > 0 then
         if table.HasValue(CSModels, CSModels[id]) then
