@@ -68,8 +68,8 @@ ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkLeft","Boomer.Concrete.WalkRight"}
 ENT.SoundTbl_Idle = {"BoomerZombie.Groan","BoomerZombie.Voice"}
 ENT.SoundTbl_Alert = {"BoomerZombie.Alert","BoomerZombie.Rage"}
 ENT.SoundTbl_Breath = {"BoomerZombie.Gurgle"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.wav","vj_l4d2/pz/miss/claw_miss_2.wav"}
-ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.wav","vj_l4d2/pz/hit/claw_hit_flesh_2.wav","vj_l4d2/pz/hit/claw_hit_flesh_3.wav","vj_l4d2/pz/hit/claw_hit_flesh_4.wav"}
+ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
+ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.mp3","vj_l4d2/pz/hit/claw_hit_flesh_2.mp3","vj_l4d2/pz/hit/claw_hit_flesh_3.mp3","vj_l4d2/pz/hit/claw_hit_flesh_4.mp3"}
 ENT.SoundTbl_RangeAttack= {"Vomit.Use"}
 ENT.SoundTbl_BeforeMeleeAttack = {"BoomerZombie.Attack"}
 ENT.SoundTbl_BeforeRangeAttack= {"BoomerZombie.Warn"}
@@ -97,7 +97,7 @@ ENT.UseTheSameGeneralSoundPitch = false
 ENT.Boomer_IsVomiting = false
 ENT.Enemy_IsPuked = true
 ENT.IsGhosted = false
-ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/boomerbacteria.wav","vj_l4d2/music/bacteria/boomerbacterias.wav"}
+ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/boomerbacteria.mp3","vj_l4d2/music/bacteria/boomerbacterias.mp3"}
 ENT.BacteriaSound = nil
 ENT.Vomited_Enemies = {}
 ENT.Attracted_Zombies = {}
@@ -123,7 +123,7 @@ function ENT:UnSetGhost(bool)
 	self.VJ_NoTarget = false
 	self.DisableMakingSelfEnemyToNPCs = false
 	self:SetRenderMode(RENDERMODE_NORMAL)
-	self:EmitSound("ui/pickup_guitarriff10.wav")
+	self:EmitSound("ui/pickup_guitarriff10.mp3")
 	self.HasSounds = true
 	self.HasMeleeAttack = true
 	self.HasRangeAttack = true
@@ -137,7 +137,7 @@ function ENT:SetGhost(bool)
 	self.VJ_NoTarget = true
 	self.DisableMakingSelfEnemyToNPCs = true
 	self:SetRenderMode(RENDERMODE_NONE)
-	self:EmitSound("ui/menu_horror01.wav")
+	self:EmitSound("ui/menu_horror01.mp3")
 	self.HasSounds = false
 	self.HasMeleeAttack = false
 	self.HasRangeAttack = false
@@ -386,9 +386,9 @@ function ENT:VomitEnemy(v)
 	    end  
 	    if v:IsPlayer() then
 	    	self:VomitEffect(v)
-	    	VJ_CreateSound(v,"vj_l4d2/music/terror/pukricide.wav",100,self:VJ_DecideSoundPitch(100,100))
+	    	VJ_CreateSound(v,"vj_l4d2/music/terror/pukricide.mp3",100,self:VJ_DecideSoundPitch(100,100))
 	    elseif v:IsNPC() then
-	        VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.wav",90,self:VJ_DecideSoundPitch(100,100))  
+	        VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.mp3",90,self:VJ_DecideSoundPitch(100,100))  
 	    end                       
     end
 end
