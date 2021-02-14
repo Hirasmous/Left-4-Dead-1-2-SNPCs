@@ -339,7 +339,6 @@ function ENT:StripEnemyWeapons(ent)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Pummel_Effects(fadeout)
-	self:PlayIncapSong()
 	if fadeout == false then
 		self.spotlightpoint = ents.Create("env_projectedtexture")
 		self.spotlightpoint:SetPos( self:GetPos() +self:GetUp()*110)
