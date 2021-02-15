@@ -62,6 +62,7 @@ General:
 -Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops)
 -Make infected unghost ✅
 -Make specials unable to ghost when incapping
+-Make incap lights clientside & visible only to incapped enemy
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
