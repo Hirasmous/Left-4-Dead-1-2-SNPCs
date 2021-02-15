@@ -122,12 +122,10 @@ function ENT:CustomOnInitialize()
     if GetConVarNumber("vj_l4d2_musictype") == 1 then self.SoundTrack = {"vj_l4d2/music/tank/tank_metal.mp3","vj_l4d2/music/tank/taank_metal.mp3"} end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:RangeAttackCode_OverrideProjectilePos(TheProjectile)
-    TheProjectile:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos) 
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
-    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,1.74,true)
+function ENT:CustomOnAcceptInput(key,activator,caller,data)
+	if key == "event_emit FootStep" then
+		self:FootStepSoundCode()
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
@@ -145,7 +143,114 @@ function ENT:Controller_Initialize(ply)
             net.WriteEntity(ply)
         net.Send(ply)
     end
-end    	
+end  
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Tank_Soundtrack(fadeout) 
+	if fadeout == false then
+		for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_tank")) do
+	        if v.SoundTracks && v.SoundTracks:IsPlaying() then
+	            return
+	        end
+	    end 
+	    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_tank")) do
+	        if v.SoundTracks && v.SoundTracks:IsPlaying() then
+	            return
+	        end
+	    end
+	    local soundtracks = table.Random(self.SoundTrack)
+		local filter = RecipientFilter()
+		filter:AddAllPlayers()
+        self.soundtrack = CreateSound(game.GetWorld(),soundtracks, filter)
+		self.SoundTracks = self.soundtrack
+		self.soundtrack:SetSoundLevel(0)		
+		self.soundtrack:PlayEx(1,100)
+	end
+	if fadeout == true then
+		if self.SoundTracks && self.SoundTracks:IsPlaying() then
+		    self.SoundTracks:FadeOut(1.5)
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:RangeAttackCode_OverrideProjectilePos(TheProjectile)
+    TheProjectile:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos) 
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:RemoveConcrete() 
+    self.Concrete:Remove()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomRangeAttackCode()
+    local ent = ents.Create("obj_vj_l4d2_debris")
+    ent:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos)
+    -- ent:SetAngles(self:GetAttachment(self:LookupAttachment("debris")).Ang)
+    ent:SetOwner(self)
+	ent:Spawn()
+	ent:Activate()
+	local phys = ent:GetPhysicsObject()
+	if IsValid(phys) then
+	    phys:SetVelocity(self:RangeAttackCode_GetShootPos() *0.7 +self:GetUp()*175) 
+    end
+    local randattackr = math.random(1,3)
+    if randattackr == 1 then                              
+        self.AnimTbl_RangeAttack = {"throw_02"}
+        self.TimeUntilRangeAttackProjectileRelease = 2.5   
+        self:RemoveConcrete()
+    end         
+    if randattackr == 3 then                              
+        self.AnimTbl_RangeAttack = {"throw_03"}
+        self.TimeUntilRangeAttackProjectileRelease = 1.97
+        self:RemoveConcrete()
+    end    
+    if randattackr == 2 then                              
+        self.AnimTbl_RangeAttack = {"throw_04"} 
+        self.TimeUntilRangeAttackProjectileRelease = 2.8
+        self:RemoveConcrete()              
+    end
+end   
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnRangeAttack_AfterStartTimer() 
+	self:SetNW2Int("RockT",CurTime() +self.NextRangeAttackTime)
+	timer.Simple(0.7,function()
+		if IsValid(self) then
+		    ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward"))              
+		    self.Concrete = ents.Create("prop_vj_animatable")
+			self.Concrete:SetLocalPos(self:GetPos())
+		    self.Concrete:SetModel("models/props_debris/concrete_chunk01a.mdl")
+			self.Concrete:SetOwner(self)
+		    self.Concrete:SetParent(self)
+		    self.Concrete:Spawn()
+		    self.Concrete:Activate()
+		    self.Concrete:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
+		    self.Concrete:SetSolid(SOLID_NONE)
+			self.Concrete:AddEffects(EF_BONEMERGE) 
+		end
+    end)        
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
+    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,1.74,true)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:MultipleMeleeAttacks()
+	local randattack = math.random(1,5)
+	if randattack == 1 then
+		self.AnimTbl_MeleeAttack = {"vjges_Hulk_RunAttack1_layer","vjges_Hulk_RunAttack2_layer","vjges_Attack_Moving"}
+		self.TimeUntilMeleeAttackDamage = 0.6
+		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_t_d")
+	elseif randattack == 2 then
+		self.AnimTbl_MeleeAttack = {"vjges_Hulk_RunAttack1_layer","vjges_Hulk_RunAttack2_layer","vjges_Attack_Moving"}
+		self.TimeUntilMeleeAttackDamage = 0.6
+		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_t_d")
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
+    if math.random(1,2) == 1 then
+        self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.74,true)
+        VJ_CreateSound(self,self.SoundTbl_Alert,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+    end
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink_AIEnabled()  
     self:Tank_Soundtrack(false)  
@@ -226,56 +331,6 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Tank_Soundtrack(fadeout) 
-	if fadeout == false then
-		for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_tank")) do
-	        if v.SoundTracks && v.SoundTracks:IsPlaying() then
-	            return
-	        end
-	    end 
-	    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_tank")) do
-	        if v.SoundTracks && v.SoundTracks:IsPlaying() then
-	            return
-	        end
-	    end
-	    local soundtracks = table.Random(self.SoundTrack)
-		local filter = RecipientFilter()
-		filter:AddAllPlayers()
-        self.soundtrack = CreateSound(game.GetWorld(),soundtracks, filter)
-		self.SoundTracks = self.soundtrack
-		self.soundtrack:SetSoundLevel(0)		
-		self.soundtrack:PlayEx(1,100)
-	end
-	if fadeout == true then
-		if self.SoundTracks && self.SoundTracks:IsPlaying() then
-		    self.SoundTracks:FadeOut(1.5)
-		end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRangeAttack_AfterStartTimer() 
-	self:SetNW2Int("RockT",CurTime() +self.NextRangeAttackTime)
-	timer.Simple(0.7,function()
-		if IsValid(self) then
-		    ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward"))              
-		    self.Concrete = ents.Create("prop_vj_animatable")
-			self.Concrete:SetLocalPos(self:GetPos())
-		    self.Concrete:SetModel("models/props_debris/concrete_chunk01a.mdl")
-			self.Concrete:SetOwner(self)
-		    self.Concrete:SetParent(self)
-		    self.Concrete:Spawn()
-		    self.Concrete:Activate()
-		    self.Concrete:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
-		    self.Concrete:SetSolid(SOLID_NONE)
-			self.Concrete:AddEffects(EF_BONEMERGE) 
-		end
-    end)        
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:RemoveConcrete() 
-    self.Concrete:Remove()
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
     local ent = self:GetEnemy()
     if IsValid(ent) then
@@ -285,36 +340,13 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
             PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
         end
     end
-end
+end                   
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomRangeAttackCode()
-    local ent = ents.Create("obj_vj_l4d2_debris")
-    ent:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos)
-    -- ent:SetAngles(self:GetAttachment(self:LookupAttachment("debris")).Ang)
-    ent:SetOwner(self)
-	ent:Spawn()
-	ent:Activate()
-	local phys = ent:GetPhysicsObject()
-	if IsValid(phys) then
-	    phys:SetVelocity(self:RangeAttackCode_GetShootPos() *0.7 +self:GetUp()*175) 
-    end
-    local randattackr = math.random(1,3)
-    if randattackr == 1 then                              
-        self.AnimTbl_RangeAttack = {"throw_02"}
-        self.TimeUntilRangeAttackProjectileRelease = 2.5   
-        self:RemoveConcrete()
-    end         
-    if randattackr == 3 then                              
-        self.AnimTbl_RangeAttack = {"throw_03"}
-        self.TimeUntilRangeAttackProjectileRelease = 1.97
-        self:RemoveConcrete()
-    end    
-    if randattackr == 2 then                              
-        self.AnimTbl_RangeAttack = {"throw_04"} 
-        self.TimeUntilRangeAttackProjectileRelease = 2.8
-        self:RemoveConcrete()              
-    end
-end                      
+function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)      
+    if self:IsMoving() && self:GetActivity() == ACT_RUN then
+        self.AnimTbl_Death = {"Death_2"}
+	end
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnKilled(dmginfo,hitgroup)    
     self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
@@ -323,39 +355,6 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRemove()     
 	self:Tank_Soundtrack(true)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)      
-    if self:IsMoving() && self:GetActivity() == ACT_RUN then
-        self.AnimTbl_Death = {"Death_2"}
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnAcceptInput(key,activator,caller,data)
-	//print(key)
-	if key == "event_emit FootStep" then
-		self:FootStepSoundCode()
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
-    if math.random(1,2) == 1 then
-        self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.74,true)
-        VJ_CreateSound(self,self.SoundTbl_Alert,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-	local randattack = math.random(1,5)
-	if randattack == 1 then
-		self.AnimTbl_MeleeAttack = {"vjges_Hulk_RunAttack1_layer","vjges_Hulk_RunAttack2_layer","vjges_Attack_Moving"}
-		self.TimeUntilMeleeAttackDamage = 0.6
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_t_d")
-	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_Hulk_RunAttack1_layer","vjges_Hulk_RunAttack2_layer","vjges_Attack_Moving"}
-		self.TimeUntilMeleeAttackDamage = 0.6
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_t_d")
-	end
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
