@@ -16,6 +16,7 @@ Charger:
 -Make it carry players until it hits a wall or travels a certain distance
 -Charger doesn't incap player if player is moving backwards (sometimes)
 -No flinching or shoving while charging
+-Incapped enemy spawns under ground when rescued from death
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
