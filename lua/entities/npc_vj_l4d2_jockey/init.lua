@@ -114,7 +114,6 @@ ENT.GhostRunAwayT = CurTime()
 ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
-ENT.CanIncap = true
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
@@ -127,97 +126,56 @@ function ENT:CustomOnInitialize()
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:ResetJockey()
-	local enemy = self.pIncapacitatedEnemy
-	self:Pounce_Effects(true)
-	self.HasEnemyIncapacitated = false
-	if self.IncapSong ~= nil then
-		self.IncapSong:Stop()
-	end
-	self:SetParent(nil)
-	self.AnimTbl_IdleStand = {ACT_IDLE}
-	self.MovementType = VJ_MOVETYPE_GROUND
-	self:VJ_ACT_PLAYACTIVITY("Pounce", true, 0, false)
-	self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, self:OBBMaxs().z / 2))
-	self:SetPos(self:GetPos() + self:GetUp() * self:OBBMaxs().z)
-	if !IsValid(self.pIncapacitatedEnemy) then return end
-	hook.Add("ShouldCollide", "Jockey_EnableCollisions", function(ent1, ent2)
-		if (ent1 == self and ent2 == enemy) then return true end
-	end)
-	if enemy:GetNoDraw() == true then
-		enemy:SetNoDraw(false)
-	end
-	if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-		enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-	end
-	enemy:SetMoveType(self.EnemyMoveType)
-	self.EnemyMoveType = nil
-	if enemy:IsPlayer() then
-		enemy:SetObserverMode(0)
-        enemy:DrawViewModel(true)
-        enemy:DrawWorldModel(true)
-		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-			enemy:SetPos(self.vecLastPos)
-			enemy:SetObserverMode(0)
-			enemy:DrawViewModel(true)
-			enemy:DrawWorldModel(true)
-		end
-	end
-	net.Start("infected_RemoveCSEnt")
-		net.WriteString(tostring(self:EntIndex()))
-	net.Broadcast()
-	if IsValid(self.pEnemyRagdoll) then
-		self.pEnemyRagdoll:Remove()
-		self.pEnemyRagdoll = nil
-	end
-	self.pIncapacitatedEnemy = nil
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnSchedule()
-	local ent = self.pIncapacitatedEnemy
-	if IsValid(ent) then
-		local dist = self:GetPos():Distance(ent:GetPos())
-		if dist <= self.IncapacitationRange then
-			if ent:Health() <= 0 then return end
-			self:VJ_PlaySequence("Jockey_Ride")
-		end
+function ENT:CustomOnAcceptInput(key,activator,caller,data)
+	if key == "event_emit FootStep" then
+		self:FootStepSoundCode()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CanIncapacitate(ent)
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-			return false
-		end
+function ENT:Controller_Initialize(ply)
+	if self.HasEnemyIncapacitated == false then
+		self:SetGhost(true)
 	end
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-			return false
-		end
-	end
-	return true
+    function self.VJ_TheControllerEntity:CustomOnStopControlling()
+        net.Start("L4D2JockeyHUD")
+            net.WriteBool(true)
+            net.WriteEntity(self)
+            net.WriteEntity(ply)
+        net.Send(ply)
+        net.Start("L4D2JockeyHUDGhost")
+            net.WriteBool(true)
+            net.WriteEntity(self)
+            net.WriteEntity(ply)
+        net.Send(ply)
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:IsEntityAlly(ent)
-	if ent:IsNPC() then
-		if ent.IsVJBaseSNPC == true then
-			for i = 1, table.Count(ent.VJ_NPC_Class) do
-				for c = 1, table.Count(self.VJ_NPC_Class) do
-					if ent.VJ_NPC_Class[i] == self.VJ_NPC_Class[c] then
-						return true
-					end
-				end
-			end
-		end
-	elseif ent:IsPlayer() then
-		if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
-			return true
-		end
-		if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
-			return true
-		end
-	end
-	return false
+function ENT:ManageHUD(ply)
+    if self.VJ_IsBeingControlled == true then
+        if self.IsGhosted == true then
+            net.Start("L4D2JockeyHUDGhost")
+                net.WriteBool(false)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
+            net.Send(ply)
+            net.Start("L4D2JockeyHUD")
+                net.WriteBool(true)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
+            net.Send(ply)
+        elseif self.IsGhosted == false then
+            net.Start("L4D2JockeyHUD")
+                net.WriteBool(false)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
+            net.Send(ply)
+            net.Start("L4D2JockeyHUDGhost")
+                net.WriteBool(true)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
+            net.Send(ply)
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Pounce_Effects(fadeout)
@@ -265,7 +223,6 @@ function ENT:Pounce_Effects(fadeout)
 		glowlight:SetParent(self)
 		glowlight:Spawn()
 		glowlight:Activate()
-		--glowlight:Fire("SetParentAttachment","attach_blur")
 		glowlight:Fire("TurnOn","",0)
 		self:DeleteOnRemove(glowlight)
 		self.Light3 = glowlight
@@ -280,19 +237,67 @@ function ENT:Pounce_Effects(fadeout)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayVassalationSound(lvl)
-	if IsValid(self.IncapSound) && self.IncapSound:IsPlaying() == true then return end
+	if self.IncapSound && self.IncapSound:IsPlaying() == true then return end
 	local snd = table.Random(self.SoundTbl_Vassal)
-	self.IncapSound = VJ_CreateSound(self, snd, 80)
-	timer.Simple(math.Round(SoundDuration(snd)), function()
-		if !IsValid(self.IncapSound) then return end
+	self.IncapSound = CreateSound(self, snd)
+	self.IncapSound:Play()
+	timer.Simple(SoundDuration(snd) * 3, function()
+		if self.IncapSound == nil then return end
 		self.IncapSound:Stop()
+		self.IncapSound = nil
 	end)
-	local id = self:EntIndex()
 	self:CallOnRemove("jockey_StopIncapSound", function(ent)
 		if self.IncapSound ~= nil then
 			self.IncapSound:Stop()
 		end
 	end)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:ResetJockey()
+	local enemy = self.pIncapacitatedEnemy
+	self:Pounce_Effects(true)
+	self.HasEnemyIncapacitated = false
+	if self.IncapSong then
+		self.IncapSong:Stop()
+		self.IncapSong = nil
+	end
+	self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+	self:SetParent(nil)
+	self.AnimTbl_IdleStand = {ACT_IDLE}
+	self.MovementType = VJ_MOVETYPE_GROUND
+	self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, self:OBBMaxs().z / 2))
+	self:SetPos(self:GetPos() + self:GetUp() * self:OBBMaxs().z)
+	if !IsValid(self.pIncapacitatedEnemy) then return end
+	hook.Add("ShouldCollide", "Jockey_EnableCollisions", function(ent1, ent2)
+		if (ent1 == self and ent2 == enemy) then return true end
+	end)
+	if enemy:GetNoDraw() == true then
+		enemy:SetNoDraw(false)
+	end
+	if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+		enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
+	end
+	enemy:SetMoveType(self.EnemyMoveType)
+	self.EnemyMoveType = nil
+	if enemy:IsPlayer() then
+		enemy:SetObserverMode(0)
+        enemy:DrawViewModel(true)
+        enemy:DrawWorldModel(true)
+		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+			enemy:SetPos(self.vecLastPos)
+			enemy:SetObserverMode(0)
+			enemy:DrawViewModel(true)
+			enemy:DrawWorldModel(true)
+		end
+	end
+	net.Start("infected_RemoveCSEnt")
+		net.WriteString(tostring(self:EntIndex()))
+	net.Broadcast()
+	if IsValid(self.pEnemyRagdoll) then
+		self.pEnemyRagdoll:Remove()
+		self.pEnemyRagdoll = nil
+	end
+	self.pIncapacitatedEnemy = nil
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
@@ -306,16 +311,38 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:MultipleMeleeAttacks()
+	local randattack = math.random(1,2)
+	if randattack == 1 then
+		self.AnimTbl_MeleeAttack = {"vjges_Jockey_Melee"}
+		self.TimeUntilMeleeAttackDamage = 0.25
+		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_j_d")
+	elseif randattack == 2 then
+		self.AnimTbl_MeleeAttack = {"vjges_Jockey_Melee"}
+		self.TimeUntilMeleeAttackDamage = 0.25
+		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_j_d")
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnSchedule()
+	local ent = self.pIncapacitatedEnemy
+	if IsValid(ent) then
+		local dist = self:GetPos():Distance(ent:GetPos())
+		if dist <= self.IncapacitationRange then
+			if ent:Health() <= 0 then return end
+			self:VJ_PlaySequence("Jockey_Ride")
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	if self.IsGhosted then
 		self:Ghost()
 	end
 	if self.IsGhosted then
-        self.CanIncap = false
         self.HasLeapAttack = false
     else
-        self.CanIncap = true
-	self.HasLeapAttack = true
+        self.HasLeapAttack = true
     end
 
 	self.vecLastPos = self:GetPos()
@@ -403,12 +430,6 @@ function ENT:CustomOnThink()
 		end
 	end
 
-	if IsValid(self.pIncapacitatedEnemy) then
-		if CurTime() >= self.nextIncapSong then
-			self:Jockey_PlayIncapSong(true,false)
-		end
-	end
-
 	if self:GetSequence() == self:LookupSequence("Jump") then
 		self.IsPouncing = true 
 	else
@@ -425,7 +446,7 @@ function ENT:CustomOnThink()
 		self:ResetJockey()
 	end
 
-	if self.IsPouncing == true && self.HasEnemyIncapacitated == false && self.CanIncap then
+	if self.IsPouncing == true && self.HasEnemyIncapacitated == false then
 		for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
 			if IsValid(v) then
 				if (v:IsPlayer() && v:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0) or (v:IsNPC() && v ~= self) then
@@ -498,6 +519,7 @@ function ENT:CustomOnThink()
 									net.WriteString(v:GetModel())
 								net.Broadcast()
 							end)
+							self.pEnemyRagdoll = mdl
 							self.EnemyMoveType = v:GetMoveType()
 							if v:IsPlayer() then
 								self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, self:OBBMaxs().z * 2))
@@ -509,15 +531,12 @@ function ENT:CustomOnThink()
 								self:SetParent(v)
 							end
 							self:SetAngles(v:GetAngles())
-							self.pEnemyRagdoll = mdl
 							v:CallOnRemove("jockey_ClearParent", function(ent)
 								if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
-									--[[self:SetCollisionBounds(Vector(25,25,25), Vector(-25,-25,0)) 
-									self:SetParent(nil)]]
 									self:ResetJockey()
-									net.Start("infected_RemoveCSEnt")
+									--[[net.Start("infected_RemoveCSEnt")
 										net.WriteString(tostring(self:EntIndex()))
-									net.Broadcast()
+									net.Broadcast()]]
 								end
 								if ent:IsPlayer() then
 									ent:SetParent(nil)
@@ -531,43 +550,6 @@ function ENT:CustomOnThink()
 									victim:DrawWorldModel(true)
 								end
 							end)
-							self:CallOnRemove("jockey_OnRemove", function(ent)
-								net.Start("infected_RemoveCSEnt")
-									net.WriteString(tostring(ent:EntIndex()))
-								net.Broadcast()
-								if ent.IncapSong ~= nil then
-									ent.IncapSong:Stop()
-								end
-								local enemy = self.pIncapacitatedEnemy
-								if IsValid(enemy) then
-									if enemy:IsPlayer() then
-										enemy:SetMoveType(self.EnemyMoveType)
-										enemy:SetPos(self.vecLastPos)
-										enemy:SetObserverMode(0)
-										enemy:DrawViewModel(true)
-										enemy:DrawWorldModel(true)
-										if table.Count(self.tblEnemyWeapons) > 0 then
-											for i = 1, table.Count(self.tblEnemyWeapons) do
-												enemy:Give(self.tblEnemyWeapons[i], true)
-											end
-										end
-										if table.Count(self.tblEnemyAmmo) > 0 then
-											for i = 1, table.Count(self.tblEnemyAmmo) do
-												enemy:GiveAmmo(self.tblEnemyAmmo[i][2], game.GetAmmoName(self.tblEnemyAmmo[1]), true)
-											end
-										end
-									end
-									if enemy:GetNoDraw() == true then
-										enemy:SetNoDraw(false)
-									end
-									if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-										enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-									end
-									if IsValid(self.pEnemyRagdoll) then
-										self.pEnemyRagdoll:Remove()
-									end
-								end
-							end)
 						end
 					end
 				end
@@ -578,6 +560,7 @@ function ENT:CustomOnThink()
 		if (IsValid(self.IncapSound) && self.IncapSound:IsPlaying() == false) || self.IncapSound == nil then
 			self:PlayVassalationSound()
 		end
+		self:PlayIncapSong()
 		self.HasIdleSounds = false
 		self.HasMeleeAttack = false
 		self.CombatFaceEnemy = false
@@ -761,80 +744,6 @@ function ENT:CustomOnThink()
 		self:PlayBacteria()
 	end
 end
-
---leave this alone
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnAcceptInput(key,activator,caller,data)
-	if key == "event_emit FootStep" then
-		self:FootStepSoundCode()
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    local ent = self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
-        end
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
-    self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
-    VJ_STOPSOUND(self.soundtrack)
-    VJ_STOPSOUND(self.attacking)
-end      
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRemove()
-    VJ_STOPSOUND(self.soundtrack)
-    VJ_STOPSOUND(self.attacking)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Controller_Initialize(ply)
-    self:SetGhost(true)
-    function self.VJ_TheControllerEntity:CustomOnStopControlling()
-        net.Start("L4D2JockeyHUD")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-        net.Start("L4D2JockeyHUDGhost")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:ManageHUD(ply)
-    if self.VJ_IsBeingControlled == true then
-        if self.IsGhosted == true then
-            net.Start("L4D2JockeyHUDGhost")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2JockeyHUD")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        elseif self.IsGhosted == false then
-            net.Start("L4D2JockeyHUD")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2JockeyHUDGhost")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        end
-    end
-end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	if dmginfo:GetDamageType() == DMG_CLUB then
@@ -842,17 +751,24 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-	local randattack = math.random(1,2)
-	if randattack == 1 then
-		self.AnimTbl_MeleeAttack = {"vjges_Jockey_Melee"}
-		self.TimeUntilMeleeAttackDamage = 0.25
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_j_d")
-	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_Jockey_Melee"}
-		self.TimeUntilMeleeAttackDamage = 0.25
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_j_d")
-	end
+function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
+    local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
+    if IsValid(ent) then
+        if ent:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
+        elseif ent:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+        end
+    end
+    self:ResetJockey()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
+    self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
+end      
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnRemove()
+	self:ResetJockey()
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
