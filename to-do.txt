@@ -64,6 +64,7 @@ General:
 -Make infected unghost ✅
 -Make specials unable to ghost when incapping
 -Make incap lights clientside & visible only to incapped enemy
+-Add crouching to all specials
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
