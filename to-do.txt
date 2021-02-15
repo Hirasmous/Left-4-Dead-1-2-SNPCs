@@ -61,6 +61,7 @@ General:
 -Bacteria cuts short for some specials (jockey & hunter for sure) ✅
 -Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops)
 -Make infected unghost ✅
+-Make specials unable to ghost when incapping
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
