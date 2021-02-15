@@ -31,6 +31,7 @@ Jockey:
 -Add updated StripEnemyWeapons() func ✅
 -Player's view is zoomed in after jockey stops incapping
 -Disable sounds when incapping
+-Add damage events
 
 Smoker:
 -Incapped enemy pose params ✅
@@ -53,6 +54,11 @@ Spitter:
 Tank:
 -Fix textures not being applied to model ✅
 -Implement rock bodygroup for range attack ❓
+
+Witch:
+-Change sequence "Standing_Idle"'s activity to something other than ACT_IDLE; it conflicts with "Idle_Standing_Crying"
+-Add rage pose parameters
+-Add sitting pose parameters
 
 General:
 -Ignore incapped players/enemies if there are more enemies nearby
