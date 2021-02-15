@@ -26,6 +26,7 @@ if SERVER then
     function ENT:Initialize()
         self:SetRenderMode(1)
         self:SetColor(Color(0, 0, 0, 0))
+        self:DrawShadow(false)
         self.Owner = self:GetOwner()
     end
 
