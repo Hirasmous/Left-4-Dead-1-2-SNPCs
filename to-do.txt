@@ -8,14 +8,13 @@ Charger:
 -Add shove code to repo ✅
 -Keep charging until he hits a wall or travels certain dist ✅
 -Can pound the bullseye entity when being controlled (is this fixed?) ✅
--Make the recharge for pounding less time?
+-Make the recharge for pounding less time? ✅
 -Make it carry players until it hits a wall or travels a certain distance
 -Charger doesn't incap player if player is moving backwards (sometimes)
 -No flinching or shoving while charging
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
--Don't incap player who is controlling 
 -Properly implement shove anims ✅
 -Proper crouch charging 
 -Gets stuck in incapped enemy when shoved off
@@ -31,12 +30,11 @@ Jockey:
 Smoker:
 -Incapped enemy pose params ✅
 -Collision for tongue (lerp mouth att pos & enemy pos) ✅
--Fix Cloud smoke damaging Smoker
+-Fix Cloud smoke damaging Smoker/other specials & allies
 -Fix cant incap when being controlled ✅
 -Smoker's incapped enemy can move ✅
 -Center tongue particle on incapped model (make tracer particle end at incapped enemy's waist) ✅
 -Drag enemies off of ledges
--Reset recharge after DismountSmoker() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 -Prevent smoke cloud from damaging altogether; add smoke overlay  effect
 -Add dangling animations for incapped enemy when it's off ground
 -(L4D1) Restore tongue bodygroup after stopping incapping
@@ -49,13 +47,13 @@ Spitter:
 
 Tank:
 -Fix textures not being applied to model ✅
--Implement rock bodygroup for range attack
+-Implement rock bodygroup for range attack ❓
 
 General:
 -Ignore incapped players/enemies if there are more enemies nearby
 -Match shared functions
-	> Update IsEntityAlly function ✅
-	> Create a module that holds shared funcs
+	> Update IsEntityAlly function  ✅
+	> Create a module that holds shared funcs ✅ (metatable in vj_l4d2si_features.lua)
 -Conserve incap enemy's bodygroups/skins to CSEnt
 -Be able to shove off on incapped enemies ✅
 -Proper recharge HUD icon when controlled ✅
@@ -64,17 +62,19 @@ General:
 -Witch HUD ✅
 -Make HUD fit any screen size ✅
 -Bacteria cuts short for some specials (jockey & hunter for sure) ✅
--Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops)
+-Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops) ✅
 -Make infected unghost ✅
 -Make specials unable to ghost when incapping
 -Make incap lights clientside & visible only to incapped enemy
 -Add crouching to all specials
+-Don't incap player who is controlling 
+-Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
 - You have to click IN_USE many times before ghosting turns on ✅
 - Smoker doesn't stop incapping after the enemy dies ✅
-- Too many smoker_tongue_fall particles spawn when smoker misses or is killed while incapping
+- Too many smoker_tongue_fall particles spawn when smoker misses or is killed while incapping (solved?) ❓
 
 ConVars:
 -Should incapped NPC enemies drop their weapons? ✅
