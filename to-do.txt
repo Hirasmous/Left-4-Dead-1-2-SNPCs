@@ -35,6 +35,7 @@ Smoker:
 -Reset recharge after DismountSmoker() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 -Prevent smoke cloud from damaging altogether; add smoke overlay  effect
 -Add dangling animations for incapped enemy when it's off ground
+-(L4D1) Restore tongue bodygroup after stopping incapping
 
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
