@@ -177,7 +177,9 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-	self:SetGhost(true)
+	if self.HasEnemyIncapacitated == false then
+		self:SetGhost(true)
+	end
 	function self.VJ_TheControllerEntity:CustomOnStopControlling()
 		net.Start("L4D2ChargerHUD")
 			net.WriteBool(true)
@@ -218,124 +220,6 @@ function ENT:ManageHUD(ply)
 			net.Send(ply)
 		end
 	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnLeapAttack_AfterStartTimer()
-	self:SetNW2Int("ChargeT",CurTime() +self.NextLeapAttackTime)
-	if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
-	timer.Create("Charger_HitWall", 0.1, 11, function()
-		if !IsValid(self) then return end
-		local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
-		local tr = util.TraceLine( {
-			start = self:GetPos() +self:OBBCenter() +self:OBBMaxs() +self:OBBMins(),
-			endpos = self:GetPos() + self:GetForward() *60 +self:GetUp() *20,
-			filter = self,
-			mask = MASK_SOLID_BRUSHONLY,
-		} )
-		if tr.Hit then
-			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-			VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
-			VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
-			ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
-			timer.Stop("Charger_HitWall")
-		end
-	end)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
-	if self.VJ_IsBeingControlled == false then
-		self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Charger_Slam_Ground","Charger_Shoved_Backward"},true,0.1,false)
-	end
-	VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
-	VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
-	ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
-	self:PummelEnemy(TheHitEntity)
-	for k, v in ipairs(ents.FindByClass("player")) do
-		if TheHitEntity:IsPlayer() then
-			VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.mp3",90,self:VJ_DecideSoundPitch(100,100))
-		elseif TheHitEntity:IsNPC() then
-			TheHitEntity:StopMoving()
-			VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-		end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-	local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
-	if IsValid(ent) then
-		if ent:IsNPC() then
-			PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-		elseif ent:IsPlayer() then
-			PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
-		end
-	end
-	self:DismountCharger()
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:ChargerIncapacitate(ent)
-	local ent = self.pIncapacitatedEnemy
-	if ent then
-		self.pIncapacitatedEnemy = ent 
-		self.HasEnemyIncapacitated = true
-		if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-			ent:AddEFlags(EFL_NO_THINK_FUNCTION)
-		end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CanIncapacitate(ent)
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-			return false
-		end
-	end
-	for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-			return false
-		end
-	end
-	return true
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:IsEntityAlly(ent)
-	if ent:GetClass() == "obj_vj_bullseye" then
-		return true
-	end
-	if ent:IsNPC() then
-		if ent.IsVJBaseSNPC == true then
-			for i = 1, table.Count(ent.VJ_NPC_Class) do
-				if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
-					return true
-				end
-			end
-		end
-	elseif ent:IsPlayer() then
-		if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
-			return true
-		end
-		if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
-			return true
-		end
-	end
-	return false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:StripEnemyWeapons(ent)
-	local weapons = ent:GetWeapons()
-	self.tblEnemyWeapons = {}
-	self.tblEnemyAmmo = {}
-	self.tblEnemyAmmo = ent:GetAmmo()
-	for l, w in ipairs(weapons) do
-		if w.Base ~= "weapon_vj_base" then
-			local index = table.Count(self.tblEnemyWeapons) + 1
-			self.tblEnemyWeapons[index] = {}
-			self.tblEnemyWeapons[index][1] = w:GetClass()
-			self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
-			self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
-		end
-	end
-	ent:StripWeapons()
-	ent:StripAmmo()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Pummel_Effects(fadeout)
@@ -383,7 +267,6 @@ function ENT:Pummel_Effects(fadeout)
 		glowlight:SetParent(self)
 		glowlight:Spawn()
 		glowlight:Activate()
-		--glowlight:Fire("SetParentAttachment","attach_blur")
 		glowlight:Fire("TurnOn","",0)
 		self:DeleteOnRemove(glowlight)
 		self.Light3 = glowlight
@@ -393,6 +276,17 @@ function ENT:Pummel_Effects(fadeout)
 			self.Light1:Remove()
 			self.Light2:Remove()
 			self.Light3:Remove()
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:ChargerIncapacitate(ent)
+	local ent = self.pIncapacitatedEnemy
+	if ent then
+		self.pIncapacitatedEnemy = ent 
+		self.HasEnemyIncapacitated = true
+		if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+			ent:AddEFlags(EFL_NO_THINK_FUNCTION)
 		end
 	end
 end
@@ -492,7 +386,11 @@ function ENT:PummelEnemy(v)
 		                        else
 		                            mdl:SetParent(enemy)
 		                        end
-		                        timer.Simple(0.1,function()
+		                        local tm = 0.1
+		                        if self.VJ_IsBeingControlled then
+		                        	tm = 0.7
+		                        end
+		                        timer.Simple(tm,function()
 		                        	if IsValid(self) && IsValid(enemy) && IsValid(mdl) then
 							            mdl:ResetSequence("Charger_pounded")
 					                    mdl:ResetSequenceInfo()
@@ -510,6 +408,7 @@ function ENT:PummelEnemy(v)
 				                    net.Broadcast()
 				                end)
 			                end
+			                self.pEnemyRagdoll = mdl
 		                    if enemy:IsPlayer() then
 		                    	self:Pummel_Effects(false)
 							    enemy:SetParent(self)
@@ -519,13 +418,12 @@ function ENT:PummelEnemy(v)
 							end
 		                    enemy:CallOnRemove("Charger_ClearParent", function(ent)
 		        				if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
-		                    		self:SetParent(nil)
+		                    		self:DismountCharger()
 		                    	end
 		                        if ent:IsPlayer() then
 		                            ent:SetParent(nil)
 		                        end
 		                	end)             
-		                    self.pEnemyRagdoll = mdl
 		                    hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
 		                        if victim == self.pIncapacitatedEnemy then
 		                            enemy:SetParent(nil)
@@ -533,74 +431,13 @@ function ENT:PummelEnemy(v)
 		                            enemy:DrawViewModel(true)
 		                            enemy:DrawWorldModel(true)
 		                        end
-		                    end)
-		                    self:CallOnRemove("Charger_OnRemove", function(ent)
-								net.Start("infected_RemoveCSEnt")
-									net.WriteString(tostring(ent:EntIndex()))
-								net.Broadcast()
-		                        local enemy = self.pIncapacitatedEnemy
-						        if IsValid(enemy) then
-						            if enemy:IsPlayer() then
-		                                enemy:SetPos(self.vecLastPos)
-		                                enemy:SetObserverMode(0)
-		                                enemy:DrawViewModel(true)
-		                                enemy:DrawWorldModel(true)
-								    if table.Count(ent.tblEnemyWeapons) > 0 then
-										for i = 1, table.Count(ent.tblEnemyWeapons) do
-										    local tbl = ent.tblEnemyWeapons
-										    enemy:Give(tbl[i][1], true)
-										    local wpn = enemy:GetWeapon(tbl[i][1])
-										    if tbl[i][2][1] ~= -1 then
-												wpn:SetClip1(tbl[i][2][2])
-										    end
-										    if tbl[i][3][1] ~= -1 then
-												wpn:SetClip2(tbl[i][3][2])
-										    end
-										end
-								    end
-								    for a, c in ipairs(self.tblEnemyAmmo) do
-										enemy:GiveAmmo(c, game.GetAmmoName(a), true)
-								    end
-						            end
-						            if enemy:GetNoDraw() == true then
-						                enemy:SetNoDraw(false)
-						            end
-						            if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-						                enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-						            end
-						            if IsValid(self.pEnemyRagdoll) then
-						            	self.pEnemyRagdoll:Remove()
-						            end
-						        end
-		                    end)						
+		                    end)			
 						end
 					end
 				end
 			end
 		end
 	end)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-	local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
-	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
-		self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-		if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
-			self:DismountCharger()
-			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-		end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnSchedule()
-	local ent = self.pIncapacitatedEnemy
-	if IsValid(ent) then
-		local dist = self:GetPos():Distance(ent:GetPos())
-		if dist <= self.IncapacitationRange then
-			if ent:Health() <= 0 then return end
-			self:VJ_PlaySequence("Charger_Pound")	  
-		end
-	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountCharger()
@@ -611,12 +448,13 @@ function ENT:DismountCharger()
 	if self.VJ_IsBeingControlled then
 		self.AnimTbl_IdleStand = {ACT_IDLE}
 	end
-	if IsValid(self.IncapSong) then
+	if self.IncapSong then
 		self.IncapSong:Stop()
 		self.IncapSong = nil
 	end
 	if !IsValid(self.pIncapacitatedEnemy) then return end
 	local enemy = self.pIncapacitatedEnemy
+	enemy:SetPos(self:GetPos())
 	hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
 		if (ent1 == self and ent2 == enemy) then return true end
 	end)
@@ -633,26 +471,25 @@ function ENT:DismountCharger()
 	end
 	if enemy:IsPlayer() then
 		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-			enemy:SetPos(self.vecLastPos)
 			enemy:SetObserverMode(0)
 			enemy:DrawViewModel(true)
 			enemy:DrawWorldModel(true)
 		end
 		if table.Count(self.tblEnemyWeapons) > 0 then
-		for i = 1, table.Count(self.tblEnemyWeapons) do
-			local tbl = self.tblEnemyWeapons
-			enemy:Give(tbl[i][1], true)
-			local wpn = enemy:GetWeapon(tbl[i][1])
-			if tbl[i][2][1] ~= -1 then
-			wpn:SetClip1(tbl[i][2][2])
+			for i = 1, table.Count(self.tblEnemyWeapons) do
+				local tbl = self.tblEnemyWeapons
+				enemy:Give(tbl[i][1], true)
+				local wpn = enemy:GetWeapon(tbl[i][1])
+				if tbl[i][2][1] ~= -1 then
+					wpn:SetClip1(tbl[i][2][2])
+				end
+				if tbl[i][3][1] ~= -1 then
+					wpn:SetClip2(tbl[i][3][2])
+				end
 			end
-			if tbl[i][3][1] ~= -1 then
-			wpn:SetClip2(tbl[i][3][2])
-			end
-		end
 		end
 		for a, c in ipairs(self.tblEnemyAmmo) do
-		enemy:GiveAmmo(c, game.GetAmmoName(a), true)
+			enemy:GiveAmmo(c, game.GetAmmoName(a), true)
 		end
 	end
 	net.Start("infected_RemoveCSEnt")
@@ -665,6 +502,71 @@ function ENT:DismountCharger()
 	self.pIncapacitatedEnemy = nil
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnLeapAttack_AfterStartTimer()
+	self:SetNW2Int("ChargeT",CurTime() +self.NextLeapAttackTime)
+	if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
+	timer.Create("Charger_HitWall", 0.1, 11, function()
+		if !IsValid(self) then return end
+		local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
+		local tr = util.TraceLine( {
+			start = self:GetPos() +self:OBBCenter() +self:OBBMaxs() +self:OBBMins(),
+			endpos = self:GetPos() + self:GetForward() *60 +self:GetUp() *20,
+			filter = self,
+			mask = MASK_SOLID_BRUSHONLY,
+		} )
+		if tr.Hit then
+			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+			VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
+			VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
+			ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
+			timer.Stop("Charger_HitWall")
+		end
+	end)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
+	if self.VJ_IsBeingControlled == false then
+		self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Charger_Slam_Ground","Charger_Shoved_Backward"},true,0.1,false)
+	end
+	VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
+	VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
+	ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
+	self:PummelEnemy(TheHitEntity)
+	for k, v in ipairs(ents.FindByClass("player")) do
+		if TheHitEntity:IsPlayer() then
+			VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.mp3",90,self:VJ_DecideSoundPitch(100,100))
+		elseif TheHitEntity:IsNPC() then
+			TheHitEntity:StopMoving()
+			VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:MultipleMeleeAttacks()
+	if self.IsIncapacitating == true then return end
+	local randattack = math.random(1,2)
+	if randattack == 1 then
+		self.AnimTbl_MeleeAttack = {"vjges_Charger_punch"}
+		self.TimeUntilMeleeAttackDamage = 0.8
+		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_c_d")
+	elseif randattack == 2 then
+		self.AnimTbl_MeleeAttack = {"vjges_Charger_punch"}
+		self.TimeUntilMeleeAttackDamage = 0.8
+		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_c_d")
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnSchedule()
+	local ent = self.pIncapacitatedEnemy
+	if IsValid(ent) then
+		local dist = self:GetPos():Distance(ent:GetPos())
+		if dist <= self.IncapacitationRange then
+			if ent:Health() <= 0 then return end
+			self:VJ_PlaySequence("Charger_Pound")	  
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	if self.IsGhosted then
         self:Ghost()
@@ -674,65 +576,17 @@ function ENT:CustomOnThink()
     else
         self.HasLeapAttack = true
     end
+
 	self.vecLastPos = self:GetPos()
+
 	if self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
 		self.IsIncapacitating = true
 	else
 		self.IsIncapacitating = false
 	end
-	if self.IsIncapacitating == true then
-		self.HasMeleeAttack = false
-	elseif self.IsIncapacitating == false then
-		self.HasMeleeAttack = true
-	end
+
 	if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
 		self:VJ_ACT_PLAYACTIVITY("Jump", true)   
-	end
-	if IsValid(self.pIncapacitatedEnemy) then
-		local enemy = self.pIncapacitatedEnemy
-		if enemy:Health() <= 0 then
-			self:DismountCharger()
-		end
-		if self.IsIncapacitating == true then
-			if self.HasEnemyIncapacitated == true then
-				if not enemy:GetNoDraw() then
-					enemy:SetNoDraw(true)
-				end
-				if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-					enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
-				end   
-				if enemy:IsPlayer() then
-					enemy:SetLocalPos(Vector(0, 0, 0))
-				else
-					self:SetLocalPos(Vector(0, 0, 0))
-				end		 
-			end
-			local dist = self:GetPos():Distance(enemy:GetPos())
-			if dist > self.IncapacitationRange then
-				self:DismountCharger()
-			end
-		else
-			if self.HasEnemyIncapacitated == false then
-				self:DismountCharger()
-			end
-		end
-	else
-		if self.IsIncapacitating == true then
-			net.Start("infected_RemoveCSEnt")
-				net.WriteString(tostring(self:EntIndex()))
-			net.Broadcast()
-			self:DismountCharger()
-			self:SetPos(self:GetPos())
-		end
-	end
-	if IsValid(self.pIncapacitatedEnemy) then
-		if CurTime() >= self.nextIncapSong then
-			self:Charger_PlayIncapSong(true,false)
-		end
-	else
-		if self.IncapSong ~= nil then
-			self.IncapSong:Stop()
-		end
 	end
 
 	if self.HasEnemyIncapacitated == true then 
@@ -741,6 +595,7 @@ function ENT:CustomOnThink()
 		if self.VJ_IsBeingControlled then
 			self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
 		end
+		self:PlayIncapSong()
 		if IsValid(self.pEnemyRagdoll) then
 			self:SetAngles(Angle(self:GetAngles().x, self.pEnemyRagdoll:GetAngles().y - 180, self:GetAngles().z))
 			self.pEnemyRagdoll:SetLocalPos(Vector(0,0,0))
@@ -751,23 +606,39 @@ function ENT:CustomOnThink()
 		end
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
-			if enemy:IsPlayer() then
+			if enemy:Health() <= 0 then
+				self:DismountCharger()
+			end
+			if not enemy:GetNoDraw() then
+				enemy:SetNoDraw(true)
+			end
+			if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+				enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
+			end    
+			if enemy:Health() < enemy:GetMaxHealth() / 3 then
+				if IsValid(self.pEnemyRagdoll) then
+		            self.pEnemyRagdoll:ResetSequence("Charger_pounded_incap")
+                    self.pEnemyRagdoll:ResetSequenceInfo()
+                    self.pEnemyRagdoll:SetCycle(0)
+				end
+			end
+			if enemy:IsPlayer() && enemy:Alive() then
 				enemy:SetLocalPos(Vector(0, 0, 0))
 			else
-				self:SetLocalPos(Vector(0, 0, 0))
+				if enemy:Health() > 0 then
+					self:SetLocalPos(Vector(0, 0, 0))
+				end
 			end
 			local dist = self:GetPos():Distance(enemy:GetPos())
 			if dist > self.IncapacitationRange then
 				self:DismountCharger()
-			end
-			if enemy:GetNoDraw() == true then 
-				enemy:SetNoDraw(true)
 			end
 		end
 	else
 		self.HasMeleeAttack = true
 		self.CombatFaceEnemy = true
 	end
+
 	if CurTime() >= self.nextBacteria then
 		self:PlayBacteria()
 	end
@@ -790,18 +661,31 @@ function ENT:CustomOnThink()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-	if self.IsIncapacitating == true then return end
-	local randattack = math.random(1,2)
-	if randattack == 1 then
-		self.AnimTbl_MeleeAttack = {"vjges_Charger_punch"}
-		self.TimeUntilMeleeAttackDamage = 0.8
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_c_d")
-	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_Charger_punch"}
-		self.TimeUntilMeleeAttackDamage = 0.8
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_c_d")
+function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
+	local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
+	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
+		self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+		if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+			self:DismountCharger()
+			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+		end
 	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
+	local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
+	if IsValid(ent) then
+		if ent:IsNPC() then
+			PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
+		elseif ent:IsPlayer() then
+			PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+		end
+	end
+	self:DismountCharger()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnRemove()
+	self:DismountCharger()
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
