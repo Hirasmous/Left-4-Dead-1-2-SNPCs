@@ -128,10 +128,25 @@ function ENT:CustomOnInitialize()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
-	//print(key)
 	if key == "event_emit FootStep" then
 		self:FootStepSoundCode()
 	end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Controller_Initialize(ply)
+    self:SetGhost(true)
+    function self.VJ_TheControllerEntity:CustomOnStopControlling()
+        net.Start("L4D2SpitterHUD")
+            net.WriteBool(true)
+            net.WriteEntity(self)
+            net.WriteEntity(ply)
+        net.Send(ply)
+        net.Start("L4D2SpitterHUDGhost")
+            net.WriteBool(true)
+            net.WriteEntity(self)
+            net.WriteEntity(ply)
+        net.Send(ply)
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
@@ -162,26 +177,43 @@ function ENT:ManageHUD(ply)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_BackWard","Shoved_Leftward","Shoved_Rightward"}
-    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+function ENT:SpitterAcid(fadeout)
+    if fadeout == false then
+        local table_acidloop = table.Random(self.SoundTbl_SpitterAcid)
+        local table_acidtheme = table.Random(self.SoundTbl_SpitterAcidTheme)
+        self.cspIdleThemeLoop = CreateSound(self, table_acidtheme)
+        self.cspIdleThemeLoop:SetSoundLevel(70)
+        self.cspIdleThemeLoop:Play(70)
+    end
+    if fadeout == true then
+        if self.Dead == true then
+            if self.AcidLoop && self.AcidLoop:IsPlaying() then
+                self.AcidLoop:FadeOut(1)
+            end
+        end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Controller_Initialize(ply)
-    self:SetGhost(true)
-    function self.VJ_TheControllerEntity:CustomOnStopControlling()
-        net.Start("L4D2SpitterHUD")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-        net.Start("L4D2SpitterHUDGhost")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
+function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
+    self:SetNW2Int("SpitT",CurTime() +self.NextRangeAttackTime)
+    self.IsTakingCover = true
+    timer.Simple(self.NextRangeAttackTime,function()
+        if IsValid(self) then
+            self.IsTakingCover = false
+        end
+    end)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:MultipleMeleeAttacks()
+    local randattack = math.random(1,2)
+    if randattack == 1 then
+        self.AnimTbl_MeleeAttack = {"vjges_spitter_melee_01","vjges_spitter_melee_02"}
+        self.TimeUntilMeleeAttackDamage = 0.5
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_sp_d")
+    elseif randattack == 2 then
+        self.AnimTbl_MeleeAttack = {"vjges_spitter_melee_01","vjges_spitter_melee_02"}
+        self.TimeUntilMeleeAttackDamage = 0.5
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_sp_d")
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -228,31 +260,11 @@ function ENT:CustomOnThink()
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
-    self:SetNW2Int("SpitT",CurTime() +self.NextRangeAttackTime)
-    self.IsTakingCover = true
-    timer.Simple(self.NextRangeAttackTime,function()
-        if IsValid(self) then
-            self.IsTakingCover = false
-        end
-    end)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:SpitterAcid(fadeout)
-	if fadeout == false then
-		local table_acidloop = table.Random(self.SoundTbl_SpitterAcid)
-	    local table_acidtheme = table.Random(self.SoundTbl_SpitterAcidTheme)
-	    self.cspIdleThemeLoop = CreateSound(self, table_acidtheme)
-	    self.cspIdleThemeLoop:SetSoundLevel(70)
-	    self.cspIdleThemeLoop:Play(70)
-	end
-	if fadeout == true then
-		if self.Dead == true then
-			if self.AcidLoop && self.AcidLoop:IsPlaying() then
-				self.AcidLoop:FadeOut(1)
-			end
-	    end
-	end
+function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
+    local anims = VJ_PICK{"Shoved_BackWard","Shoved_Leftward","Shoved_Rightward"}
+    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt) 
@@ -267,7 +279,6 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
-	--self:SpitterAcid(true)
     local acid = ents.Create("obj_vj_l4d2_spit")
     acid:SetPos(self:GetPos() +Vector(0,0,13))
     acid:SetAngles(self:GetAngles())
@@ -275,19 +286,6 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
     acid:Activate()
     acid:Spawn()  
     acid:SetNoDraw(true)  
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-	local randattack = math.random(1,2)
-	if randattack == 1 then
-		self.AnimTbl_MeleeAttack = {"vjges_spitter_melee_01","vjges_spitter_melee_02"}
-		self.TimeUntilMeleeAttackDamage = 0.5
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_sp_d")
-	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_spitter_melee_01","vjges_spitter_melee_02"}
-		self.TimeUntilMeleeAttackDamage = 0.5
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_sp_d")
-	end
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
