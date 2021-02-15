@@ -1,5 +1,9 @@
 Boomer:
 -Add vomit cover material overlay to enemies hit by vomit
+-On death, make the surrounding enemies covered in puke
+-Fix missing materials on gib models
+-Decrease puke range
+-Don't make vomit cover particles visible in firstperson
 
 Boomette:
 -Fix broken model
