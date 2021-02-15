@@ -454,7 +454,6 @@ function ENT:DismountCharger()
 	end
 	if !IsValid(self.pIncapacitatedEnemy) then return end
 	local enemy = self.pIncapacitatedEnemy
-	enemy:SetPos(self:GetPos())
 	hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
 		if (ent1 == self and ent2 == enemy) then return true end
 	end)
