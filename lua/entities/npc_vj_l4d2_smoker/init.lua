@@ -114,7 +114,7 @@ ENT.IsEnemyFloating = false
 ENT.pEnemyCamera = nil
 ENT.NextTongueSpawn = CurTime()
 ENT.SoundTbl_Incapacitation_Tied = {"vj_l4d2/music/terror/tonguetied.mp3"}
-ENT.SoundTbl_Incapacitation_Incap = {"vj_l4d2/music/special_attacks/asphyxiation.mp3"} 
+ENT.SoundTbl_Incapacitation = {"vj_l4d2/music/special_attacks/asphyxiation.mp3"} 
 ENT.BacteriaSound = nil
 ENT.IncapSong = nil
 ENT.IncapSong2 = nil
@@ -144,6 +144,77 @@ function ENT:CustomOnInitialize()
         ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
     end
     self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnAcceptInput(key,activator,caller,data)
+    if key == "event_emit FootStep" then
+        self:FootStepSoundCode()
+    end
+    if key == "event_incap_hit" then
+        if self.IsEnemyStuck == true || self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
+            local incapent = self.pIncapacitatedEnemy
+            if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
+                if IsValid(incapent) then
+                    local applyDmg = DamageInfo()
+                    applyDmg:SetDamage(15)
+                    applyDmg:SetDamageType(DMG_SLASH)
+                    applyDmg:SetInflictor(incapent)
+                    applyDmg:SetAttacker(self)
+                    incapent:TakeDamage(2,self,incapent)
+                    VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"},65,self:VJ_DecideSoundPitch(100,100))
+                end
+            end
+        end
+    end
+    if key == "event_incap_voice" then
+        VJ_CreateSound(self,self.SoundTbl_BeforeMeleeAttack,75,self:VJ_DecideSoundPitch(100,100))
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Controller_Initialize(ply)
+    if self.HasEnemyIncapacitated == false then
+        self:SetGhost(true)
+    end
+    function self.VJ_TheControllerEntity:CustomOnStopControlling()
+        net.Start("L4D2SmokerHUD")
+            net.WriteBool(true)
+            net.WriteEntity(self)
+            net.WriteEntity(ply)
+        net.Send(ply)
+        net.Start("L4D2SmokerHUDGhost")
+            net.WriteBool(true)
+            net.WriteEntity(self)
+            net.WriteEntity(ply)
+        net.Send(ply)
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:ManageHUD(ply)
+    if self.VJ_IsBeingControlled == true then
+        if self.IsGhosted == true then
+            net.Start("L4D2SmokerHUDGhost")
+                net.WriteBool(false)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
+            net.Send(ply)
+            net.Start("L4D2SmokerHUD")
+                net.WriteBool(true)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
+            net.Send(ply)
+        elseif self.IsGhosted == false then
+            net.Start("L4D2SmokerHUD")
+                net.WriteBool(false)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
+            net.Send(ply)
+            net.Start("L4D2SmokerHUDGhost")
+                net.WriteBool(true)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
+            net.Send(ply)
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Incap_Effects(fadeout)
@@ -195,7 +266,6 @@ function ENT:Incap_Effects(fadeout)
         glowlight:SetParent(self)
         glowlight:Spawn()
         glowlight:Activate()
-        --glowlight:Fire("SetParentAttachment","attach_blur")
         glowlight:Fire("TurnOn","",0)
         self:DeleteOnRemove(glowlight)
         self.Light3 = glowlight
@@ -209,29 +279,31 @@ function ENT:Incap_Effects(fadeout)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnAcceptInput(key,activator,caller,data)
-    if key == "event_emit FootStep" then
-        self:FootStepSoundCode()
-    end
-    if key == "event_incap_hit" then
-        if self.IsEnemyStuck == true || self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
-            local incapent = self.pIncapacitatedEnemy
-            if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
-                if IsValid(incapent) then
-                    local applyDmg = DamageInfo()
-                    applyDmg:SetDamage(15)
-                    applyDmg:SetDamageType(DMG_SLASH)
-                    applyDmg:SetInflictor(incapent)
-                    applyDmg:SetAttacker(self)
-                    incapent:TakeDamage(2,self,incapent)
-                    VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"},65,self:VJ_DecideSoundPitch(100,100))
+function ENT:Smoker_PlayIncapSong_Choke(bOverwrite,fadeout)
+    if self.IncapSong2 && self.IncapSong2:IsPlaying() then return end
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
+        if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy then
+            if v ~= self && v.IncapSong2 && v.IncapSong2:IsPlaying() then
+                if bOverwrite == true then
+                    v.IncapSong2:Stop()
+                else
+                    return
                 end
             end
         end
     end
-    if key == "event_incap_voice" then
-        VJ_CreateSound(self,self.SoundTbl_BeforeMeleeAttack,75,self:VJ_DecideSoundPitch(100,100))
-    end
+    local sndIncap = table.Random(self.SoundTbl_Incapacitation_Tied)
+    local filter = RecipientFilter()
+    filter:AddPlayer(self.pIncapacitatedEnemy)
+    local sound = CreateSound(self, sndIncap, filter)
+    self.IncapSong2 = sound
+    sound:SetSoundLevel(0)
+    sound:Play()
+    timer.Simple(22, function()
+        if self.IncapSong2 == nil then return end
+        self.IncapSong2:Stop()
+        self.IncapSong2 = nil
+    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SmokerIncapacitate(ent)
@@ -245,75 +317,6 @@ function ENT:SmokerIncapacitate(ent)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CanIncapacitate(ent)
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-        if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-            return false
-        end
-    end
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-            return false
-        end
-    end
-    return true
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:IsEntityAlly(ent)
-    if ent:GetClass() == "obj_vj_bullseye" then
-        return true
-    end
-    if ent:IsNPC() then
-        if ent.IsVJBaseSNPC == true then
-            for i = 1, table.Count(ent.VJ_NPC_Class) do
-                if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
-                    return true
-                end
-            end
-        end
-    elseif ent:IsPlayer() then
-        if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
-            return true
-        end
-        if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
-            return true
-        end
-    end
-    return false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:StripEnemyWeapons(ent)
-    local weapons = ent:GetWeapons()
-    self.tblEnemyWeapons = {}
-    self.tblEnemyAmmo = {}
-    self.tblEnemyAmmo = ent:GetAmmo()
-    for l, w in ipairs(weapons) do
-        if w.Base ~= "weapon_vj_base" then
-            local index = table.Count(self.tblEnemyWeapons) + 1
-            self.tblEnemyWeapons[index] = {}
-            self.tblEnemyWeapons[index][1] = w:GetClass()
-            self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
-            self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
-        end
-    end
-    ent:StripWeapons()
-    ent:StripAmmo()
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnSchedule()
-    local ent = self.pIncapacitatedEnemy
-    if IsValid(ent) then
-        if ent:Health() <= 0 then return end
-        local dist = self:GetPos():Distance(ent:GetPos())
-        if dist <= self.IncapacitationRange then
-            self:VJ_PlaySequence(self.IncapAnimation)
-            self.IsChokingEnemy = true 
-        else
-            self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
-        end
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
     if IsValid(self.pIncapacitatedEnemy) then
         util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pIncapacitatedEnemy:GetPos(), false, self:EntIndex(), 3)
@@ -322,11 +325,11 @@ function ENT:DismountSmoker()
     self:Incap_Effects(true)
     self.HasEnemyIncapacitated = false
     self.IsChokingEnemy = false
-    if self.IncapSong && self.IncapSong:IsPlaying() then
+    if self.IncapSong then
         self.IncapSong:Stop()
         self.IncapSong = nil
     end
-    if self.IncapSong2 && self.IncapSong2:IsPlaying() then
+    if self.IncapSong2 then
         self.IncapSong2:Stop()
         self.IncapSong2 = nil
     end
@@ -395,6 +398,65 @@ function ENT:DismountSmoker()
         self.pEnemyRagdoll = nil
     end
     self.pIncapacitatedEnemy = nil
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnRangeAttack_BeforeStartTimer(seed) 
+    if self.VJ_IsBeingControlled == false then
+        self:VJ_ACT_PLAYACTIVITY("vjseq_Tongue_Attack_Antic",false,VJ_GetSequenceDuration(self,"vjseq_Tongue_Attack_Antic"),false)
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
+    self:SetNW2Int("TongueT",CurTime() +self.NextRangeAttackTime)
+    timer.Simple(0.5,function() if IsValid(self) then VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/smoker/miss/smoker_reeltonguein_01.mp3","player/smoker/miss/smoker_reeltonguein_02.mp3","player/smoker/miss/smoker_reeltonguein_03.mp3","player/smoker/miss/smoker_reeltonguein_04.mp3","player/smoker/miss/smoker_reeltonguein_05.mp3"}),self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100)) end end)
+    timer.Simple(1,function() 
+        if IsValid(self) && !IsValid(self.pIncapacitatedEnemy) then 
+           if self:GetClass() == "npc_vj_l4d2_smoker" then
+                self:SetBodygroup(2,0) 
+            end
+        elseif IsValid(self) && !IsValid(self.pIncapacitatedEnemy) then 
+            if self:GetClass() == "npc_vj_l4d_smoker" then
+                self:SetBodygroup(1,0) 
+            end
+        end
+    end) 
+    if self:GetClass() == "npc_vj_l4d2_smoker" then
+        self:SetBodygroup(2,1)  
+    elseif self:GetClass() == "npc_vj_l4d_smoker" then
+        self:SetBodygroup(1,1)  
+    end
+    projectile:SetGravity(0)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:RangeAttackCode_GetShootPos(projectile)
+    return (self:GetEnemy():GetPos() +self:GetEnemy():OBBCenter() -(self:GetAttachment(self:LookupAttachment(self.RangeUseAttachmentForPosID)).Pos)) *1000 +self:GetForward()* 1000
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:MultipleMeleeAttacks()
+    local randattack = math.random(1,2)
+    if randattack == 1 then
+        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
+        self.TimeUntilMeleeAttackDamage = 0.4
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_s_d")
+    elseif randattack == 2 then
+        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
+        self.TimeUntilMeleeAttackDamage = 0.4
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_s_d")
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnSchedule()
+    local ent = self.pIncapacitatedEnemy
+    if IsValid(ent) then
+        if ent:Health() <= 0 then return end
+        local dist = self:GetPos():Distance(ent:GetPos())
+        if dist <= self.IncapacitationRange then
+            self:VJ_PlaySequence(self.IncapAnimation)
+            self.IsChokingEnemy = true 
+        else
+            self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
@@ -501,7 +563,18 @@ function ENT:CustomOnThink()
     if self.HasEnemyIncapacitated == true then 
         self.HasIdleSounds = false
         self.HasMeleeAttack = false
-        self.HasRangeAttack = false    
+        self.HasRangeAttack = false
+
+        --[[local effectData = EffectData()
+        effectData:SetStart(self:GetAttachment(3).Pos)
+        effectData:SetOrigin(self.pEnemyRagdoll:GetPos())
+        effectData:SetEntity(self)
+        effectData:SetAttachment(3)
+        util.Effect("tongue_beam", effectData)]]
+
+        if self.IncapSong == nil or self.IncapSong:IsPlaying() == false then
+        	self:Smoker_PlayIncapSong_Choke()
+        end
         if IsValid(self.pIncapacitatedEnemy) then
             local enemy = self.pIncapacitatedEnemy
 
@@ -623,13 +696,21 @@ function ENT:CustomOnThink()
                     end
                     if enemy:IsPlayer() then
                         self:Incap_Effects(false)
-                        self:Smoker_PlayIncapSong(false,true)
-                        self:Smoker_PlayIncapSong_Choke(false,false)
                         enemy:SpectateEntity(self.Camera)
                         enemy:SetFOV(80)
                     end
+	            end
+                if self.IsEnemyStuck then
+	                if self.IncapSong2 then
+	                	self.IncapSong2:Stop()
+	                end
+	                self:PlayIncapSong()
                 end
             elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
+                if self.IncapSong2 then
+                	self.IncapSong2:Stop()
+                end
+                self:PlayIncapSong()
                 if dist > self.IncapacitationRange then
                     self:VJ_ACT_PLAYACTIVITY("Tongue_Attack_Drag_Survivor_Idle", true)   
                 end
@@ -771,18 +852,6 @@ function ENT:CustomOnThink()
     if CurTime() >= self.nextBacteria then
         self:PlayBacteria()
     end
-    if IsValid(self.pIncapacitatedEnemy) then
-        if CurTime() >= self.nextIncapSong && self.IsChokingEnemy == false then
-            self:Smoker_PlayIncapSong(false,false)
-        end
-    else
-        if self.IncapSong ~= nil then
-            self.IncapSong:Stop()
-        end
-        if self.IncapSong2 ~= nil then
-            self.IncapSong2:Stop()
-        end
-    end
 
     self:ManageHUD(self.VJ_TheController)
     hook.Add("KeyPress", "Ghosting", function(ply, key)
@@ -825,50 +894,6 @@ function ENT:CustomOnThink()
         end)
     end
 end 
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:ManageHUD(ply)
-    if self.VJ_IsBeingControlled == true then
-        if self.IsGhosted == true then
-            net.Start("L4D2SmokerHUDGhost")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2SmokerHUD")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        elseif self.IsGhosted == false then
-            net.Start("L4D2SmokerHUD")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2SmokerHUDGhost")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        end
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Controller_Initialize(ply)
-    self:SetGhost(true)
-    function self.VJ_TheControllerEntity:CustomOnStopControlling()
-        net.Start("L4D2SmokerHUD")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-        net.Start("L4D2SmokerHUDGhost")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-    end
-end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
     local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
@@ -913,49 +938,8 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, corpseEnt)
     self:DismountSmoker()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRangeAttack_BeforeStartTimer(seed) 
-    if self.VJ_IsBeingControlled == false then
-        self:VJ_ACT_PLAYACTIVITY("vjseq_Tongue_Attack_Antic",false,VJ_GetSequenceDuration(self,"vjseq_Tongue_Attack_Antic"),false)
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
-    self:SetNW2Int("TongueT",CurTime() +self.NextRangeAttackTime)
-    timer.Simple(0.5,function() if IsValid(self) then VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/smoker/miss/smoker_reeltonguein_01.mp3","player/smoker/miss/smoker_reeltonguein_02.mp3","player/smoker/miss/smoker_reeltonguein_03.mp3","player/smoker/miss/smoker_reeltonguein_04.mp3","player/smoker/miss/smoker_reeltonguein_05.mp3"}),self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100)) end end)
-    timer.Simple(1,function() 
-        if IsValid(self) && !IsValid(self.pIncapacitatedEnemy) then 
-           if self:GetClass() == "npc_vj_l4d2_smoker" then
-                self:SetBodygroup(2,0) 
-            end
-        elseif IsValid(self) && !IsValid(self.pIncapacitatedEnemy) then 
-            if self:GetClass() == "npc_vj_l4d_smoker" then
-                self:SetBodygroup(1,0) 
-            end
-        end
-    end) 
-    if self:GetClass() == "npc_vj_l4d2_smoker" then
-        self:SetBodygroup(2,1)  
-    elseif self:GetClass() == "npc_vj_l4d_smoker" then
-        self:SetBodygroup(1,1)  
-    end
-    projectile:SetGravity(0)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:RangeAttackCode_GetShootPos(projectile)
-    return (self:GetEnemy():GetPos() +self:GetEnemy():OBBCenter() -(self:GetAttachment(self:LookupAttachment(self.RangeUseAttachmentForPosID)).Pos)) *1000 +self:GetForward()* 1000
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-    local randattack = math.random(1,2)
-    if randattack == 1 then
-        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
-        self.TimeUntilMeleeAttackDamage = 0.4
-        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_s_d")
-    elseif randattack == 2 then
-        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
-        self.TimeUntilMeleeAttackDamage = 0.4
-        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_s_d")
-    end
+function ENT:CustomOnRemove()
+    self:DismountSmoker()
 end
 /*-----------------------------------------------
     *** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
