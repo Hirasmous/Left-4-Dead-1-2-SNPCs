@@ -1,3 +1,6 @@
+Boomer:
+-Add vomit cover material overlay to enemies hit by vomit
+
 Boomette:
 -Fix broken model
 
