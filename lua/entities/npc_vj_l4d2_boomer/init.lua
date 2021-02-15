@@ -115,8 +115,26 @@ function ENT:CustomOnInitialize()
     self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRangeAttack_AfterStartTimer()
-    self:StopMoving()
+function ENT:CustomOnAcceptInput(key,activator,caller,data)
+    if key == "event_emit FootStep" then
+        self:FootStepSoundCode()
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Controller_Initialize(ply)
+    self:SetGhost(true)
+    function self.VJ_TheControllerEntity:CustomOnStopControlling()
+        net.Start("L4D2BoomerHUD")
+            net.WriteBool(true)
+            net.WriteEntity(self)
+            net.WriteEntity(ply)
+        net.Send(ply)
+        net.Start("L4D2BoomerHUDGhost")
+            net.WriteBool(true)
+            net.WriteEntity(self)
+            net.WriteEntity(ply)
+        net.Send(ply)
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
@@ -144,6 +162,106 @@ function ENT:ManageHUD(ply)
 		        net.WriteEntity(ply)
             net.Send(ply)
         end
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:VomitEffect(hPlayer)
+    util.AddNetworkString("nDoBoomerBlast")
+    net.Start("nDoBoomerBlast")
+    net.Send(hPlayer)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:VomitBile()    
+    for i = 1, 5 do 
+        local ent = ents.Create("obj_vj_l4d2_bile")
+        ent:SetPos(self:GetPos())
+        ent:SetOwner(self)
+        ent:Spawn()
+        ent:Activate()
+        local phys = ent:GetPhysicsObject()
+        if IsValid(phys) then
+            phys:SetVelocity(self:RangeAttackCode_GetShootPos() *0.6)
+        end
+    end  
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:VomitEnemy(v)
+    if self.VJ_TheController == v then return end 
+    if (v:IsPlayer() or v:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
+        local numBones = v:GetBoneCount()
+        self.Vomit = {}
+        for i = 0, numBones -1 do
+            local bonepos, boneang = v:GetBonePosition(i)
+            local ent = ents.Create("info_particle_system")
+            ent:SetParent(v)
+            ent:SetPos(bonepos)
+            ent:SetKeyValue("effect_name","boomer_vomit_survivor")
+            ent:SetKeyValue("start_active","1")
+            ent:Spawn()
+            ent:Activate()
+            self.Vomit[i] = ent
+            if(i > 0) then
+                local ent = ents.Create("info_particle_system")
+                ent:SetParent(v)
+                ent:SetPos(bonepos +(v:GetBonePosition(i -1) -bonepos):GetNormal() *bonepos:Distance(v:GetBonePosition(i -1)))
+                ent:SetKeyValue("effect_name","boomer_vomit_survivor")
+                ent:SetKeyValue("start_active","1")
+                ent:Spawn()
+                ent:Activate()
+                self.Vomit[i +numBones] = ent
+            end            
+        end  
+        if v:IsPlayer() then
+            self:VomitEffect(v)
+            VJ_CreateSound(v,"vj_l4d2/music/terror/pukricide.mp3",100,self:VJ_DecideSoundPitch(100,100))
+        elseif v:IsNPC() then
+            VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.mp3",90,self:VJ_DecideSoundPitch(100,100))  
+        end                       
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomRangeAttackCode()
+    timer.Simple(1,function()
+        if IsValid(self) then
+            self.IsTakingCover = true
+        end
+    end)
+    timer.Simple(self.NextRangeAttackTime,function()
+        if IsValid(self) then
+            self.IsTakingCover = false
+        end
+    end)
+    for _, x in ipairs(ents.FindInSphere(self:GetPos(),445)) do
+        if IsValid(x) && IsValid(self) then
+            table.insert(self.Vomited_Enemies,x)
+            self:VomitEnemy(x)
+            self.Enemy_IsPuked = true
+        end
+    end     
+    self:SetNW2Int("VomitT",CurTime() +self.NextRangeAttackTime)    
+    ParticleEffectAttach("boomer_vomit",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))         
+    timer.Simple(0,function() if IsValid(self) then self:VomitBile(75) end end)         
+    timer.Simple(0.1,function() if IsValid(self) then self:VomitBile(75) end end) 
+    timer.Simple(0.3,function() if IsValid(self) then self:VomitBile(75) end end)   
+    timer.Simple(0.5,function() if IsValid(self) then self:VomitBile(75) end end)  
+    timer.Simple(0.6,function() if IsValid(self) then self:VomitBile(75) end end) 
+    timer.Simple(0.7,function() if IsValid(self) then self:VomitBile(75) end end)      
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnRangeAttack_AfterStartTimer()
+    self:StopMoving()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:MultipleMeleeAttacks()
+    local randattack = math.random(1,2)
+    if randattack == 1 then
+        self.AnimTbl_MeleeAttack = {"vjges_Melee_01_Layer","vjges_Melee_02","vjges_Melee_03","vjges_Melee_02_Layer","vjges_Melee_03_Layer"}
+        self.TimeUntilMeleeAttackDamage = 0.8
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_b_d")
+    elseif randattack == 2 then
+        self.AnimTbl_MeleeAttack = {"vjges_Melee_01_Layer","vjges_Melee_02","vjges_Melee_03","vjges_Melee_02_Layer","vjges_Melee_03_Layer"}
+        self.TimeUntilMeleeAttackDamage = 0.8
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_b_d")
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -199,25 +317,16 @@ function ENT:CustomOnThink()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Controller_Initialize(ply)
-	self:SetGhost(true)
-	function self.VJ_TheControllerEntity:CustomOnStopControlling()
-		net.Start("L4D2BoomerHUD")
-			net.WriteBool(true)
-			net.WriteEntity(self)
-			net.WriteEntity(ply)
-		net.Send(ply)
-		net.Start("L4D2BoomerHUDGhost")
-			net.WriteBool(true)
-			net.WriteEntity(self)
-			net.WriteEntity(ply)
-		net.Send(ply)
-	end
+function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
+    local anims = VJ_PICK{"Shoved_Backward_01","Shoved_Leftward","Shoved_Rightward"}
+    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnKilled(dmginfo,hitgroup)
     local iAtt = self:LookupAttachment(left && "lfoot" || "rfoot")
-	local att = self:GetAttachment(iAtt)
+    local att = self:GetAttachment(iAtt)
     util.ScreenShake(att.Pos, 100, 100, 0.5, 1500)       
     ParticleEffect("boomer_explode",self:GetPos() +self:GetUp()*40,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil) 
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_head.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
@@ -225,20 +334,6 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak1.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak2.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak3.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnAcceptInput(key,activator,caller,data)
-	//print(key)
-	if key == "event_emit FootStep" then
-		self:FootStepSoundCode()
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward_01","Shoved_Leftward","Shoved_Rightward"}
-    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
@@ -250,125 +345,6 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
             PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
         end
     end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:IsEntityAlly(ent)
-    if ent:GetClass() == "obj_vj_bullseye" then
-        return true
-    end
-    if ent:IsNPC() then
-        if ent.IsVJBaseSNPC == true then
-            for i = 1, table.Count(ent.VJ_NPC_Class) do
-                if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
-                    return true
-                end
-            end
-        end
-    elseif ent:IsPlayer() then
-        if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
-            return true
-        end
-        if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
-            return true
-        end
-    end
-    return false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:VomitEffect(hPlayer)
-	util.AddNetworkString("nDoBoomerBlast")
-	net.Start("nDoBoomerBlast")
-	net.Send(hPlayer)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:VomitBile()    
-    for i = 1, 5 do 
-        local ent = ents.Create("obj_vj_l4d2_bile")
-        ent:SetPos(self:GetPos())
-        ent:SetOwner(self)
-        ent:Spawn()
-        ent:Activate()
-        local phys = ent:GetPhysicsObject()
-        if IsValid(phys) then
-            phys:SetVelocity(self:RangeAttackCode_GetShootPos() *0.6)
-        end
-	end  
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:VomitEnemy(v)
-	if self.VJ_TheController == v then return end 
-	if (v:IsPlayer() or v:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
-        local numBones = v:GetBoneCount()
-        self.Vomit = {}
-        for i = 0, numBones -1 do
-	        local bonepos, boneang = v:GetBonePosition(i)
-	        local ent = ents.Create("info_particle_system")
-	        ent:SetParent(v)
-	        ent:SetPos(bonepos)
-	        ent:SetKeyValue("effect_name","boomer_vomit_survivor")
-	        ent:SetKeyValue("start_active","1")
-	        ent:Spawn()
-	        ent:Activate()
-	        self.Vomit[i] = ent
-	        if(i > 0) then
-		        local ent = ents.Create("info_particle_system")
-		        ent:SetParent(v)
-		        ent:SetPos(bonepos +(v:GetBonePosition(i -1) -bonepos):GetNormal() *bonepos:Distance(v:GetBonePosition(i -1)))
-		        ent:SetKeyValue("effect_name","boomer_vomit_survivor")
-		        ent:SetKeyValue("start_active","1")
-		        ent:Spawn()
-		        ent:Activate()
-		        self.Vomit[i +numBones] = ent
-		    end            
-	    end  
-	    if v:IsPlayer() then
-	    	self:VomitEffect(v)
-	    	VJ_CreateSound(v,"vj_l4d2/music/terror/pukricide.mp3",100,self:VJ_DecideSoundPitch(100,100))
-	    elseif v:IsNPC() then
-	        VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.mp3",90,self:VJ_DecideSoundPitch(100,100))  
-	    end                       
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomRangeAttackCode()
-	timer.Simple(1,function()
-        if IsValid(self) then
-            self.IsTakingCover = true
-        end
-    end)
-	timer.Simple(self.NextRangeAttackTime,function()
-		if IsValid(self) then
-			self.IsTakingCover = false
-		end
-	end)
-    for _, x in ipairs(ents.FindInSphere(self:GetPos(),445)) do
-        if IsValid(x) && IsValid(self) then
-            table.insert(self.Vomited_Enemies,x)
-            self:VomitEnemy(x)
-            self.Enemy_IsPuked = true
-        end
-    end     
-    self:SetNW2Int("VomitT",CurTime() +self.NextRangeAttackTime)    
-    ParticleEffectAttach("boomer_vomit",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))         
-    timer.Simple(0,function() if IsValid(self) then self:VomitBile(75) end end)         
-    timer.Simple(0.1,function() if IsValid(self) then self:VomitBile(75) end end) 
-    timer.Simple(0.3,function() if IsValid(self) then self:VomitBile(75) end end)   
-    timer.Simple(0.5,function() if IsValid(self) then self:VomitBile(75) end end)  
-    timer.Simple(0.6,function() if IsValid(self) then self:VomitBile(75) end end) 
-    timer.Simple(0.7,function() if IsValid(self) then self:VomitBile(75) end end)      
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-	local randattack = math.random(1,2)
-	if randattack == 1 then
-		self.AnimTbl_MeleeAttack = {"vjges_Melee_01_Layer","vjges_Melee_02","vjges_Melee_03","vjges_Melee_02_Layer","vjges_Melee_03_Layer"}
-		self.TimeUntilMeleeAttackDamage = 0.8
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_b_d")
-	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_Melee_01_Layer","vjges_Melee_02","vjges_Melee_03","vjges_Melee_02_Layer","vjges_Melee_03_Layer"}
-		self.TimeUntilMeleeAttackDamage = 0.8
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_b_d")
-	end
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
