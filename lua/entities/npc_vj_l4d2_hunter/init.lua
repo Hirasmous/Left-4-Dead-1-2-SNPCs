@@ -125,14 +125,6 @@ ENT.IsGhosted = false
 util.AddNetworkString("L4D2HunterHUD")
 util.AddNetworkString("L4D2HunterHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnLeapAttack_BeforeStartTimer() 
-    VJ_CreateSound(self,"HunterZombie.Warn",85,self:VJ_DecideSoundPitch(100,100))
-    if self.VJ_IsBeingControlled == false then
-	    self.AnimTbl_Run = {ACT_RUN_CROUCH}
-	    self.AnimTbl_Walk = {ACT_RUN_CROUCH}  
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
     self.nextBacteria = 0
@@ -181,7 +173,9 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    self:SetGhost(true)
+    if self.HasEnemyIncapacitated == false then
+        self:SetGhost(true)
+    end
     function self.VJ_TheControllerEntity:CustomOnStopControlling()
         net.Start("L4D2HunterHUD")
             net.WriteBool(true)
@@ -222,88 +216,7 @@ function ENT:ManageHUD(ply)
             net.Send(ply)
         end
     end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward_01","Shoved_Backward_02","Shoved_Leftward","Shoved_Rightward"}
-    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
-            self:DismountHunter()
-            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)      
-        end
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
-    self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
-end      
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:HunterIncapacitate(ent)
-    local ent = self.pIncapacitatedEnemy
-    if ent then
-        self.pIncapacitatedEnemy = ent 
-        self.HasEnemyIncapacitated = true
-        if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-            ent:AddEFlags(EFL_NO_THINK_FUNCTION)
-        end
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CanIncapacitate(ent)
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
-        if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-            return false
-        end
-    end
-    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_*")) do
-        if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
-            return false
-        end
-    end
-    return true
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:IsEntityAlly(ent)
-    if ent:GetClass() == "obj_vj_bullseye" then
-        return true
-    end
-    if ent:IsNPC() then
-        if ent.IsVJBaseSNPC == true then
-            for i = 1, table.Count(ent.VJ_NPC_Class) do
-                if table.HasValue(self.VJ_NPC_Class, ent.VJ_NPC_Class[i]) then
-                    return true
-                end
-            end
-        end
-    elseif ent:IsPlayer() then
-        if table.HasValue(self.VJ_NPC_Class, "CLASS_PLAYER_ALLY") then
-            return true
-        end
-        if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
-            return true
-        end
-    end
-    return false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:StripEnemyWeapons(ent)
-    local weapons = ent:GetWeapons()
-    self.tblEnemyWeapons = {}
-    self.tblEnemyAmmo = {}
-    self.tblEnemyAmmo = ent:GetAmmo()
-    for l, w in ipairs(weapons) do
-        if w.Base ~= "weapon_vj_base" then
-            local index = table.Count(self.tblEnemyWeapons) + 1
-            self.tblEnemyWeapons[index] = {}
-            self.tblEnemyWeapons[index][1] = w:GetClass()
-            self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
-            self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
-        end
-    end
-    ent:StripWeapons()
-    ent:StripAmmo()
-end
+end 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Pounce_Effects(fadeout)
     if fadeout == false then
@@ -363,229 +276,13 @@ function ENT:Pounce_Effects(fadeout)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnLeapAttack_AfterStartTimer()
-    self.nEntityIndex = self:EntIndex()
-    self:SetNW2Int("PounceT",CurTime() +self.NextLeapAttackTime)
-    timer.Simple(1.7,function() 
-        if IsValid(self) && IsValid(self:GetEnemy()) then 
-            self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true)           
-        end    
-        if IsValid(self) then 
-            self.AnimTbl_Run = {ACT_RUN}
-		    self.AnimTbl_Walk = {ACT_RUN}           
-        end 
-    end)
-    timer.Simple(1.9, function()
-    	if IsValid(self) && IsValid(self:GetEnemy()) then 
-    		self:VJ_ACT_PLAYACTIVITY("vjges_pounce_idle_low",true,1.5,true) 
-        	self:VJ_ACT_PLAYACTIVITY("vjges_Idlenoise_02",true,1.5,true) 
-        	ParticleEffectAttach("hunter_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
-        end
-    end)
-    timer.Simple(2, function()
-        if IsValid(self) then 
-		    if timer.Exists("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange") then timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") end --if the same timer is playing, stop it
-		    timer.Create("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
-		        if !IsValid(self) then return end
-		        local id = self.nEntityIndex
-		        for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
-			        if IsValid(self) && IsValid(v) then
-			        	if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0) or (v:IsNPC() && v ~= self) then
-				        	if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
-                                local enemy = v
-                                if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
-                                    return
-                                end
-					        	if not self:CanIncapacitate(enemy) then
-					                timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange")
-					                return
-					            end
-                                local camera = ents.Create("prop_dynamic")
-                                camera:SetModel("models/error.mdl")
-                                camera:SetPos(self:GetPos())
-                                camera:Spawn()
-                                camera:Activate()
-                                camera:SetRenderMode(RENDERMODE_NONE)
-                                camera:DrawShadow(false)
-                                camera:SetParent(self)
-                                camera:Fire("SetParentAttachment","camera_att")
-                                self:DeleteOnRemove(camera)
-                                VJ_CreateSound(v,"player/hunter/hit/tackled_1.mp3",75,self:VJ_DecideSoundPitch(100,100))
-                				if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
-                				    local dist = self:GetPos():Distance(enemy:GetPos())
-                				    if dist <= self.IncapacitationRange then
-            			                timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") --kill the timer
-                    					self:SetLocalVelocity(self:GetForward() * 0) --stop the hunter from lunging forward
-                    					self.pIncapacitatedEnemy = enemy
-                    					enemy:SetLocalVelocity(self:GetForward() * 0)
-                                        if enemy:IsNPC() then
-                                            if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
-                                                enemy:GetActiveWeapon():SetNoDraw(true)
-                                            else
-                                                enemy:DropWeapon()
-                                            end
-                                        elseif enemy:IsPlayer() then
-                                            self:StripEnemyWeapons(enemy)
-                                            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-                                                enemy:SetObserverMode(OBS_MODE_CHASE)
-                                                enemy:SpectateEntity(camera)
-                                                enemy:DrawViewModel(false)
-                                                enemy:DrawWorldModel(false)
-                                                enemy:SetFOV(75)
-                                            end
-                                        end
-					                    self.HasEnemyIncapacitated = true
-					                    self.nextShredSound = CurTime()
-					                    self.nextIncapSong = CurTime()
-				                        self:SetCustomCollisionCheck(true)
-				                        enemy:SetCustomCollisionCheck(true)
-                                        hook.Add("ShouldCollide", "hunter_EnableCollisions", function(ent1, ent2)
-				                            if (ent1 == self and ent2 == enemy) then return false end
-				                        end)
-					                    local ang = self:GetAngles()
-					                    enemy:SetNoDraw(true)
-					                    local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
-					                    if IsValid(self.pEnemyRagdoll) then
-											net.Start("infected_RemoveCSEnt")
-												net.WriteString(tostring(self:EntIndex()))
-											net.Broadcast()
-					                    	self.pEnemyRagdoll:Remove()
-					                    end
-					                    local mdl
-					                    if enemy:IsPlayer() && enemy:LookupBone("ValveBiped.Bip01_Pelvis") == nil then
-						                    mdl = ents.Create("prop_ragdoll")
-						                    mdl:SetModel(enemy:GetModel())
-						                    mdl:SetPos(tr.HitPos)
-						                    mdl:SetAngles(Angle(ang.x - 90, ang.y - 180, ang.z))
-						                    mdl:SetCollisionGroup(1)
-						                    mdl:Spawn()
-						                    local root = mdl:GetPhysicsObjectNum(0)
-						                    root:EnableMotion(false)
-						                    mdl:Fire("StartRagdollBoogie")
-						                else
-						                   	mdl = ents.Create("prop_dynamic")
-						                    mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
-						                    mdl:SetPos(tr.HitPos)
-						                    mdl:SetAngles(Angle(ang.x, ang.y - 180, ang.z))
-						                    mdl:Spawn()
-						                    mdl:SetRenderMode(1)
-						                    mdl:SetColor(Color(0, 0, 0, 0))
-                                            if enemy:IsPlayer() then
-    						                    mdl:SetParent(self)
-                                            else
-                                                mdl:SetParent(enemy)
-                                            end
-						                    mdl:ResetSequence(3)
-						                    mdl:ResetSequenceInfo()
-						                    mdl:SetCycle(0)
-						                    mdl:SetLocalPos(Vector(0, 0, 0))
-						                    timer.Simple(0.15, function()
-						                    	if !IsValid(self) then return end
-							                    net.Start("infected_PounceEnemy")
-							                    	net.WriteString(tostring(self:EntIndex()))
-							                        net.WriteEntity(mdl)
-							                        net.WriteString(enemy:GetModel())
-							                    net.Broadcast()
-							                end)
-						                end
-					                    if enemy:IsPlayer() then
-                                            self:Pounce_Effects(false)
-                                            enemy:SetParent(self)                                          
-                                            enemy:SetLocalPos(Vector(0, 0, 0))
-                                        else
-                                            self:SetParent(enemy)
-                                        end
-					                    enemy:CallOnRemove("hunter_ClearParent", function(ent)
-                            				if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
-					                    		self:SetParent(nil)
-					                    	end
-                                            if ent:IsPlayer() then
-                                                ent:SetParent(nil)
-                                            end
-					                	end)             
-					                    self.pEnemyRagdoll = mdl
-					                    hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
-					                        if victim == self.pIncapacitatedEnemy then
-                                                enemy:SetParent(nil)
-                                                enemy:SetObserverMode(0)
-                                                enemy:DrawViewModel(true)
-                                                enemy:DrawWorldModel(true)
-					                        end
-					                    end)
-					                    self:CallOnRemove("hunter_OnRemove", function(ent)
-											net.Start("infected_RemoveCSEnt")
-												net.WriteString(tostring(ent:EntIndex()))
-											net.Broadcast()
-					                        local enemy = ent.pIncapacitatedEnemy
-									        if IsValid(enemy) then
-									            if enemy:IsPlayer() then
-                                                    enemy:SetPos(ent.vecLastPos)
-                                                    enemy:SetObserverMode(0)
-                                                    enemy:DrawViewModel(true)
-                                                    enemy:DrawWorldModel(true)
-                                                    if table.Count(ent.tblEnemyWeapons) > 0 then
-                                                        for i = 1, table.Count(ent.tblEnemyWeapons) do
-                                                            local tbl = ent.tblEnemyWeapons
-                                                            enemy:Give(tbl[i][1], true)
-                                                            local wpn = enemy:GetWeapon(tbl[i][1])
-                                                            if tbl[i][2][1] ~= -1 then
-                                                                wpn:SetClip1(tbl[i][2][2])
-                                                            end
-                                                            if tbl[i][3][1] ~= -1 then
-                                                                wpn:SetClip2(tbl[i][3][2])
-                                                            end
-                                                        end
-                                                    end
-                                                    for a, c in ipairs(self.tblEnemyAmmo) do
-                                                        enemy:GiveAmmo(c, game.GetAmmoName(a), true)
-                                                    end
-									            end
-									            if enemy:GetNoDraw() == true then
-									                enemy:SetNoDraw(false)
-									            end
-									            if enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-									                enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-									            end
-									            if IsValid(ent.pEnemyRagdoll) then
-									            	ent.pEnemyRagdoll:Remove()
-									            end
-									        end
-					                    end)
-					                    for k, v in ipairs(ents.FindByClass("player")) do
-										    if enemy:IsNPC() then
-										    	VJ_CreateSound(v,"vj_l4d2/music/tags/exenterationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-										    end
-										end
-					                end
-					            end
-					        end
-				        end
-				    end
-			    end
-		    end)    
-        end
-    end)     
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, GetCorpse)
-    local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
-        end
-    end
-    self:DismountHunter()
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnSchedule()
+function ENT:HunterIncapacitate(ent)
     local ent = self.pIncapacitatedEnemy
-    if IsValid(ent) then
-        local flDistance = self:GetPos():Distance(ent:GetPos())
-        if flDistance <= self.IncapacitationRange then
-            if ent:Health() <= 0 then return end
-            self:VJ_PlaySequence("Melee_Pounce")
+    if ent then
+        self.pIncapacitatedEnemy = ent 
+        self.HasEnemyIncapacitated = true
+        if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
+            ent:AddEFlags(EFL_NO_THINK_FUNCTION)
         end
     end
 end
@@ -597,12 +294,13 @@ function ENT:DismountHunter()
     if self.VJ_IsBeingControlled then
     	self.AnimTbl_IdleStand = {ACT_IDLE}
     end
-	if IsValid(self.IncapSong) then
+	if self.IncapSong then
 		self.IncapSong:Stop()
 		self.IncapSong = nil
 	end
     if !IsValid(self.pIncapacitatedEnemy) then return end
     local enemy = self.pIncapacitatedEnemy
+    enemy:SetPos(self:GetPos())
     hook.Add("ShouldCollide", "hunter_EnableCollisions", function(ent1, ent2)
         if (ent1 == self and ent2 == enemy) then return true end
     end)
@@ -619,7 +317,6 @@ function ENT:DismountHunter()
     end
     if enemy:IsPlayer() then
         if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-            enemy:SetPos(self.vecLastPos)
             enemy:SetObserverMode(0)
             enemy:DrawViewModel(true)
             enemy:DrawWorldModel(true)
@@ -649,6 +346,203 @@ function ENT:DismountHunter()
         self.pEnemyRagdoll = nil
     end
     self.pIncapacitatedEnemy = nil
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnLeapAttack_BeforeStartTimer() 
+    VJ_CreateSound(self,"HunterZombie.Warn",85,self:VJ_DecideSoundPitch(100,100))
+    if self.VJ_IsBeingControlled == false then
+        self.AnimTbl_Run = {ACT_RUN_CROUCH}
+        self.AnimTbl_Walk = {ACT_RUN_CROUCH}  
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnLeapAttack_AfterStartTimer()
+    self.nEntityIndex = self:EntIndex()
+    self:SetNW2Int("PounceT",CurTime() +self.NextLeapAttackTime)
+    timer.Simple(1.7,function() 
+        if IsValid(self) && IsValid(self:GetEnemy()) then 
+            self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true)           
+        end    
+        if IsValid(self) then 
+            self.AnimTbl_Run = {ACT_RUN}
+            self.AnimTbl_Walk = {ACT_RUN}           
+        end 
+    end)
+    timer.Simple(1.9, function()
+        if IsValid(self) && IsValid(self:GetEnemy()) then 
+            self:VJ_ACT_PLAYACTIVITY("vjges_pounce_idle_low",true,1.5,true) 
+            self:VJ_ACT_PLAYACTIVITY("vjges_Idlenoise_02",true,1.5,true) 
+            ParticleEffectAttach("hunter_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
+        end
+    end)
+    timer.Simple(2, function()
+        if IsValid(self) then 
+            if timer.Exists("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange") then timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") end --if the same timer is playing, stop it
+            timer.Create("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
+                if !IsValid(self) then return end
+                local id = self.nEntityIndex
+                for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
+                    if IsValid(self) && IsValid(v) then
+                        if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0) or (v:IsNPC() && v ~= self) then
+                            if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
+                                local enemy = v
+                                if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
+                                    return
+                                end
+                                if not self:CanIncapacitate(enemy) then
+                                    timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange")
+                                    return
+                                end
+                                local camera = ents.Create("prop_dynamic")
+                                camera:SetModel("models/error.mdl")
+                                camera:SetPos(self:GetPos())
+                                camera:Spawn()
+                                camera:Activate()
+                                camera:SetRenderMode(RENDERMODE_NONE)
+                                camera:DrawShadow(false)
+                                camera:SetParent(self)
+                                camera:Fire("SetParentAttachment","camera_att")
+                                self:DeleteOnRemove(camera)
+                                VJ_CreateSound(v,"player/hunter/hit/tackled_1.mp3",75,self:VJ_DecideSoundPitch(100,100))
+                                if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
+                                    local dist = self:GetPos():Distance(enemy:GetPos())
+                                    if dist <= self.IncapacitationRange then
+                                        timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") --kill the timer
+                                        self:SetLocalVelocity(self:GetForward() * 0) --stop the hunter from lunging forward
+                                        self.pIncapacitatedEnemy = enemy
+                                        enemy:SetLocalVelocity(self:GetForward() * 0)
+                                        if enemy:IsNPC() then
+                                            if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+                                                enemy:GetActiveWeapon():SetNoDraw(true)
+                                            else
+                                                enemy:DropWeapon()
+                                            end
+                                        elseif enemy:IsPlayer() then
+                                            self:StripEnemyWeapons(enemy)
+                                            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+                                                enemy:SetObserverMode(OBS_MODE_CHASE)
+                                                enemy:SpectateEntity(camera)
+                                                enemy:DrawViewModel(false)
+                                                enemy:DrawWorldModel(false)
+                                                enemy:SetFOV(75)
+                                            end
+                                        end
+                                        self.HasEnemyIncapacitated = true
+                                        self.nextShredSound = CurTime()
+                                        self:SetCustomCollisionCheck(true)
+                                        enemy:SetCustomCollisionCheck(true)
+                                        hook.Add("ShouldCollide", "hunter_EnableCollisions", function(ent1, ent2)
+                                            if (ent1 == self and ent2 == enemy) then return false end
+                                        end)
+                                        local ang = self:GetAngles()
+                                        enemy:SetNoDraw(true)
+                                        local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
+                                        if IsValid(self.pEnemyRagdoll) then
+                                            net.Start("infected_RemoveCSEnt")
+                                                net.WriteString(tostring(self:EntIndex()))
+                                            net.Broadcast()
+                                            self.pEnemyRagdoll:Remove()
+                                        end
+                                        local mdl
+                                        if enemy:IsPlayer() && enemy:LookupBone("ValveBiped.Bip01_Pelvis") == nil then
+                                            mdl = ents.Create("prop_ragdoll")
+                                            mdl:SetModel(enemy:GetModel())
+                                            mdl:SetPos(tr.HitPos)
+                                            mdl:SetAngles(Angle(ang.x - 90, ang.y - 180, ang.z))
+                                            mdl:SetCollisionGroup(1)
+                                            mdl:Spawn()
+                                            local root = mdl:GetPhysicsObjectNum(0)
+                                            root:EnableMotion(false)
+                                            mdl:Fire("StartRagdollBoogie")
+                                        else
+                                            mdl = ents.Create("prop_dynamic")
+                                            mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
+                                            mdl:SetPos(tr.HitPos)
+                                            mdl:SetAngles(Angle(ang.x, ang.y - 180, ang.z))
+                                            mdl:Spawn()
+                                            mdl:SetRenderMode(1)
+                                            mdl:SetColor(Color(0, 0, 0, 0))
+                                            if enemy:IsPlayer() then
+                                                mdl:SetParent(self)
+                                            else
+                                                mdl:SetParent(enemy)
+                                            end
+                                            mdl:ResetSequence(3)
+                                            mdl:ResetSequenceInfo()
+                                            mdl:SetCycle(0)
+                                            mdl:SetLocalPos(Vector(0, 0, 0))
+                                            timer.Simple(0.15, function()
+                                                if !IsValid(self) then return end
+                                                net.Start("infected_PounceEnemy")
+                                                    net.WriteString(tostring(self:EntIndex()))
+                                                    net.WriteEntity(mdl)
+                                                    net.WriteString(enemy:GetModel())
+                                                net.Broadcast()
+                                            end)
+                                        end
+                                        self.pEnemyRagdoll = mdl
+                                        if enemy:IsPlayer() then
+                                            self:Pounce_Effects(false)
+                                            enemy:SetParent(self)                                          
+                                            enemy:SetLocalPos(Vector(0, 0, 0))
+                                        else
+                                            self:SetParent(enemy)
+                                        end
+                                        enemy:CallOnRemove("hunter_ClearParent", function(ent)
+                                            if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
+                                                self:DismountHunter()
+                                            end
+                                            if ent:IsPlayer() then
+                                                ent:SetParent(nil)
+                                            end
+                                        end)             
+                                        hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
+                                            if victim == self.pIncapacitatedEnemy then
+                                                enemy:SetParent(nil)
+                                                enemy:SetObserverMode(0)
+                                                enemy:DrawViewModel(true)
+                                                enemy:DrawWorldModel(true)
+                                            end
+                                        end)
+                                        for k, v in ipairs(ents.FindByClass("player")) do
+                                            if enemy:IsNPC() then
+                                                VJ_CreateSound(v,"vj_l4d2/music/tags/exenterationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)    
+        end
+    end)     
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:MultipleMeleeAttacks()
+    if self.IsIncapacitating == true then return end
+    local randattack = math.random(1,2)
+    if randattack == 1 then
+        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
+        self.TimeUntilMeleeAttackDamage = 0.6
+        self.MeleeAttackDamage = 15
+    elseif randattack == 2 then
+        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
+        self.TimeUntilMeleeAttackDamage = 0.6
+        self.MeleeAttackDamage = 15
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnSchedule()
+    local ent = self.pIncapacitatedEnemy
+    if IsValid(ent) then
+        local flDistance = self:GetPos():Distance(ent:GetPos())
+        if flDistance <= self.IncapacitationRange then
+            if ent:Health() <= 0 then return end
+            self:VJ_PlaySequence("Melee_Pounce")
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
@@ -704,21 +598,13 @@ function ENT:CustomOnThink()
     if CurTime() >= self.nextBacteria then
         self:PlayBacteria()
     end
-    if IsValid(self.pIncapacitatedEnemy) then
-	    if CurTime() >= self.nextIncapSong then
-	    	self:Hunter_PlayIncapSong(true,false)
-	    end
-    else
-        if self.IncapSong ~= nil then
-            self.IncapSong:Stop()
-        end
-    end
     if self.HasEnemyIncapacitated == true then 
         self.HasMeleeAttack = false
         self.CombatFaceEnemy = false
         if self.VJ_IsBeingControlled then
         	self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
         end
+        self:PlayIncapSong()
         if IsValid(self.pEnemyRagdoll) then
         	self:SetAngles(Angle(self:GetAngles().x, self.pEnemyRagdoll:GetAngles().y - 180, self:GetAngles().z))
         	self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
@@ -732,14 +618,17 @@ function ENT:CustomOnThink()
         		self.nextShredSound = CurTime() + 0.3
         	end
             local enemy = self.pIncapacitatedEnemy
-            if enemy:IsPlayer() then
+            local dist = self:GetPos():Distance(enemy:GetPos())
+            if enemy:IsPlayer() && enemy:Alive() then
                 enemy:SetLocalPos(Vector(0, 0, 0))
             else
-                self:SetLocalPos(Vector(0, 0, 0))
+                if enemy:Health() > 0 then
+                    self:SetLocalPos(Vector(0, 0, 0))
+                end
             end
-            local dist = self:GetPos():Distance(enemy:GetPos())
             if dist > self.IncapacitationRange then
                 self:DismountHunter()
+                enemy:SetParent(nil)
             end
             if enemy:GetNoDraw() == true then 
             	enemy:SetNoDraw(true)
@@ -803,18 +692,35 @@ function ENT:CustomOnThink()
     end
 end 
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-    if self.IsIncapacitating == true then return end
-    local randattack = math.random(1,2)
-    if randattack == 1 then
-        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
-        self.TimeUntilMeleeAttackDamage = 0.6
-        self.MeleeAttackDamage = 15
-    elseif randattack == 2 then
-        self.AnimTbl_MeleeAttack = {"vjges_Melee_02","vjges_Melee_03"}
-        self.TimeUntilMeleeAttackDamage = 0.6
-        self.MeleeAttackDamage = 15
+function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
+    local anims = VJ_PICK{"Shoved_Backward_01","Shoved_Backward_02","Shoved_Leftward","Shoved_Rightward"}
+    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+            self:DismountHunter()
+            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)      
+        end
     end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
+    self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, GetCorpse)
+    local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
+    if IsValid(ent) then
+        if ent:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
+        elseif ent:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+        end
+    end
+    self:DismountHunter()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnRemove()
+    self:DismountHunter()
 end
 /*-----------------------------------------------
     *** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
