@@ -1,8 +1,8 @@
 Boomer:
 -Add vomit cover material overlay to enemies hit by vomit
--On death, make the surrounding enemies covered in puke
+-On death, make the surrounding enemies covered in puke ✅
 -Fix missing materials on gib models
--Decrease puke range
+-Decrease puke range ✅
 -Don't make vomit cover particles visible in firstperson
 
 Boomette:
@@ -76,7 +76,7 @@ General:
 -Bacteria cuts short for some specials (jockey & hunter for sure) ✅
 -Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops) ✅
 -Make infected unghost ✅
--Make specials unable to ghost when incapping
+-Make specials unable to ghost when incapping 
 -Make incap lights clientside & visible only to incapped enemy
 -Add crouching to all specials
 -Don't incap player who is controlling 
