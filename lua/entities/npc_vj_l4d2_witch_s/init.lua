@@ -147,20 +147,6 @@ function ENT:Controller_Initialize(ply)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnTakeDamage_BeforeDamage(dmginfo,hitgroup)
-    self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnResetEnemy() 
-    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,7,true) 
-    self.Alerted = false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
-    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,7,true) 
-    self.Alerted = false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAlert(argent) 
 	if self.Alerted == true then
         self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.5,false) 
@@ -173,12 +159,6 @@ function ENT:CustomOnAlert(argent)
             end
         end
     end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRemove()
-    VJ_STOPSOUND(self.soundtrack)
-    VJ_STOPSOUND(self.soundtrack_chase)
-    VJ_STOPSOUND(self.soundtrack_burning)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInvestigate(argent)
@@ -220,20 +200,6 @@ function ENT:CustomOnInvestigate(argent)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    VJ_STOPSOUND(self.soundtrack)
-    VJ_STOPSOUND(self.soundtrack_chase)
-    VJ_STOPSOUND(self.soundtrack_burning)
-    local ent = self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
-        end
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Witch_GroanLow()
     self:VJ_ACT_PLAYACTIVITY("vjseq_Agitated",true,1.5,true) 
     VJ_CreateSound(self,self.SoundTbl_Witch_GrowlLow,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100))
@@ -249,12 +215,26 @@ function ENT:Witch_GroanHigh()
     VJ_CreateSound(self,self.SoundTbl_Witch_GrowlHigh,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_BackWard_03","Shoved_Leftward_01","Shoved_Rightward_01"}
-    if IsValid(self:GetEnemy()) then
-        if dmginfo:GetDamageType() == DMG_CLUB then
-            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-        end
+function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
+    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,7,true) 
+    self.Alerted = false
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnResetEnemy() 
+    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,7,true) 
+    self.Alerted = false
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:MultipleMeleeAttacks()
+    local randattack = math.random(1,2)
+    if randattack == 1 then
+        self.AnimTbl_MeleeAttack = {"vjges_MovingMelee_01","vjges_MovingMelee_02"}
+        self.TimeUntilMeleeAttackDamage = 0.7
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_w_d")
+    elseif randattack == 2 then
+        self.AnimTbl_MeleeAttack = {"vjges_MovingMelee_01","vjges_MovingMelee_02"}
+        self.TimeUntilMeleeAttackDamage = 0.7
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_w_d")
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -317,23 +297,44 @@ function ENT:CustomOnThink()
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnTakeDamage_BeforeDamage(dmginfo,hitgroup)
+    self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
+    local anims = VJ_PICK{"Shoved_BackWard_03","Shoved_Leftward_01","Shoved_Rightward_01"}
+    if IsValid(self:GetEnemy()) then
+        if dmginfo:GetDamageType() == DMG_CLUB then
+            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        end
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)
     if self:IsMoving() && self:GetActivity() == ACT_RUN then
         self.AnimTbl_Death = {ACT_DIESIMPLE}
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-	local randattack = math.random(1,2)
-	if randattack == 1 then
-		self.AnimTbl_MeleeAttack = {"vjges_MovingMelee_01","vjges_MovingMelee_02"}
-		self.TimeUntilMeleeAttackDamage = 0.7
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_w_d")
-	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_MovingMelee_01","vjges_MovingMelee_02"}
-		self.TimeUntilMeleeAttackDamage = 0.7
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_w_d")
-	end
+function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
+    VJ_STOPSOUND(self.soundtrack)
+    VJ_STOPSOUND(self.soundtrack_chase)
+    VJ_STOPSOUND(self.soundtrack_burning)
+    local ent = self:GetEnemy()
+    if IsValid(ent) then
+        if ent:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
+        elseif ent:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+        end
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnRemove()
+    VJ_STOPSOUND(self.soundtrack)
+    VJ_STOPSOUND(self.soundtrack_chase)
+    VJ_STOPSOUND(self.soundtrack_burning)
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
