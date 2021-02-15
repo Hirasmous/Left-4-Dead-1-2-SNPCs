@@ -14,18 +14,17 @@ ENT.RadiusDamageType = DMG_NERVEGAS -- Damage type
 ENT.Model = {"models/spitball_medium.mdl"} -- The models it should spawn with | Picks a random one from the table} -- The models it should spawn with | Picks a random one from the table
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	local sphere = ents.FindInSphere(self:GetPos(),150)
+	local sphere = ents.FindInSphere(self:GetPos(), 150)
 	local owner = self:GetOwner()
 	for k, v in ipairs(sphere) do
-		if GetConVar("vj_l4d2_gasdamage"):GetInt() == 1 then
-			if (v:IsNPC() or v:IsPlayer()) then
-	    	    if math.random(1,4) == 1 then
+		--if GetConVar("vj_l4d2_gasdamage"):GetInt() == 1 then
+			if (v:IsPlayer()) then
+	    	    if math.random(1, 4) == 1 then
 	    		    VJ_EmitSound(v,VJ_PICKRANDOMTABLE({"ambient/voices/cough1.mp3","ambient/voices/cough2.mp3","ambient/voices/cough3.mp3","ambient/voices/cough4.mp3"}),70,math.random(100,100))
-		            util.VJ_SphereDamage(self,self,v:GetPos(),10,30,DMG_NERVEGAS,true,true)
 	    		end
-	        end
+	        --end
 	    end
-    end  	
+    end  		
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
