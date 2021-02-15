@@ -37,6 +37,7 @@ Smoker:
 -Prevent smoke cloud from damaging altogether; add smoke overlay  effect
 -Add dangling animations for incapped enemy when it's off ground
 -(L4D1) Restore tongue bodygroup after stopping incapping
+-Add attachment to "smoker_tongue_attach.mdl" (on the end of the tongue)
 
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
