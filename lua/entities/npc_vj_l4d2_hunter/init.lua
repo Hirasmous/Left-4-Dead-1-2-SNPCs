@@ -316,6 +316,8 @@ function ENT:DismountHunter()
         enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
     end
     if enemy:IsPlayer() then
+        enemy:SetParent(nil)
+        enemy:SetPos(self:GetPos())
         if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
             enemy:SetObserverMode(0)
             enemy:DrawViewModel(true)
