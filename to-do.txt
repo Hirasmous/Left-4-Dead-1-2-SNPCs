@@ -36,7 +36,7 @@ Jockey:
 Smoker:
 -Incapped enemy pose params ✅
 -Collision for tongue (lerp mouth att pos & enemy pos) ✅
--Fix Cloud smoke damaging Smoker/other specials & allies
+-Fix Cloud smoke damaging Smoker/other specials & allies ✅
 -Fix cant incap when being controlled ✅
 -Smoker's incapped enemy can move ✅
 -Center tongue particle on incapped model (make tracer particle end at incapped enemy's waist) ✅
@@ -57,12 +57,12 @@ Tank:
 -Implement rock bodygroup for range attack ❓
 
 Witch:
--Change sequence "Standing_Idle"'s activity to something other than ACT_IDLE; it conflicts with "Idle_Standing_Crying"
+-Change sequence "Standing_Idle"'s activity to something other than ACT_IDLE; it conflicts with "Idle_Standing_Crying" ✅
 -Add rage pose parameters
 -Add sitting pose parameters
 
 General:
--Ignore incapped players/enemies if there are more enemies nearby
+-Ignore incapped players/enemies if there are more enemies nearby ✅
 -Match shared functions
 	> Update IsEntityAlly function  ✅
 	> Create a module that holds shared funcs ✅ (metatable in vj_l4d2si_features.lua)
