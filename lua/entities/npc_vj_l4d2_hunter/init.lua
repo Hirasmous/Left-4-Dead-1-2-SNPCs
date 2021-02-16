@@ -548,6 +548,7 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+	self:IgnoreIncappedEnemies()
     if self.IsGhosted then
         self:Ghost()
     end
