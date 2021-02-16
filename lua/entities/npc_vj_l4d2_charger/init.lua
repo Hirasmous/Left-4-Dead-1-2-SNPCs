@@ -582,6 +582,7 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+	self:IgnoreIncappedEnemies()
 	--[[if self.IsCharging && CurTime() > self.NextChargeAnim then
 		self:VJ_PlaySequence("Charger_Charge")
 		self.NextChargeAnim = CurTime() +VJ_GetSequenceDuration(self,"Charger_Charge")
