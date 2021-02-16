@@ -302,13 +302,22 @@ function ENT:CustomOnThink()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
-    local anims = VJ_PICK{"Shoved_BackWard_03","Shoved_Leftward_01","Shoved_Rightward_01"}
-    if IsValid(self:GetEnemy()) then
-        if dmginfo:GetDamageType() == DMG_CLUB then
-            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-        end
-    end
+	if self:IsShoved() then return end
+	if IsValid(self:GetEnemy()) then
+	    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+	        local function GetDirection()
+	            local directions = {
+	                {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+	                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+	                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+	                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+	            }
+	            table.sort(directions, function(a, b) return a[2] < b[2] end)
+	            return directions[1][1]
+	        end
+	        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+	    end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)

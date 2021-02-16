@@ -60,7 +60,7 @@ ENT.LeapAttackDamageDistance = 100 -- How far does the damage go?
 ENT.FootStepTimeRun = 0.2 -- Next foot step sound when it is running
 ENT.FootStepTimeWalk = 0.4 -- Next foot step sound when it is walking
 	-- ====== Flinching Code ====== --
-ENT.CanFlinch = 1 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
+ENT.CanFlinch = 0 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
 ENT.FlinchChance = 12 -- Chance of it flinching from 1 to x | 1 will make it always flinch
 ENT.NextMoveAfterFlinchTime = "LetBaseDecide" -- How much time until it can move, attack, etc. | Use this for schedules or else the base will set the time 0.6 if it sees it's a schedule!
 ENT.HasHitGroupFlinching = true -- It will flinch when hit in certain hitgroups | It can also have certain animations to play in certain hitgroups
@@ -73,6 +73,7 @@ ENT.SoundTbl_Idle = {"ChargerZombie.Voice","ChargerZombie.Growl"}
 ENT.SoundTbl_Alert = {"ChargerZombie.Alert","ChargerZombie.Recognize"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
 ENT.SoundTbl_MeleeAttack = {"ChargerZombie.Smash"}
+ENT.SoundTbl_BeforeMeleeAttack = {"ChargerZombie.VocalizePummel"}
 ENT.SoundTbl_LeapAttackJump = {"ChargerZombie.Charge"}
 ENT.SoundTbl_LeapAttackDamage = {}
 ENT.SoundTbl_Pain = {"ChargerZombie.Pain"}
@@ -121,6 +122,10 @@ ENT.GhostRunAwayT = CurTime()
 ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
+ENT.NextChargeAnim = CurTime()
+ENT.IsCarryingEnemy = false
+ENT.CarriedEnemy = nil 
+ENT.IsCharging = false
 
 util.AddNetworkString("L4D2ChargerHUD")
 util.AddNetworkString("L4D2ChargerHUDGhost")
@@ -502,6 +507,7 @@ function ENT:DismountCharger()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
+    --self.IsCharging = true
 	self:SetNW2Int("ChargeT",CurTime() +self.NextLeapAttackTime)
 	if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
 	timer.Create("Charger_HitWall", 0.1, 11, function()
@@ -509,7 +515,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 		local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
 		local tr = util.TraceLine( {
 			start = self:GetPos() +self:OBBCenter() +self:OBBMaxs() +self:OBBMins(),
-			endpos = self:GetPos() + self:GetForward() *60 +self:GetUp() *20,
+			endpos = self:GetPos() + self:GetForward() *80 +self:GetUp() *20,
 			filter = self,
 			mask = MASK_SOLID_BRUSHONLY,
 		} )
@@ -519,18 +525,27 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 			VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
 			ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
 			timer.Stop("Charger_HitWall")
+			if self.IsCarryingEnemy then
+				self:PummelEnemy(TheHitEntity)
+			end
 		end
 	end)
 end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CarryEnemy(ent)
+	ent = self.CarriedEnemy
+	self.IsCarryingEnemy = true
+end
+    
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
 	if self.VJ_IsBeingControlled == false then
 		self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Charger_Slam_Ground","Charger_Shoved_Backward"},true,0.1,false)
 	end
 	VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
-	VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
-	ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
+	VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95))	
 	self:PummelEnemy(TheHitEntity)
+	ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
 	for k, v in ipairs(ents.FindByClass("player")) do
 		if TheHitEntity:IsPlayer() then
 			VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.mp3",90,self:VJ_DecideSoundPitch(100,100))
@@ -549,8 +564,8 @@ function ENT:MultipleMeleeAttacks()
 		self.TimeUntilMeleeAttackDamage = 0.8
 		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_c_d")
 	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_Charger_punch"}
-		self.TimeUntilMeleeAttackDamage = 0.8
+		self.AnimTbl_MeleeAttack = {"vjges_Melee_01","vjges_Melee_02","vjges_Melee_03"}
+		self.TimeUntilMeleeAttackDamage = 0.3
 		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_c_d")
 	end
 end
@@ -567,6 +582,10 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+	--[[if self.IsCharging && CurTime() > self.NextChargeAnim then
+		self:VJ_PlaySequence("Charger_Charge")
+		self.NextChargeAnim = CurTime() +VJ_GetSequenceDuration(self,"Charger_Charge")
+	end]]
 	if self.IsGhosted then
         self:Ghost()
     end
@@ -661,14 +680,25 @@ function ENT:CustomOnThink()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-	local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
-	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
-		self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-		if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
-			self:DismountCharger()
-			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-		end
-	end
+	if self.pIncapacitatedEnemy && dmginfo:GetAttacker() == self.pIncapacitatedEnemy then return end
+	if self:IsShoved() then return end
+    if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
+        local function GetDirection()
+            local directions = {
+                {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+            }
+            table.sort(directions, function(a, b) return a[2] < b[2] end)
+            return directions[1][1]
+        end
+        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+        	self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+        	self:DismountCharger()
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)

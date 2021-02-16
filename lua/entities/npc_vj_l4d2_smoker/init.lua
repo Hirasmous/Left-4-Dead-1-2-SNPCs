@@ -55,7 +55,7 @@ ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time
 ENT.FootStepTimeRun = 0.3 -- Next foot step sound when it is running
 ENT.FootStepTimeWalk = 0.4 -- Next foot step sound when it is walking
     -- ====== Flinching Code ====== --
-ENT.CanFlinch = 1 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
+ENT.CanFlinch = 0 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
 ENT.FlinchChance = 12 -- Chance of it flinching from 1 to x | 1 will make it always flinch
 ENT.NextMoveAfterFlinchTime = "LetBaseDecide" -- How much time until it can move, attack, etc. | Use this for schedules or else the base will set the time 0.6 if it sees it's a schedule!
 ENT.HasHitGroupFlinching = true -- It will flinch when hit in certain hitgroups | It can also have certain animations to play in certain hitgroups
@@ -565,12 +565,18 @@ function ENT:CustomOnThink()
         self.HasMeleeAttack = false
         self.HasRangeAttack = false
 
-        --[[local effectData = EffectData()
-        effectData:SetStart(self:GetAttachment(3).Pos)
-        effectData:SetOrigin(self.pEnemyRagdoll:GetPos())
-        effectData:SetEntity(self)
-        effectData:SetAttachment(3)
-        util.Effect("tongue_beam", effectData)]]
+        if IsValid(self.pEnemyRagdoll) then
+	        local effectData = EffectData()
+	        effectData:SetStart(self:GetAttachment(3).Pos)
+	        effectData:SetEntity(self)
+	        effectData:SetAttachment(3)
+	        util.Effect("tongue_beam", effectData)
+	        if self.IsChokingEnemy then
+	            effectData:SetOrigin(self.pEnemyRagdoll:GetPos() +self.pEnemyRagdoll:OBBCenter())
+	        else
+	        	effectData:SetOrigin(self.pEnemyRagdoll:GetPos())
+	        end
+	    end
 
         if self.IncapSong == nil or self.IncapSong:IsPlaying() == false then
         	self:Smoker_PlayIncapSong_Choke()
@@ -659,7 +665,7 @@ function ENT:CustomOnThink()
             if self.HasEnemyIncapacitated == false then return end
 
             --create tongue
-            if CurTime() > self.NextTongueSpawn then
+            --[[if CurTime() > self.NextTongueSpawn then
                 if self.IsChokingEnemy == true then
                     util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos() +enemy:OBBCenter(), false, self:EntIndex(), 3)
                     self.NextTongueSpawn = CurTime() + 0.25
@@ -667,7 +673,7 @@ function ENT:CustomOnThink()
                     util.ParticleTracerEx("smoker_tongue_new", self:GetPos(), enemy:GetPos(), false, self:EntIndex(), 3)
                     self.NextTongueSpawn = CurTime() + 0.25
                 end
-            end
+            end]]
 
             local dist = self:GetPos():Distance(enemy:GetPos())  
 
@@ -896,12 +902,23 @@ function ENT:CustomOnThink()
 end 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
+    if self.pIncapacitatedEnemy && dmginfo:GetAttacker() == self.pIncapacitatedEnemy then return end
+    if self:IsShoved() then return end
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        local function GetDirection()
+            local directions = {
+                {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+            }
+            table.sort(directions, function(a, b) return a[2] < b[2] end)
+            return directions[1][1]
+        end
+        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
         if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+            self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
             self:DismountSmoker()
-            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)      
         end
     end
 end

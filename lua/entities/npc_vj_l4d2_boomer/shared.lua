@@ -85,12 +85,16 @@ if CLIENT then
         if isdeleted == true then hook.Remove("HUDPaint","BoomerChargeHUD") end
 		hook.Add("PreDrawHalos","L4D2BoomerHalo",function()
 			local tbL4D2Infected = {}
+			local tbL4D2GhostedInfected = {}
 			local tbL4D2Survivors = {}
-			local tbL4D2IncappedEnemies = {}
 			for _,v in pairs(ents.GetAll()) do
 				if v:IsNPC() or v:IsPlayer() then
 					if string.find(v:GetClass(),"npc_vj_l4d*") then
-						table.insert(tbL4D2Infected,v)
+						if v:GetNW2Bool("Ghosted") then
+						    table.insert(tbL4D2GhostedInfected,v)
+						else
+							table.insert(tbL4D2Infected,v)
+						end
 					else
 						if v:GetClass() != "obj_vj_bullseye" then
 							table.insert(tbL4D2Survivors,v)
@@ -100,6 +104,7 @@ if CLIENT then
 			end
 			halo.Add(tbL4D2Infected,Color(255,100,0),4,4,3,true,true)
 			halo.Add(tbL4D2Survivors,Color(0,0,255),4,4,3,true,true)
+			halo.Add(tbL4D2GhostedInfected,Color(0,150,150),4,4,3,true,true)
 		end)
 		if isdeleted == true then hook.Remove("PreDrawHalos","L4D2BoomerHalo") end
 	end)
@@ -147,11 +152,16 @@ if CLIENT then
         if isdeleted == true then hook.Remove("HUDPaint","GhostBoomerChargeHUD") end
 		hook.Add("PreDrawHalos","GhostL4D2BoomerHalo",function()
 			local tbL4D2Infected = {}
+			local tbL4D2GhostedInfected = {}
 			local tbL4D2Survivors = {}
 			for _,v in pairs(ents.GetAll()) do
 				if v:IsNPC() or v:IsPlayer() then
 					if string.find(v:GetClass(),"npc_vj_l4d*") then
-						table.insert(tbL4D2Infected,v)
+						if v:GetNW2Bool("Ghosted") then
+						    table.insert(tbL4D2GhostedInfected,v)
+						else
+							table.insert(tbL4D2Infected,v)
+						end
 					else
 						if v:GetClass() != "obj_vj_bullseye" then
 							table.insert(tbL4D2Survivors,v)
@@ -159,8 +169,9 @@ if CLIENT then
 					end
 				end
 			end
-			halo.Add(tbL4D2Infected,Color(0,0,255),4,4,3,true,true)
+			halo.Add(tbL4D2Infected,Color(255,100,0),4,4,3,true,true)
 			halo.Add(tbL4D2Survivors,Color(0,0,255),4,4,3,true,true)
+			halo.Add(tbL4D2GhostedInfected,Color(0,150,150),4,4,3,true,true)
 		end)
 		if isdeleted == true then hook.Remove("PreDrawHalos","GhostL4D2BoomerHalo") end
 	end)

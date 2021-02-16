@@ -49,14 +49,14 @@ ENT.AnimTbl_RangeAttack = {"vjges_Vomit_Attack"} -- Range Attack Animations
 -- ====== Distance Variables ====== --
 ENT.TimeUntilRangeAttackProjectileRelease = 1.5 -- How much time until the projectile code is ran?
 ENT.RangeAttackPos_Up = 47
-ENT.RangeDistance = 445 -- This is how far away it can shoot
+ENT.RangeDistance = 345 -- This is how far away it can shoot
 ENT.RangeToMeleeDistance = 200 -- How close does it have to be until it uses melee?
 ENT.NextRangeAttackTime = 20 -- How much time until it can use a range attack?
 ENT.DeathCorpseModel = {"models/vj_l4d2/limbs/exploded_boomer.mdl"}
 ENT.RangeAttackAnimationFaceEnemy = false -- Should it face the enemy while playing the range attack animation?
 	-- ====== Flinching Code ====== --
 ENT.AnimTbl_Flinch = {"vjges_flinch_01","vjges_flinch_02","vjges_flinch_03"} -- If it uses normal based animation, use this
-ENT.CanFlinch = 1 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
+ENT.CanFlinch = 0 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
 ENT.FlinchChance = 1 -- Chance of it flinching from 1 to x | 1 will make it always flinch
 ENT.NextMoveAfterFlinchTime = "LetBaseDecide" -- How much time until it can move, attack, etc. | Use this for schedules or else the base will set the time 0.6 if it sees it's a schedule!
 ENT.HasHitGroupFlinching = false -- It will flinch when hit in certain hitgroups | It can also have certain animations to play in certain hitgroups
@@ -231,14 +231,16 @@ function ENT:CustomRangeAttackCode()
             self.IsTakingCover = false
         end
     end)
-    for _, x in ipairs(ents.FindInSphere(self:GetPos(),445)) do
+    for _, x in ipairs(ents.FindInSphere(self:GetPos(),self.RangeDistance)) do
         if IsValid(x) && IsValid(self) then
-            table.insert(self.Vomited_Enemies,x)
-            self:VomitEnemy(x)
-            self.Enemy_IsPuked = true
+            if self:IsLineOfSightClear(x) then
+                table.insert(self.Vomited_Enemies,x)
+                self:VomitEnemy(x)
+                self.Enemy_IsPuked = true
+            end
         end
     end     
-    self:SetNW2Int("VomitT",CurTime() +self.NextRangeAttackTime)    
+    self:SetNW2Float("VomitT",CurTime() +self.NextRangeAttackTime)    
     ParticleEffectAttach("boomer_vomit",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))         
     timer.Simple(0,function() if IsValid(self) then self:VomitBile(75) end end)         
     timer.Simple(0.1,function() if IsValid(self) then self:VomitBile(75) end end) 
@@ -318,9 +320,19 @@ function ENT:CustomOnThink()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward_01","Shoved_Leftward","Shoved_Rightward"}
+	if self:IsShoved() then return end
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        local function GetDirection()
+            local directions = {
+                {"Shoved_Backward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+            }
+            table.sort(directions, function(a, b) return a[2] < b[2] end)
+            return directions[1][1]
+        end
+        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -334,6 +346,15 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak1.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak2.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak3.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
+    for _, x in ipairs(ents.FindInSphere(self:GetPos(),135)) do
+        if IsValid(x) && IsValid(self) then
+            if self:IsLineOfSightClear(x) then
+                table.insert(self.Vomited_Enemies,x)
+                self:VomitEnemy(x)
+                self.Enemy_IsPuked = true
+            end
+        end
+    end 
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)

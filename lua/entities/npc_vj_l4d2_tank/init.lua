@@ -210,7 +210,7 @@ function ENT:CustomRangeAttackCode()
 end   
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_AfterStartTimer() 
-	self:SetNW2Int("RockT",CurTime() +self.NextRangeAttackTime)
+	self:SetNW2Float("RockT",CurTime() +self.NextRangeAttackTime)
 	timer.Simple(0.7,function()
 		if IsValid(self) then
 		    ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward"))              
@@ -325,9 +325,19 @@ function ENT:CustomOnThink_AIEnabled()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_BackWard","Shoved_Forward","Shoved_Leftward","Shoved_Rightward"}
-    if dmginfo:GetDamageType() == DMG_CRUSH || dmginfo:GetDamageType() == DMG_BLAST then
-        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+	if self:IsShoved() then return end
+    if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
+        local function GetDirection()
+            local directions = {
+                {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+            }
+            table.sort(directions, function(a, b) return a[2] < b[2] end)
+            return directions[1][1]
+        end
+        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------

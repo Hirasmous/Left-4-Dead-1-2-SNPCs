@@ -360,7 +360,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
     self.nEntityIndex = self:EntIndex()
-    self:SetNW2Int("PounceT",CurTime() +self.NextLeapAttackTime)
+    self:SetNW2Float("PounceT",CurTime() +self.NextLeapAttackTime)
     timer.Simple(1.7,function() 
         if IsValid(self) && IsValid(self:GetEnemy()) then 
             self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true)           
@@ -695,12 +695,35 @@ function ENT:CustomOnThink()
 end 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    local anims = VJ_PICK{"Shoved_Backward_01","Shoved_Backward_02","Shoved_Leftward","Shoved_Rightward"}
+	if self.pIncapacitatedEnemy && dmginfo:GetAttacker() == self.pIncapacitatedEnemy then return end
+	if self:IsShoved() then return end
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
+        local function GetDirection()
+            local directions = {
+                {"Shoved_Backward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Shoved_Backward_02", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+            }
+            table.sort(directions, function(a, b) return a[2] < b[2] end)
+            return directions[1][1]
+        end
+        local function GetDirection_Incapping()
+            local directions_incapping = {
+                {"Melee_Pounce_Knockoff_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Melee_Pounce_Knockoff_L", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+                {"Melee_Pounce_Knockoff_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+                {"Melee_Pounce_Knockoff_R", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+            }    
+            table.sort(directions_incapping, function(a, b) return a[2] < b[2] end)
+            return directions_incapping[1][1] 
+        end
         if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+            self:VJ_ACT_PLAYACTIVITY(GetDirection_Incapping(),true,VJ_GetSequenceDuration(self,GetDirection_Incapping()),false)
             self:DismountHunter()
-            self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)      
+        else
+        	self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
         end
     end
 end

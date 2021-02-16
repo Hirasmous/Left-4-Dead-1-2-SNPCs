@@ -23,9 +23,8 @@ ENT.ShakeWorldOnDeathtDuration = 1 -- How long the screen shake will last, in se
 ENT.ShakeWorldOnDeathFrequency = 200 -- The frequency
 ENT.DecalTbl_DeathDecals = {"ManhackCut"}
 ENT.SoundTbl_Idle = {"HulkZombie.Throw.FlyLoop"}
-ENT.SoundTbl_OnCollide = {"tank/hit/thrown_projectile_hit_01.mp3"}
+ENT.SoundTbl_OnCollide = {"player/tank/hit/thrown_projectile_hit_01.mp3"}
 ENT.MassAmount = 1
-
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:GetMassAmount()
 	return self.MassAmount
