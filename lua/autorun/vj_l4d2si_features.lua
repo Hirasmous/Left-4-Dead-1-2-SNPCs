@@ -148,6 +148,47 @@ function NPC:CanIncapacitate(ent)
     return true
 end
 
+function NPC:IgnoreIncappedEnemies()
+    local function CalcDistance(pos1, pos2)
+        return pos1:Distance(pos2)
+    end
+    local function GetNextClosestEnemy(enemy)
+        local tbl = {}
+        for _, x in ipairs(ents.GetAll()) do
+            if x ~= enemy && (x:IsNPC() || (x:IsPlayer() && x:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0)) then
+                if self:Disposition(x) == D_HT then
+                    tbl[table.Count(tbl) + 1] = {x:EntIndex(), CalcDistance(self:GetPos(), x:GetPos())}
+                    for y, z in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+                        if z.pIncapacitatedEnemy == x then
+                            table.remove(tbl, table.KeyFromValue(tbl, x:EntIndex()))
+                        end
+                    end
+                end
+            end
+        end
+        if table.Count(tbl) > 0 then
+            table.sort(tbl, function(a, b) return a[2] < b[2] end)
+            local mdl = ents.Create("prop_dynamic")
+            mdl:SetModel("models/dav0r/hoverball.mdl")
+            mdl:SetPos(ents.GetByIndex(tbl[1][1]):GetPos())
+            mdl:Spawn()
+            timer.Simple(1, function()
+                mdl:Remove()
+            end)
+            return ents.GetByIndex(tbl[1][1])
+        end
+        return nil
+    end
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+        if v ~= self && IsValid(v.pIncapacitatedEnemy) && v.HasEnemyIncapacitated then
+            local ene = v.pIncapacitatedEnemy
+            if self:GetEnemy() == ene then
+                self:VJ_DoSetEnemy(GetNextClosestEnemy(ene) or ene, false, false)
+            end
+        end
+    end
+end
+
 function NPC:IsEntityAlly(ent)
     if ent:GetClass() == "obj_vj_bullseye" then
         return true
