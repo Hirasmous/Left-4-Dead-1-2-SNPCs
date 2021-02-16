@@ -81,6 +81,7 @@ General:
 -Add crouching to all specials
 -Don't incap player who is controlling 
 -Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2)
+-Add original viewmodels when controlling in first-person 
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
