@@ -400,19 +400,19 @@ function ENT:PummelEnemy(v)
 		                        end
 		                        timer.Simple(tm,function()
 		                        	if IsValid(self) && IsValid(enemy) && IsValid(mdl) then
-		                        		if self.PummelType == "Down" && self:GetSequenceActivity(self:LookupSequence("Charger_Pound")) then
+		                        		if self.PummelType == "Down" then
 								            mdl:ResetSequence("Charger_pounded")
 						                    mdl:ResetSequenceInfo()
 						                    mdl:SetCycle(0)
 								            mdl:SetPlaybackRate(1)
 						                    mdl:SetLocalPos(Vector(0, 0, 0))
-						                elseif self.PummelType == "Up" && self:GetSequenceActivity(self:LookupSequence("Charger_Pound_Up")) then
+						                elseif self.PummelType == "Up" then
 								            mdl:ResetSequence("Charger_pounded_up")
 						                    mdl:ResetSequenceInfo()
 						                    mdl:SetCycle(0)
 								            mdl:SetPlaybackRate(1)
 						                    mdl:SetLocalPos(Vector(0, 0, 0))
-						                elseif self.PummelType == "North" && self:GetSequenceActivity(self:LookupSequence("Charger_Pound_North")) then
+						                elseif self.PummelType == "North" then
 								            mdl:ResetSequence("Charger_pounded_north")
 						                    mdl:ResetSequenceInfo()
 						                    mdl:SetCycle(0)
@@ -583,18 +583,37 @@ function ENT:CustomOnSchedule()
 		local dist = self:GetPos():Distance(ent:GetPos())
 		if dist <= self.IncapacitationRange then
 			if ent:Health() <= 0 then return end
-			if self.PummelType == "Down" then
-				self:VJ_PlaySequence("Charger_Pound")
-			elseif self.PummelType == "Up" then
-                self:VJ_PlaySequence("Charger_Pound_Up")
-            elseif self.PummelType == "North" then
-                self:VJ_PlaySequence("Charger_Pound_North")
-            end	  
+			self:VJ_PlaySequence(self.IncapAnimation) 
 		end
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Charger_Think()
+	if IsValid(self.pEnemyRagdoll) then
+        if self:GetSequence() == self:LookupSequence("Charger_Pound") then
+            self.pEnemyRagdoll:ResetSequence("Charger_pounded")
+            self.pEnemyRagdoll:ResetSequenceInfo()
+            self.pEnemyRagdoll:SetCycle(0)
+            self.pEnemyRagdoll:SetPlaybackRate(1)
+            self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
+        elseif self:GetSequence() == self:LookupSequence("Charger_Pound_Up")  then
+            self.pEnemyRagdoll:ResetSequence("Charger_pounded_up")
+            self.pEnemyRagdoll:ResetSequenceInfo()
+            self.pEnemyRagdoll:SetCycle(0)
+            self.pEnemyRagdoll:SetPlaybackRate(1)
+            self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
+        elseif self:GetSequence() == self:LookupSequence("Charger_Pound_North")  then
+            self.pEnemyRagdoll:ResetSequence("Charger_pounded_north")
+            self.pEnemyRagdoll:ResetSequenceInfo()
+            self.pEnemyRagdoll:SetCycle(0)
+            self.pEnemyRagdoll:SetPlaybackRate(1)
+            self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
+        end
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+	self:Charger_Think()
 	self:IgnoreIncappedEnemies()
 	if self.IsGhosted then
         self:Ghost()
@@ -607,11 +626,11 @@ function ENT:CustomOnThink()
 
 	self.vecLastPos = self:GetPos()
 
-	if self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
-		self.IsIncapacitating = true
-	else
-		self.IsIncapacitating = false
-	end
+	if self:GetSequence() == self:LookupSequence(self.IncapAnimation) || self:GetSequence() == self:LookupSequence("Charger_Pound") then
+        self.IsIncapacitating = true
+    else
+        self.IsIncapacitating = false
+    end
 
 	if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
 		self:VJ_ACT_PLAYACTIVITY("Jump", true)   
@@ -645,9 +664,11 @@ function ENT:CustomOnThink()
 			end    
 			if enemy:Health() < enemy:GetMaxHealth() / 3 then
 				if IsValid(self.pEnemyRagdoll) then
-		            self.pEnemyRagdoll:ResetSequence("Charger_pounded_incap")
-                    self.pEnemyRagdoll:ResetSequenceInfo()
-                    self.pEnemyRagdoll:SetCycle(0)
+					if self.PummelType == "Down" then
+			            self.pEnemyRagdoll:ResetSequence("Charger_pounded_incap")
+	                    self.pEnemyRagdoll:ResetSequenceInfo()
+	                    self.pEnemyRagdoll:SetCycle(0)
+	                end
 				end
 			end
 			if enemy:IsPlayer() && enemy:Alive() then
@@ -673,8 +694,10 @@ function ENT:CustomOnThink()
 			})
 			if Tr_PummelWall.HitWorld && math.random(1,2) == 1 then
 				self.PummelType = "North"
-			elseif Tr_PummelCeiling.HitWorld && math.random(1,3) == 1 then
+				self.IncapAnimation = "Charger_Pound_North"
+			elseif Tr_PummelCeiling.HitWorld && math.random(1,2) == 1 then
 				self.PummelType = "Up"
+				self.IncapAnimation = "Charger_Pound_Up"
 			end
 		end
 	else
