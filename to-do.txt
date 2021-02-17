@@ -16,7 +16,7 @@ Charger:
 -Make it carry players until it hits a wall or travels a certain distance
 -Charger doesn't incap player if player is moving backwards (sometimes)
 -No flinching or shoving while charging ✅
--Incapped enemy spawns under ground when rescued from death
+-Incapped enemy spawns under ground when rescued from death ✅
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
@@ -51,6 +51,7 @@ Spitter:
 -Fix Spitter goo damaging Spitter ✅
 -Don't play spitter goo music for players that are controlling specials
 -Don't play spitter goo music for goo that spawns on spitter's death
+-Make spitter goo spawn on ground (instead of floating) if the projectile lands on an entity
 
 Tank:
 -Fix textures not being applied to model ✅
