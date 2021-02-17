@@ -17,6 +17,7 @@ Charger:
 -Charger doesn't incap player if player is moving backwards (sometimes)
 -No flinching or shoving while charging ✅
 -Incapped enemy spawns under ground when rescued from death ✅
+-Directional pummeling (Ceiling,wall) ✅
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
