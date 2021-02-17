@@ -35,6 +35,8 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	VJ.AddNPC("Jockey","npc_vj_l4d2_jockey",vCatL4D2)  
 	VJ.AddNPC("Witch","sent_vj_l4d2_witch",vCatL4D2)  
 	VJ.AddNPC("Spitter","npc_vj_l4d2_spitter",vCatL4D2) 
+	VJ.AddNPC("Random Special Infected","sent_vj_l4d2_random",vCatL4D2)
+	VJ.AddNPC("Random Special Infected (Spawner)","sent_vj_l4d2_random_spawner",vCatL4D2)
 
 	local vCatL4D = "Left 4 Dead"
 	VJ.AddNPC("Boomer","npc_vj_l4d_boomer",vCatL4D)  
@@ -42,6 +44,8 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	VJ.AddNPC("Hunter","npc_vj_l4d_hunter",vCatL4D)  
 	VJ.AddNPC("Tank","npc_vj_l4d_tank",vCatL4D)  
 	VJ.AddNPC("Witch","npc_vj_l4d_witch",vCatL4D)  
+	VJ.AddNPC("Random Special Infected","sent_vj_l4d_random",vCatL4D)
+	VJ.AddNPC("Random Special Infected (Spawner)","sent_vj_l4d_random_spawner",vCatL4D)
 
 
 	//Particles
