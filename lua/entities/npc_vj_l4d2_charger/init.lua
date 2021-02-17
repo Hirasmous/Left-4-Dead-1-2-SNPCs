@@ -122,10 +122,10 @@ ENT.GhostRunAwayT = CurTime()
 ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
-ENT.NextChargeAnim = CurTime()
-ENT.IsCarryingEnemy = false
-ENT.CarriedEnemy = nil 
 ENT.IsCharging = false
+ENT.NextChargeTime = CurTime()
+ENT.ChargeStopT = CurTime()
+ENT.PummelType = "Down"
 
 util.AddNetworkString("L4D2ChargerHUD")
 util.AddNetworkString("L4D2ChargerHUDGhost")
@@ -297,6 +297,9 @@ function ENT:ChargerIncapacitate(ent)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PummelEnemy(v)
+	if self.IsCharging then
+		self.IsCharging = false
+	end
 	if timer.Exists("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange") then timer.Stop("Charger"..tostring(id).."_HasEnemyInRange") end --if the same timer is playing, stop it
     timer.Create("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
 		if !IsValid(self) then return end
@@ -397,11 +400,25 @@ function ENT:PummelEnemy(v)
 		                        end
 		                        timer.Simple(tm,function()
 		                        	if IsValid(self) && IsValid(enemy) && IsValid(mdl) then
-							            mdl:ResetSequence("Charger_pounded")
-					                    mdl:ResetSequenceInfo()
-					                    mdl:SetCycle(0)
-							            mdl:SetPlaybackRate(1)
-					                    mdl:SetLocalPos(Vector(0, 0, 0))
+		                        		if self.PummelType == "Down" && self:GetSequenceActivity(self:LookupSequence("Charger_Pound")) then
+								            mdl:ResetSequence("Charger_pounded")
+						                    mdl:ResetSequenceInfo()
+						                    mdl:SetCycle(0)
+								            mdl:SetPlaybackRate(1)
+						                    mdl:SetLocalPos(Vector(0, 0, 0))
+						                elseif self.PummelType == "Up" && self:GetSequenceActivity(self:LookupSequence("Charger_Pound_Up")) then
+								            mdl:ResetSequence("Charger_pounded_up")
+						                    mdl:ResetSequenceInfo()
+						                    mdl:SetCycle(0)
+								            mdl:SetPlaybackRate(1)
+						                    mdl:SetLocalPos(Vector(0, 0, 0))
+						                elseif self.PummelType == "North" && self:GetSequenceActivity(self:LookupSequence("Charger_Pound_North")) then
+								            mdl:ResetSequence("Charger_pounded_north")
+						                    mdl:ResetSequenceInfo()
+						                    mdl:SetCycle(0)
+								            mdl:SetPlaybackRate(1)
+						                    mdl:SetLocalPos(Vector(0, 0, 0))
+						                end
 					                end
 					            end)
 			                    timer.Simple(0.15, function()
@@ -507,7 +524,6 @@ function ENT:DismountCharger()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
-    --self.IsCharging = true
 	self:SetNW2Int("ChargeT",CurTime() +self.NextLeapAttackTime)
 	if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
 	timer.Create("Charger_HitWall", 0.1, 11, function()
@@ -519,24 +535,15 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 			filter = self,
 			mask = MASK_SOLID_BRUSHONLY,
 		} )
-		if tr.Hit then
+		if tr.HitWorld then
 			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
 			VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
 			VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
 			ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
 			timer.Stop("Charger_HitWall")
-			if self.IsCarryingEnemy then
-				self:PummelEnemy(TheHitEntity)
-			end
 		end
 	end)
 end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CarryEnemy(ent)
-	ent = self.CarriedEnemy
-	self.IsCarryingEnemy = true
-end
-    
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
 	if self.VJ_IsBeingControlled == false then
@@ -576,17 +583,19 @@ function ENT:CustomOnSchedule()
 		local dist = self:GetPos():Distance(ent:GetPos())
 		if dist <= self.IncapacitationRange then
 			if ent:Health() <= 0 then return end
-			self:VJ_PlaySequence("Charger_Pound")	  
+			if self.PummelType == "Down" then
+				self:VJ_PlaySequence("Charger_Pound")
+			elseif self.PummelType == "Up" then
+                self:VJ_PlaySequence("Charger_Pound_Up")
+            elseif self.PummelType == "North" then
+                self:VJ_PlaySequence("Charger_Pound_North")
+            end	  
 		end
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:IgnoreIncappedEnemies()
-	--[[if self.IsCharging && CurTime() > self.NextChargeAnim then
-		self:VJ_PlaySequence("Charger_Charge")
-		self.NextChargeAnim = CurTime() +VJ_GetSequenceDuration(self,"Charger_Charge")
-	end]]
 	if self.IsGhosted then
         self:Ghost()
     end
@@ -621,7 +630,7 @@ function ENT:CustomOnThink()
 			if self.pEnemyRagdoll:GetClass() == "prop_ragdoll" then
 				self.pEnemyRagdoll:Fire("StartRagdollBoogie")
 				self.pEnemyRagdoll:SetPos(self:GetAttachment(3).Pos)
-			end
+            end
 		end
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
@@ -651,6 +660,21 @@ function ENT:CustomOnThink()
 			local dist = self:GetPos():Distance(enemy:GetPos())
 			if dist > self.IncapacitationRange then
 				self:DismountCharger()
+			end
+			local Tr_PummelCeiling = util.TraceLine({
+				start = self:GetPos() +self:OBBCenter(),
+				endpos = self:GetPos() +self:OBBCenter() +self:GetUp() *150,
+				filter = {self,self.pIncapacitatedEnemy}
+			})
+			local Tr_PummelWall = util.TraceLine({
+				start = self:GetPos() +self:OBBCenter(),
+				endpos = self:GetPos() +self:OBBCenter() +self:GetForward() *150,
+				filter = {self,self.pIncapacitatedEnemy}
+			})
+			if Tr_PummelWall.HitWorld && math.random(1,2) == 1 then
+				self.PummelType = "North"
+			elseif Tr_PummelCeiling.HitWorld && math.random(1,3) == 1 then
+				self.PummelType = "Up"
 			end
 		end
 	else
