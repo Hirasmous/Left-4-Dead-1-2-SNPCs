@@ -15,7 +15,7 @@ Charger:
 -Make the recharge for pounding less time? ✅
 -Make it carry players until it hits a wall or travels a certain distance
 -Charger doesn't incap player if player is moving backwards (sometimes)
--No flinching or shoving while charging
+-No flinching or shoving while charging ✅
 -Incapped enemy spawns under ground when rescued from death
 
 Hunter:
@@ -45,7 +45,7 @@ Smoker:
 -Add dangling animations for incapped enemy when it's off ground
 -(L4D1) Restore tongue bodygroup after stopping incapping
 -Add attachment to "smoker_tongue_attach.mdl" (on the end of the tongue)
--Add spawners and/or random special infected spawn icons?
+-Add spawners and/or random special infected spawn icons? ✅
 
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
