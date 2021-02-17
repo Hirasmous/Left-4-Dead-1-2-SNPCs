@@ -47,6 +47,7 @@ Smoker:
 -(L4D1) Restore tongue bodygroup after stopping incapping
 -Add attachment to "smoker_tongue_attach.mdl" (on the end of the tongue)
 -Add spawners and/or random special infected spawn icons? ✅
+-Incapped player can still move freely around the world
 
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
