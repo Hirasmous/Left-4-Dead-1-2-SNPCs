@@ -61,8 +61,11 @@ Tank:
 
 Witch:
 -Change sequence "Standing_Idle"'s activity to something other than ACT_IDLE; it conflicts with "Idle_Standing_Crying" ✅
--Add rage pose parameters
+-Add rage pose parameters ✅
 -Add sitting pose parameters
+-Add unique activity name for "Idle_Standing"
+-Add unique activity name for "Agitated_02"
+-Touch up the sitting variant
 
 General:
 -Ignore incapped players/enemies if there are more enemies nearby ✅
