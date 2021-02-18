@@ -18,6 +18,16 @@ local tblIncapSongs = {
 	["jockey"] = 25
 }
 
+function NPC:IsShoved()
+    local seq = self:GetSequenceName(self:GetSequence())
+    local s, e = string.find(seq, "Shoved_")
+    if s then
+        return true
+    end
+    return false
+end
+
+
 function NPC:SetGhost(bool)
 	self.IsGhosted = bool
 	self:DrawShadow(!bool)
