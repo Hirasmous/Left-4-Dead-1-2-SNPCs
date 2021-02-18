@@ -549,6 +549,32 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:IgnoreIncappedEnemies()
+    if self:IsInWorld() then
+        self.LastInWorldPos = self:GetPos()
+    else
+        if self.LastInWorldPos then self:SetPos(self.LastInWorldPos) end
+    end
+    if self.HasEnemyIncapacitated == false && IsValid(self:GetEnemy()) && self.IsIncapacitating == false then
+        local enemy = self:GetEnemy()
+        if enemy:Health() > 0 then
+            local dist = self:GetPos():Distance(enemy:GetPos())
+            if dist < 20 then
+                local tr1 = util.TraceLine({start = self:GetPos(), endpos = self:GetPos() + self:GetForward() * 35, filter = {self, enemy}})
+                local tr2 = util.TraceLine({start = self:GetPos(), endpos = self:GetPos() + self:GetRight() * 35, filter = {self, enemy}})
+                local tr3 = util.TraceLine({start = self:GetPos(), endpos = self:GetPos() - self:GetForward() * 35, filter = {self, enemy}})
+                local tr4 = util.TraceLine({start = self:GetPos(), endpos = self:GetPos() - self:GetRight() * 35, filter = {self, enemy}})
+                if tr1.Hit == false then
+                    self:SetPos(self:GetPos() + self:GetForward() * enemy:OBBMaxs().x * 1.5)
+                elseif tr2.Hit == false then
+                    self:SetPos(self:GetPos() + self:GetRight() * enemy:OBBMaxs().y * 1.5)
+                elseif tr3.Hit == false then
+                    self:SetPos(self:GetPos() - self:GetForward() * enemy:OBBMaxs().x * 1.5)
+                elseif tr4.Hit == false then
+                    self:SetPos(self:GetPos() - self:GetRight() * enemy:OBBMaxs().y * 1.5)
+                end
+            end
+        end
+    end
     if self.IsGhosted then
         self:Ghost()
     end
