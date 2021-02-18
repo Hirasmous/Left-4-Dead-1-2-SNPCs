@@ -229,3 +229,191 @@ function NPC:StripEnemyWeapons(ent)
     ent:StripWeapons()
     ent:StripAmmo()
 end
+
+-- Witch --
+function NPC:PlayCalmIdleSound()
+    if self.m_idleSound && self.m_idleSound:IsPlaying() then return end
+    if math.random(1, 10) ~= 1 then return end
+    if self.bTriggered then return end
+    if not self:CanPlayMusic(2) then return end
+    local filter = RecipientFilter()
+    filter:AddAllPlayers()
+    local idleSound = table.Random(self.SoundTbl_CalmIdle)
+    local pt = "CSoundPatch ".."["..string.Replace(idleSound, "\"", "").."]"
+    for k, v in ipairs(ents.FindByClass("player")) do 
+        for l, w in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then
+                filter:RemovePlayer(v)
+            end
+        end
+    end
+    local sound = CreateSound(self, idleSound, filter)
+    self.m_idleSound = sound
+    sound:SetSoundLevel(80)
+    sound:Play()
+    timer.Simple(4, function()
+        local p = pt
+        if self.m_idleSound == nil then return end
+        if tostring(self.m_idleSound) ~= pt then return end
+        self.m_idleSound:Stop()
+    end)
+end
+
+function NPC:PlayIrritatedSound(level)
+    if self.bTriggered then return end
+    if not self:CanPlayMusic(2) then return end
+    local idleSound
+    if level == 1 then
+        idleSound = "vj_l4d2/music/witch/loud_angry_little_witch_04.mp3"
+    elseif level == 2 then
+        idleSound = "vj_l4d2/music/witch/loud_angry_little_witch_03.mp3"
+    elseif level == 3 then
+        idleSound = "vj_l4d2/music/witch/loud_angry_little_witch_02.mp3"
+    elseif level == 4 then
+        idleSound = "vj_l4d2/music/witch/loud_angry_little_witch_01.mp3"
+    end
+    local pt = "CSoundPatch ".."["..string.Replace(idleSound, "\"", "").."]"
+    if self.m_idleSound && self.m_idleSound:IsPlaying() then 
+        if tostring(self.m_idleSound) == pt then
+            return 
+        else
+            self.m_idleSound:FadeOut(1)
+        end
+    end
+    local filter = RecipientFilter()
+    filter:AddAllPlayers()
+    for k, v in ipairs(ents.FindByClass("player")) do 
+        for l, w in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then
+                filter:RemovePlayer(v)
+            end
+        end
+    end
+    local sound = CreateSound(self, idleSound, filter)
+    self.m_idleSound = sound
+    sound:SetSoundLevel(80)
+    sound:Play()
+    timer.Simple(4, function()
+        local p = pt
+        if self.m_idleSound == nil then return end
+        if tostring(self.m_idleSound) ~= pt then return end
+        self.m_idleSound:Stop()
+    end)
+end
+
+function NPC:CanPlayMusic(iType)
+    iType = iType or 1
+    local tbl = {"npc_vj_l4d_witch", "npc_vj_l4d2_witch_s", "npc_vj_l4d2_witch_w"}
+    for k, v in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+        if v ~= self && table.HasValue(tbl, v:GetClass()) then
+            if iType == 1 then
+                if v.IncapSong && v.IncapSong:IsPlaying() then
+                    return false
+                end
+            elseif iType == 2 then
+                if v.m_idleSound && v.m_idleSound:IsPlaying() then
+                    return false
+                end
+            end
+        end
+    end
+    return true
+end
+
+function NPC:PlayWitchMusic(iType, bOverwrite)
+    if self.Dead then return end
+    if not self:CanPlayMusic(1) then return end
+    local song
+    local tm
+    if iType == 1 then
+        song = table.Random(self.SoundTbl_IdleSoundtrack)
+        tm = 16
+    elseif iType == 2 then
+        song = table.Random(self.SoundTbl_AlertedSoundtrack)
+        tm = 31
+    elseif iType == 3 then
+        song = table.Random(self.SoundTbl_OnFireSoundtrack)
+        tm = 27
+    end
+    local pt = "CSoundPatch ".."["..string.Replace(song, "\"", "").."]"
+    if self.IncapSong && self.IncapSong:IsPlaying() then 
+        if tostring(self.IncapSong) == pt then
+            return 
+        else
+            self.IncapSong:FadeOut(1)
+        end
+    end
+    local filter = RecipientFilter()
+    filter:AddAllPlayers()
+    for k, v in ipairs(ents.FindByClass("player")) do 
+        for l, w in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+            if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then
+                filter:RemovePlayer(v)
+            end
+        end
+    end
+    local sound = CreateSound(self, song, filter)
+    self.IncapSong = sound
+    if iType == 1 then
+        sound:SetSoundLevel(85)
+    else
+        sound:SetSoundLevel(0)
+    end
+    sound:Play()
+    timer.Simple(tm, function()
+        local p = pt
+        if self.IncapSong == nil then return end
+        if tostring(self.IncapSong) ~= p then return end
+        self.IncapSong:Stop()
+    end)
+    self:CallOnRemove("Witch_StopMusic", function()
+        if self.IncapSong ~= nil then
+            self.IncapSong:Stop()
+        end
+    end)
+end
+
+function NPC:CreateAggressionSound(scale)
+    if self.AggressionSound && self.AggressionSound:IsPlaying() then return end
+    local scale = scale or 1
+    local snd
+    if scale == 1 then
+        snd = "npc/witch/voice/mad/zombiefemale_growl1.mp3"
+        self.AggressionSound = CreateSound(self, snd)
+        self.AggressionSound:Play()
+    elseif scale == 2 then
+        snd = "npc/witch/voice/mad/zombiefemale_growl6.mp3"
+        self.AggressionSound = CreateSound(self, snd)
+        self.AggressionSound:Play()
+    elseif scale == 3 then
+        snd = "npc/witch/voice/mad/female_ls_d_madscream0"..math.random(1, 3)..".mp3"
+        self.AggressionSound = CreateSound(self, snd)
+        self.AggressionSound:Play()
+    end
+    timer.Simple(2, function()
+        if self.AggressionSound == nil then return end
+        self.AggressionSound:Stop()
+        self.AggressionSound = nil
+    end)
+end
+
+function NPC:GetEnemiesInRange()
+    if self.bTriggered == true then return end
+    local tbl = {}
+    for k, v in ipairs(ents.FindInSphere(self:GetPos(), 600)) do
+        if IsValid(v) && v ~= self then
+            if v:IsNPC() || v:IsNextBot() || (v:IsPlayer() && v:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0) then
+                if self:IsEntityAlly(v) == false then
+                    local dist = self:GetPos():Distance(v:GetPos())
+                    if (v:IsPlayer() && util.TraceLine(util.GetPlayerTrace(v)).Entity == self && v:FlashlightIsOn()) or dist <= 200 then
+                        tbl[table.Count(tbl) + 1] = {v:EntIndex(), v:GetPos():Distance(self:GetPos())}
+                        table.sort(tbl, function(a, b) return a[2] < b[2] end)
+                        self.pTargetEntity = tbl[1][1]
+                        return true
+                    end
+                end
+            end
+        end
+    end
+    return false
+end
