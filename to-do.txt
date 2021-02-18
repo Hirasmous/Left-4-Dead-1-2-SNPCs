@@ -19,6 +19,7 @@ Charger:
 -No flinching or shoving while charging ✅
 -Incapped enemy spawns under ground when rescued from death ✅
 -Directional pummeling (Ceiling,wall) ✅
+-Fix third-person player control camera view when incapping
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
@@ -26,6 +27,7 @@ Hunter:
 -Proper crouch charging 
 -Gets stuck in incapped enemy when shoved off
 -Not make boomer bile damage enemy ✅
+-Fix third-person player control camera view when incapping
 
 Jockey:
 -Directional movement for incapped mdl ✅
@@ -90,6 +92,7 @@ General:
 -Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 -Add original viewmodels when controlling in first-person 
 -Resize materials (what happened to them?!)
+-If the special hits a wall after being shoved, play the  
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
