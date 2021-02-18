@@ -168,13 +168,6 @@ function NPC:IgnoreIncappedEnemies()
         end
         if table.Count(tbl) > 0 then
             table.sort(tbl, function(a, b) return a[2] < b[2] end)
-            local mdl = ents.Create("prop_dynamic")
-            mdl:SetModel("models/dav0r/hoverball.mdl")
-            mdl:SetPos(ents.GetByIndex(tbl[1][1]):GetPos())
-            mdl:Spawn()
-            timer.Simple(1, function()
-                mdl:Remove()
-            end)
             return ents.GetByIndex(tbl[1][1])
         end
         return nil
