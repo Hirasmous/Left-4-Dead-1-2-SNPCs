@@ -69,6 +69,7 @@ Witch:
 -Add unique activity name for "Idle_Standing"
 -Add unique activity name for "Agitated_02"
 -Touch up the sitting variant
+-Reset rage pose params after triggered
 
 General:
 -Ignore incapped players/enemies if there are more enemies nearby ✅
