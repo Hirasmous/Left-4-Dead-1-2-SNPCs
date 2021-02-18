@@ -4,6 +4,7 @@ Boomer:
 -Fix missing materials on gib models
 -Decrease puke range ✅
 -Don't make vomit cover particles visible in firstperson
+-Player still has vomit overlay/puke particles after death on respawn 
 
 Boomette:
 -Fix broken model
