@@ -13,11 +13,11 @@ ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through wall
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
 ENT.PoseParameterLooking_InvertYaw = false -- Inverts the yaw poseparameters (Y)
-ENT.PoseParameterLooking_InvertRoll = true -- Inverts the roll poseparameters (Z)
+ENT.PoseParameterLooking_InvertRoll = false -- Inverts the roll poseparameters (Z)
 ENT.PoseParameterLooking_TurningSpeed = 10 -- How fast does the parameter turn?
 ENT.DeathCorpseAlwaysCollide = false -- Should the corpse always collide?
 ENT.CallForHelp = false -- Does the SNPC call for help?
-ENT.PoseParameterLooking_Names = {pitch={"body_pitch"},yaw={"body_yaw"},roll={"wander_rage"}} -- Custom pose parameters to use, can put as many as needed
+ENT.PoseParameterLooking_Names = {pitch={"body_pitch"},yaw={"body_yaw"},roll={"PoseParams_Rage"}} -- Custom pose parameters to use, can put as many as needed
 ENT.Behavior = VJ_BEHAVIOR_NEUTRAL -- The behavior of the SNPC
 ENT.BecomeEnemyToPlayer = false -- Should the friendly SNPC become enemy towards the player if it's damaged by a player?
 ENT.BecomeEnemyToPlayerLevel = 1 -- How many times does the player have to hit the SNPC for it to become enemy?
@@ -54,16 +54,6 @@ ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shove
 -- Leave blank if you don't want any sounds to play
 ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkLeft","Boomer.Concrete.WalkRight"}
 ENT.SoundTbl_Idle = {"WanderWitchZombie.Despair"}
-ENT.SoundTbl_Breath = {
-    "vj_l4d2/music/witch/lost_little_witch_01a.mp3",
-    "vj_l4d2/music/witch/lost_little_witch_01b.mp3",
-    "vj_l4d2/music/witch/lost_little_witch_02a.mp3",
-    "vj_l4d2/music/witch/lost_little_witch_02b.mp3",
-    "vj_l4d2/music/witch/lost_little_witch_03a.mp3",
-    "vj_l4d2/music/witch/lost_little_witch_03b.mp3",
-    "vj_l4d2/music/witch/lost_little_witch_04a.mp3",
-    "vj_l4d2/music/witch/lost_little_witch_04b.mp3",
-}
 ENT.SoundTbl_CombatIdle = {"WitchZombie.Rage"}
 ENT.SoundTbl_Alert = {
 	"npc/witch/voice/attack/female_distantscream1.mp3",
@@ -104,26 +94,35 @@ ENT.GeneralSoundPitch2 = 105
 ENT.UseTheSameGeneralSoundPitch = false
 
 --- Custom ---
-ENT.Witch_CanGroan = true
-ENT.Witch_State = 1 --- (1 - Wander) (2 - Sitting)
-ENT.SoundTrack = {"vj_l4d2/music/witch/witchencroacher.mp3"}
-ENT.SoundTrack_Chase = {"vj_l4d2/music/witch/psychowitch.mp3"}
-ENT.SoundTrack_Burning = {"vj_l4d2/music/witch/witchroast.mp3"}
+ENT.SoundTbl_CalmIdle = {"vj_l4d2/music/witch/lost_little_witch_01a.mp3", "vj_l4d2/music/witch/lost_little_witch_02a.mp3", "vj_l4d2/music/witch/lost_little_witch_03a.mp3", "vj_l4d2/music/witch/lost_little_witch_04a.mp3"}
+ENT.SoundTbl_IdleSoundtrack = {"vj_l4d2/music/witch/witchencroacher.mp3"}
+ENT.SoundTbl_AlertedSoundtrack = {"vj_l4d2/music/witch/psychowitch.mp3"}
+ENT.SoundTbl_OnFireSoundtrack = {"vj_l4d2/music/witch/witchroast.mp3"}
+ENT.AggressionSound = nil
+ENT.m_idleSound = nil
+ENT.IncapSong = nil
+ENT.bSwitchedMode = false
+ENT.bCanChangePPs = true
+ENT.EnemyInRange = false
+ENT.bTriggered = false
+ENT.nextPoseReset = -1
+ENT.nextPoseChange = -1
+ENT.PoseParams_Rage = 0
+ENT.pTargetEntity = nil
 
 util.AddNetworkString("L4D2WitchHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
-    self.IsSurprised = false
-    self.IsGroaningLow = false
-    self.IsGroaningMedium = false
-    self.IsGroaningHigh = false
+
     for _, x in ipairs(player.GetAll()) do
         self.soundtrack_chase = CreateSound(x, "vj_l4d2/music/witch/psychowitch.mp3") 
         self.soundtrack_chase:SetSoundLevel(100)
         self.soundtrack_burning = CreateSound(x, "vj_l4d2/music/witch/witchroast.mp3") 
         self.soundtrack_burning:SetSoundLevel(100)
     end
+
+    self:SetNWEntity("Witch"..self:EntIndex().."_TriggerEntity", nil)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
@@ -143,205 +142,180 @@ function ENT:Controller_Initialize(ply)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnResetEnemy() 
-    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,7,true) 
-    self.Alerted = false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
-    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,7,true) 
-    self.Alerted = false
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnAlert(argent) 
-	if self.Alerted == true then
-        self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.5,false) 
-        local ent = self:GetEnemy()
-        if IsValid(ent) then
-            if ent:IsNPC() then
-                PrintMessage(HUD_PRINTTALK, ent:GetClass().." startled the ".. self:GetName())
-            elseif ent:IsPlayer() then
-                PrintMessage(HUD_PRINTTALK, ent:GetName().." startled the ".. self:GetName())
-            end
+function ENT:CustomOnTouch(ent)
+    if self.bTriggered == false then
+        if ent ~= self && (ent:IsNPC() || (ent:IsPlayer() && ent:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0)) && not self:IsEntityAlly(ent) then
+            self:EnableAggression(ent)
         end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRemove()
-    VJ_STOPSOUND(self.soundtrack_chase)
-    VJ_STOPSOUND(self.soundtrack_burning)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnInvestigate(argent)
-    if self.Dead == true then return false end
-    if self.Alerted == true then return false end
-	self.IsSurprised = true
-    if math.random(1,2) == 1 then
-        timer.Simple(1,function()
-            if IsValid(self) then
-                self.IsGroaningLow = true
-            end
-        end)
-        timer.Simple(3,function()
-            if IsValid(self) then
-                self.IsGroaningLow = false
-            end
-        end)
-    elseif math.random(1,2) == 1 then
-        timer.Simple(1,function()
-            if IsValid(self) then
-                self.IsGroaningMedium = true
-            end
-        end)
-        timer.Simple(3,function()
-            if IsValid(self) then
-                self.IsGroaningMedium = false
-            end
-        end)
-    elseif math.random(1,3) == 1 then
-        timer.Simple(1,function()
-            if IsValid(self) then
-                self.IsGroaningHigh = true
-            end
-        end)
-        timer.Simple(3,function()
-            if IsValid(self) then
-                self.IsGroaningHigh = false
-            end
-        end)
+function ENT:MultipleMeleeAttacks()
+    local randattack = math.random(1,2)
+    if randattack == 1 then
+        self.AnimTbl_MeleeAttack = {"vjges_MovingMelee_01","vjges_MovingMelee_02"}
+        self.TimeUntilMeleeAttackDamage = 0.8
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_w_d")
+    elseif randattack == 2 then
+        self.AnimTbl_MeleeAttack = {"vjges_MovingMelee_01","vjges_MovingMelee_02"}
+        self.TimeUntilMeleeAttackDamage = 0.8
+        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_w_d")
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    VJ_STOPSOUND(self.soundtrack_chase)
-    VJ_STOPSOUND(self.soundtrack_burning)
-    local ent = self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
-        end
+function ENT:EnableAggression(enemy)
+    if self.bTriggered == true then return end
+    self.HasIdleSounds = true
+    if self.AggressionSound && self.AggressionSound:IsPlaying() then self.AggressionSound:Stop() end
+    if tostring(self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity")) ~= "[NULL_Entity]" then
+        self:SetNWEntity("Witch"..self:EntIndex().."_TriggerEntity", enemy)
     end
+    self:VJ_DoSetEnemy(enemy or self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity"), false, true)
+    self.HasPoseParameterLooking = true
+    self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
+    local ent = self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity")
+    if ent:IsNPC() then
+        PrintMessage(HUD_PRINTTALK, ent:GetClass().." startled the ".. self:GetName())
+    elseif ent:IsPlayer() then
+        PrintMessage(HUD_PRINTTALK, ent:GetName().." startled the ".. self:GetName())
+    end
+    self.bTriggered = true
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Witch_GroanLow()
-	local wanderragelow = self:GetPoseParameter("wander_rage")
-	self:SetPoseParameter(wanderragelow,0,3)
-	VJ_CreateSound(self,self.SoundTbl_Witch_GrowlLow,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100))
-	self:VJ_ACT_PLAYACTIVITY("vjges_agitated_wander",false)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Witch_GroanMedium()
-	local wanderragemedium = self:GetPoseParameter("wander_rage")
-	self:SetPoseParameter(wanderragemedium,0,5)
-    VJ_CreateSound(self,self.SoundTbl_Witch_GrowlMedium,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100))
-    self:VJ_ACT_PLAYACTIVITY("vjges_agitated_wander",false)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Witch_GroanHigh() 
-	local wanderragehigh = self:GetPoseParameter("wander_rage")
-	self:SetPoseParameter(wanderragehigh,1)
-    VJ_CreateSound(self,self.SoundTbl_Witch_GrowlHigh,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100))
-    self:VJ_ACT_PLAYACTIVITY("vjges_agitated_wander",false)
+function ENT:DisableAggression()
+    self.HasIdleSounds = true
+    self.witch_rage = 0
+    self.bTriggered = false
+    self:ResetEnemy()
+    self:ClearPoseParameters()
+    self.HasPoseParameterLooking = false
+    self.Behavior = VJ_BEHAVIOR_NEUTRAL
+    self:SetNWEntity("Witch"..self:EntIndex().."_TriggerEntity", nil)
+    self:VJ_PlaySequence("Idle_Pre_Retreat")
+    timer.Simple(self:SequenceDuration(self:LookupSequence("Idle_Pre_Retreat")), function()
+        if !IsValid(self) then return end
+        self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self:SetPoseParameter(self:GetPoseParameter("wander_rage"),1)
-	if self.IsGroaningLow == true then
-        if math.random(1,5) == 1 then
-        	self:Witch_GroanLow()
-        end
-    end
-    if self.IsGroaningMedium == true then
-        if math.random(1,5) == 1 then
-        	self:Witch_GroanMedium()
-        end
-    end
-    if self.IsGroaningHigh == true then
-        if math.random(1,5) == 1 then
-        	self:Witch_GroanHigh()
-        end
-    end
-    if IsValid(self:GetEnemy()) then
-        self.SoundTbl_Breath = {}
-        self.soundtrack_chase:Play()
-        self.VJ_NoTarget = false
-        self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
+    if self:IsOnFire() then
+        self:PlayWitchMusic(3, true)
+        self.AnimTbl_Run = {self:GetSequenceActivity(self:LookupSequence("Run_OnFire"))}
     else
-        VJ_STOPSOUND(self.soundtrack_chase)
-        self.Alerted = false
-        self.Behavior = VJ_BEHAVIOR_NEUTRAL
-        self.VJ_NoTarget = true
-        self.SoundTbl_Breath = {"vj_l4d2/music/witch/lost_little_witch_01a.mp3","vj_l4d2/music/witch/lost_little_witch_01b.mp3","vj_l4d2/music/witch/lost_little_witch_02a.mp3","vj_l4d2/music/witch/lost_little_witch_02b.mp3","vj_l4d2/music/witch/lost_little_witch_03a.mp3","vj_l4d2/music/witch/lost_little_witch_03b.mp3","vj_l4d2/music/witch/lost_little_witch_04a.mp3","vj_l4d2/music/witch/lost_little_witch_04b.mp3"}
-    end
-    if self:IsOnFire() && self.Immune_Fire == false then
-    	self.SoundTbl_Breath = {}
-        self.AnimTbl_IdleStand = {ACT_IDLE_ON_FIRE}
-        self.AnimTbl_Walk = {ACT_RUN_ON_FIRE}
-        self.AnimTbl_Run = {ACT_RUN_ON_FIRE}
-        VJ_STOPSOUND(self.soundtrack_chase)
-        self.soundtrack_burning:Play()
-        self.SoundTbl_Pain = {"WitchZombie.PainFire"}
-    else
-        self.AnimTbl_IdleStand = {ACT_IDLE}
-        self.AnimTbl_Walk = {ACT_WALK}
         self.AnimTbl_Run = {ACT_RUN}
-        VJ_STOPSOUND(self.soundtrack_burning)
-        self.SoundTbl_Pain = {"WitchZombie.Pain"}
-        if IsValid(self:GetEnemy()) then
-            self.soundtrack_chase:Play()
-            self.SoundTbl_Breath = {}
+    end
+    if self.bTriggered == false then
+        if not self:IsOnFire() then
+            self:PlayWitchMusic(1, true)
+        end
+        if self.PoseParams_Rage <= 0 then
+            self:PlayCalmIdleSound() 
+        end
+        if self.PoseParams_Rage > 0 && self.PoseParams_Rage <= 0.25 then
+            self:CreateAggressionSound(1)
+            self:PlayIrritatedSound(1)
+        elseif self.PoseParams_Rage > 0.25 && self.PoseParams_Rage <= 0.5 then
+            self:CreateAggressionSound(1)
+            self:PlayIrritatedSound(2)
+        elseif self.PoseParams_Rage > 0.5 && self.PoseParams_Rage <= 0.75 then
+            self:CreateAggressionSound(2)
+            self:PlayIrritatedSound(3)
+        elseif self.PoseParams_Rage > 0.75 && self.PoseParams_Rage <= 1 then
+            self:CreateAggressionSound(3)
+            self:PlayIrritatedSound(4)
+        end
+        if self:GetEnemiesInRange() then
+            self.HasIdleSounds = false
+            self.bCanChangePPs = true
+            if self.bSwitchedMode == false then
+                self.nextPoseChange = CurTime() + 1
+                self.bSwitchedMode = true
+            end
         else
-            VJ_STOPSOUND(self.soundtrack_chase)
-            self.SoundTbl_Breath = {"vj_l4d2/music/witch/lost_little_witch_01a.mp3","vj_l4d2/music/witch/lost_little_witch_01b.mp3","vj_l4d2/music/witch/lost_little_witch_02a.mp3","vj_l4d2/music/witch/lost_little_witch_02b.mp3","vj_l4d2/music/witch/lost_little_witch_03a.mp3","vj_l4d2/music/witch/lost_little_witch_03b.mp3","vj_l4d2/music/witch/lost_little_witch_04a.mp3","vj_l4d2/music/witch/lost_little_witch_04b.mp3"}
+            self.bCanChangePPs = false
+            if self.bSwitchedMode == false then
+                self.nextPoseReset = CurTime() + 1
+                self.bSwitchedMode = true
+            end
+        end
+    else
+        if not self:IsOnFire() then
+            self:PlayWitchMusic(2, true)
+        end
+        local ent = self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity")
+        if (ent:IsPlayer() && (GetConVar("ai_ignoreplayers"):GetInt() == 1 || ent:Alive() == false)) or not IsValid(ent) then
+            self:DisableAggression()
+        else
+            self:VJ_DoSetEnemy(self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity"), false, false)
         end
     end
-    for k, x in ipairs(ents.FindInSphere(self:GetPos(),150)) do
-        if IsValid(x) then
-            if x:IsPlayer() && self:Disposition(x) != D_LI then
-                self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
-            end
+    if self.PoseParams_Rage > 1 then
+        self.PoseParams_Rage = 1
+    end
+    if self.PoseParams_Rage < 0 then
+        self.PoseParams_Rage = 0
+    end
+    if self.PoseParams_Rage == 1 then
+        if not IsValid(self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity")) or self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity"):Health() <= 0 then
+            self:EnableAggression(ents.GetByIndex(self.pTargetEntity))
+        else
+            self.PoseParams_Rage = 0 
+        end
+    end
+    if self.bTriggered == false then
+        self.HasPoseParameterLooking = false
+    end
+    if self.nextPoseChange >= CurTime() then
+        if self.bCanChangePPs == true then
+            self.PoseParams_Rage = self.PoseParams_Rage + 0.01
+            self:SetPoseParameter("wander_rage", self.PoseParams_Rage)
+            self.bSwitchedMode = false
+        end
+    end
+    if self.nextPoseReset >= CurTime() then
+        if self.bCanChangePPs == false then
+            self.PoseParams_Rage = self.PoseParams_Rage - 0.1
+            self:SetPoseParameter("wander_rage", self.PoseParams_Rage)
+            self.bSwitchedMode = false
         end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)
+function ENT:CustomOnTakeDamage_BeforeDamage(dmginfo, hitgroup)
+    if self:IsOnFire() && dmginfo:IsDamageType(DMG_DIRECT) then
+        dmginfo:AddDamage(15)
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnTakeDamage_AfterDamage(dmginfo, hitgroup)
+    if self.bTriggered == false then
+        self:EnableAggression(dmginfo:GetAttacker())
+    end
+    if self:IsShoved() then return end
+    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+        local function GetDirection()
+            local directions = {
+                {"Shoved_Backward_03", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Shoved_Leftward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+                {"Shoved_Forward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+                {"Shoved_Rightward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+            }
+            table.sort(directions, function(a, b) return a[2] < b[2] end)
+            return directions[1][1]
+        end
+        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomDeathAnimationCode(dmginfo, hitgroup)
     if self:IsMoving() && self:GetActivity() == ACT_RUN then
         self.AnimTbl_Death = {ACT_DIESIMPLE}
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-    if self:IsShoved() then return end
-	if IsValid(self:GetEnemy()) then
-	    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-	        local function GetDirection()
-	            local directions = {
-	                {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
-	                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
-	                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
-	                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
-	            }
-	            table.sort(directions, function(a, b) return a[2] < b[2] end)
-	            return directions[1][1]
-	        end
-	        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
-	    end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:MultipleMeleeAttacks()
-	local randattack = math.random(1,2)
-	if randattack == 1 then
-		self.AnimTbl_MeleeAttack = {"vjges_MovingMelee_01","vjges_MovingMelee_02"}
-		self.TimeUntilMeleeAttackDamage = 0.8
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_w_d")
-	elseif randattack == 2 then
-		self.AnimTbl_MeleeAttack = {"vjges_MovingMelee_01","vjges_MovingMelee_02"}
-		self.TimeUntilMeleeAttackDamage = 0.8
-		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_w_d")
-	end
+function ENT:CustomOnRemove()
+    self:SetNWEntity("Witch"..self:EntIndex().."_TriggerEntity", nil)
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
