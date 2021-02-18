@@ -88,6 +88,7 @@ General:
 -Don't incap player who is controlling 
 -Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 -Add original viewmodels when controlling in first-person 
+-Resize materials (what happened to them?!)
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
