@@ -119,6 +119,11 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
     if key == "event_emit FootStep" then
         self:FootStepSoundCode()
     end
+    if key == "event_land" then
+        if !self.IsGhosted then
+            VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
@@ -188,7 +193,7 @@ end
 function ENT:VomitEnemy(v)
     if self.VJ_TheController == v then return end 
     if (v:IsPlayer() or v:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
-        local numBones = v:GetBoneCount()
+        --[[local numBones = v:GetBoneCount()
         self.Vomit = {}
         for i = 0, numBones -1 do
             local bonepos, boneang = v:GetBonePosition(i)
@@ -210,7 +215,8 @@ function ENT:VomitEnemy(v)
                 ent:Activate()
                 self.Vomit[i +numBones] = ent
             end            
-        end  
+        end]]
+        ParticleEffectAttach("boomer_vomit_survivor",PATTACH_ABSORIGIN_FOLLOW,v,0)
         if v:IsPlayer() then
             self:VomitEffect(v)
             VJ_CreateSound(v,"vj_l4d2/music/terror/pukricide.mp3",100,self:VJ_DecideSoundPitch(100,100))
@@ -233,7 +239,7 @@ function ENT:CustomRangeAttackCode()
     end)
     for _, x in ipairs(ents.FindInSphere(self:GetPos(),self.RangeDistance)) do
         if IsValid(x) && IsValid(self) then
-            if self:IsLineOfSightClear(x) then
+            if self:IsLineOfSightClear(x) && self:Visible(x) then
                 table.insert(self.Vomited_Enemies,x)
                 self:VomitEnemy(x)
                 self.Enemy_IsPuked = true
@@ -291,12 +297,12 @@ function ENT:CustomOnThink()
     end
 
 	self:ManageHUD(self.VJ_TheController)
-    hook.Add("KeyPress", "Ghosting", function(ply, key)
+    hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
         if self.VJ_IsBeingControlled then
-            if key == IN_USE then
-        	    if self.IsGhosted == true then
+            if button == KEY_E then
+        	    if self.IsGhosted then
         	        self:SetGhost(false)
-        	    elseif self.IsGhosted == false then
+        	    else
         	        self:SetGhost(true)  
         	    end
             end
@@ -348,7 +354,7 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak3.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     for _, x in ipairs(ents.FindInSphere(self:GetPos(),135)) do
         if IsValid(x) && IsValid(self) then
-            if self:IsLineOfSightClear(x) then
+            if self:IsLineOfSightClear(x) && self:Visible(x) then
                 table.insert(self.Vomited_Enemies,x)
                 self:VomitEnemy(x)
                 self.Enemy_IsPuked = true
