@@ -109,6 +109,10 @@ function ENT:PhysicsCollide(data, physobj, entity)
                         owner.lastEnemyGround = -1
                     end
 
+                    if enemy:IsPlayer() then
+                        enemy:SetMoveType(MOVETYPE_CUSTOM)
+                    end
+
                     --VJ vars
                     owner.MovementType = VJ_MOVETYPE_STATIONARY
                     if enemy.IsVJBaseSNPC == true then
@@ -124,11 +128,11 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     dragObj:SetPos(enemy:GetPos() +enemy:OBBCenter())
                     dragObj:Spawn()
                     owner.pEnemyObj = dragObj 
-                    dragObj:SetNoDraw(true)
+                    dragObj:SetNoDraw(false)
                     enemy:SetGravity(0)
                     enemy:SetMoveType(MOVETYPE_FLY)
                     constraint.NoCollide(enemy, dragObj, 1, 1)
-                    constraint.Keepupright(dragObj, dragObj:GetAngles(), 0, 999999)
+                    --constraint.Keepupright(dragObj, dragObj:GetAngles(), 0, 999999)
 
                     hook.Add("PhysgunPickup", "smoker_AllowDragObjPickup", function(ply, ent)
                         if ent == owner.pEnemyObj then
@@ -181,6 +185,9 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
                     mdl:SetPos(dragObj:GetPos())
                     mdl:SetAngles(enemy:GetAngles())
+                    mdl:SetRenderMode(1)
+                    mdl:SetColor(Color(0, 0, 0, 0))
+                    mdl:DrawShadow(false)
                     mdl:Spawn()
                     if enemy:IsPlayer() then
                         mdl:SetParent(dragObj)
@@ -203,17 +210,12 @@ function ENT:PhysicsCollide(data, physobj, entity)
 
                     owner.pEnemyRagdoll = mdl
 
-                    local tongue = ents.Create("prop_dynamic")
+                    local tongue = ents.Create("prop_anim_survivor")
                     tongue:SetModel("models/vj_l4d2/smoker_tongue_attach.mdl")
                     tongue:SetPos(owner.pEnemyObj:GetPos())
                     tongue:SetAngles(enemy:GetAngles())
                     tongue:Spawn()
-                    tongue:SetRenderMode(0)
-                    if data.HitEntity:IsPlayer() then
-                        tongue:SetParent(owner.pEnemyObj)
-                    else
-                        tongue:SetParent(data.HitEntity)
-                    end
+                    tongue:SetParent(mdl)
                     tongue:ResetSequence(tongue:LookupSequence("NamVet_Idle_Tongued_Dragging_Ground"))
                     tongue:ResetSequenceInfo()
                     tongue:SetCycle(0)
