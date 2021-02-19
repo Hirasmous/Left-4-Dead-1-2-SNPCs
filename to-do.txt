@@ -48,8 +48,7 @@ Smoker:
 -Prevent smoke cloud from damaging altogether; add smoke overlay  effect
 -Add dangling animations for incapped enemy when it's off ground
 -(L4D1) Restore tongue bodygroup after stopping incapping
--Add attachment to "smoker_tongue_attach.mdl" (on the end of the tongue)
--Add spawners and/or random special infected spawn icons? ✅
+-Add attachment to "smoker_tongue_attach.mdl" (on the end of the tongue) 
 -Incapped player can still move freely around the world
 
 Spitter:
@@ -65,11 +64,11 @@ Tank:
 Witch:
 -Change sequence "Standing_Idle"'s activity to something other than ACT_IDLE; it conflicts with "Idle_Standing_Crying" ✅
 -Add rage pose parameters ✅
--Add sitting pose parameters
+-Add sitting pose parameters ✅
 -Add unique activity name for "Idle_Standing"
 -Add unique activity name for "Agitated_02"
--Touch up the sitting variant
--Reset rage pose params after triggered
+-Touch up the sitting variant 
+-Reset rage pose params after triggered ✅
 -Witch attacks env_fire entity
 
 General:
@@ -95,12 +94,13 @@ General:
 -Add original viewmodels when controlling in first-person 
 -Resize materials (what happened to them?!)
 -If the special hits a wall after being shoved, play the  
+-Add spawners and/or random special infected spawn icons? ✅
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
 - You have to click IN_USE many times before ghosting turns on ✅
 - Smoker doesn't stop incapping after the enemy dies ✅
-- Too many smoker_tongue_fall particles spawn when smoker misses or is killed while incapping (solved?) ❓
+- Too many smoker_tongue_fall particles spawn when smoker misses or is killed while incapping ✅
 
 ConVars:
 -Should incapped NPC enemies drop their weapons? ✅
@@ -110,4 +110,4 @@ ConVars:
 Before release:
 -Make HUD fit any screen size ✅
 -Better jockey control
--Improve witch (i.e. add special pose params)
+-Improve witch (i.e. add special pose params) ✅
