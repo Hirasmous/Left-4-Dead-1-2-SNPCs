@@ -97,7 +97,7 @@ ENT.IsGhosted = false
 ENT.BacteriaSound = nil
 ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/smokerbacteria.mp3","vj_l4d2/music/bacteria/smokerbacterias.mp3"}
 ENT.nEntityIndex = -1 --this is for identifying timers unique to each smoker in the world
-ENT.IncapacitationRange = 50 --how close can he be to incapacitate his enemies?
+ENT.IncapacitationRange = 60 --how close can he be to incapacitate his enemies?
 ENT.HasEnemyIncapacitated = false --is he in range of being incapacitated?
 ENT.pIncapacitatedEnemy = nil --the enemy that is incapacitated 
 ENT.pEnemyRagdoll = nil --the incapacitated enemy's ragdoll
@@ -318,11 +318,14 @@ function ENT:SmokerIncapacitate(ent)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
-    if IsValid(self.pIncapacitatedEnemy) then
+    if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:Health() > 0 then
         util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pIncapacitatedEnemy:GetPos(), false, self:EntIndex(), 3)
+    else
+    	VJ_CreateSound(self, "player/smoker/miss/smoker_reeltonguein_05.mp3", 75, self:VJ_DecideSoundPitch(100,95))
     end
     self.HasRangeAttack = true
     self:Incap_Effects(true)
+    self:SetBodygroup(2, 0)
     self.HasEnemyIncapacitated = false
     self.IsChokingEnemy = false
     if self.IncapSong then
@@ -529,9 +532,15 @@ function ENT:CustomOnThink()
         local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
         if quad == tpos:Distance(quadrants[1]) || quad == tpos:Distance(quadrants[2]) then
             degX = math.Round(degX)
+            if tpos.z < spos.z then
+            	degX = -degX
+            end
             ent:SetPoseParameter(poseName, math.Remap(degX, 0, 90, 0, 1))
         elseif quad == tpos:Distance(quadrants[3]) || quad == tpos:Distance(quadrants[4]) then
             degY = math.Round(degY)
+            if tpos.z < spos.z then
+            	degY = -degY
+            end
             ent:SetPoseParameter(poseName, math.Remap(degY, 0, 90, 0, 1))
         end
     end
@@ -620,7 +629,16 @@ function ENT:CustomOnThink()
                 end
             end
 
-            SetPitch(self.pEnemyRagdoll, "tongue_angle", self)
+            if self.IncapAnimation ~= self:GetSequenceName(self:GetSequence()) then
+            	SetPitch(self.pEnemyTongueAttach, "tongue_angle", self)
+            	SetPitch(self.pEnemyRagdoll, "tongue_angle", self)
+            else
+            	self.pEnemyTongueAttach:ClearPoseParameters()
+            end
+
+            if self.IsChokingEnemy then
+            	self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
+            end
 
             if IsValid(self.pTongueController) then
                 local tCtrl = self.pTongueController
@@ -692,9 +710,15 @@ function ENT:CustomOnThink()
             if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
                 if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
                     self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
-                    self.IsChokingEnemy = true                          
-                    self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
-                    self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
+                    self.IsChokingEnemy = true
+                    if not self.IsEnemyFloating then
+	                    self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
+	                    self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
+                    else
+	                    self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
+	                    self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
+	                    self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
+                    end
                     for k, v in ipairs(ents.FindByClass("player")) do
                         if enemy:IsNPC() then
                             VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
@@ -722,6 +746,10 @@ function ENT:CustomOnThink()
                 end
             end
 
+            if IsValid(self.pEnemyTongueAttach) then
+            	--self.pEnemyTongueAttach:SetAngles(self.pEnemyRagdoll:GetAngles())
+            end
+
             local ene = self.pIncapacitatedEnemy
 
             --check enemy type           
@@ -740,8 +768,10 @@ function ENT:CustomOnThink()
             --check if path to us is blocked
             local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
             --check if enemy is on ground
-            local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 15, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-            
+            local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+            --check if enemy is 
+            local tr3 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 10 - enemy:GetForward() * 10, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+
             --call if enemy is stuck
             local function FreezeEnemy()
                 if ene:IsPlayer() then
@@ -767,35 +797,67 @@ function ENT:CustomOnThink()
                 end
             end
 
+            if tr1.Hit == true then
+            	self.lastTr1Hit = CurTime()
+            else
+            	self.lastTr1Hit = -1
+            end
+
             local function CheckPath()
-                if enemy:GetPos().z > self:GetPos().z then
+                if enemy:GetPos().z > self:GetPos().z + 5 then
+                	print("ePos > sPos")
                     if tr2.Hit == true then
                         --on ledge
+                        print("On ledge")
                         self.IsEnemyFloating = false
                         enemy:SetMoveType(MOVETYPE_FLY)
                         if tr1.Hit == false then
                             enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+                        else
+                            enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
                         end
                     else
                         --floating
+                        print("Floating")
                         self.IsEnemyFloating = true
                         if not ene:IsPlayer() then
                             enemy:SetMoveType(self.EnemyMoveType)
                         else
                             enemy:SetMoveType(MOVETYPE_FLY)
-                            enemy:SetLocalVelocity(- enemy:GetUp() * 100)
+                            if tr3.Hit == false then
+                            	enemy:SetLocalVelocity(-enemy:GetForward() * 50 - enemy:GetUp() * 100)
+                            else
+                            	enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
+                            end
                         end
                     end
                 else
-                    self.IsEnemyFloating = false
+                	print("ePos < sPos")
                     enemy:SetMoveType(MOVETYPE_FLY)
-                    if tr1.Hit == true then
-                        enemy:SetLocalVelocity(-enemy:GetForward() * 50 + enemy:GetUp() * 50)
+                    if tr2.Hit == true then
+                    	self.IsEnemyFloating = false
                     else
-                        enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+                    	self.IsEnemyFloating = true
+                    end
+                    if tr1.Hit == true then
+                        enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 75)
+                    else
+                    	if tr3.Hit == false then
+                        	enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+                        else
+                        	enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
+                        end
                     end
                 end
             end
+
+            if self.IsChokingEnemy == false then
+	            if self.IsEnemyFloating == true then
+	            	self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
+	            else
+	            	self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Dragging_Ground"))
+	            end
+	        end
 
             --tracks terrestrial status
             if self.IsEnemyFloating == true then
