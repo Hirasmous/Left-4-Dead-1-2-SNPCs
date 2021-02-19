@@ -25,6 +25,7 @@ ENT.bIsBeingShredded = false
 if SERVER then
 	function ENT:Initialize()
 		self.Owner = self:GetOwner()
+		self:DrawShadow(false)
 	end
 
 	function ENT:Think()
