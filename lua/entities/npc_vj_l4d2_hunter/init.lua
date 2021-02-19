@@ -95,6 +95,8 @@ ENT.LeapAttackJumpSoundLevel = 100
 ENT.BeforeLeapAttackSoundLevel = 105
 ENT.NextSoundTime_Idle1 = 1
 ENT.NextSoundTime_Idle2 = 2
+ENT.LeapAttackJumpSoundPitch1 = 95
+ENT.LeapAttackJumpSoundPitch1 = 105
 
 ENT.GeneralSoundPitch1 = 95
 ENT.GeneralSoundPitch2 = 105
@@ -121,6 +123,8 @@ ENT.GhostRunAwayT = CurTime()
 ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
+ENT.IsFlying = false
+ENT.CheckEnemyTimer = 2
 
 util.AddNetworkString("L4D2HunterHUD")
 util.AddNetworkString("L4D2HunterHUDGhost")
@@ -134,6 +138,13 @@ end
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
     if key == "event_emit FootStep" then
         self:FootStepSoundCode()
+    end
+    if key == "event_land" then
+        if !self.IsGhosted then
+            VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
+            VJ_CreateSound(self,self.SoundTbl_HunterPounceMiss,85,self:VJ_DecideSoundPitch(100,100))
+            ParticleEffect("hunter_leap_dust",self:GetPos(),self:GetAngles())
+        end
     end
     if key == "event_pounce" then
         local incapent = self.pIncapacitatedEnemy
@@ -351,38 +362,99 @@ function ENT:DismountHunter()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_BeforeStartTimer() 
-    VJ_CreateSound(self,"HunterZombie.Warn",85,self:VJ_DecideSoundPitch(100,100))
     if self.VJ_IsBeingControlled == false then
         self.AnimTbl_Run = {ACT_RUN_CROUCH}
         self.AnimTbl_Walk = {ACT_RUN_CROUCH}  
+        VJ_CreateSound(self,"HunterZombie.Warn",85,self:VJ_DecideSoundPitch(100,100))
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
     self.nEntityIndex = self:EntIndex()
     self:SetNW2Float("PounceT",CurTime() +self.NextLeapAttackTime)
-    timer.Simple(1.7,function() 
-        if IsValid(self) && IsValid(self:GetEnemy()) then 
-            self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true)           
-        end    
-        if IsValid(self) then 
-            self.AnimTbl_Run = {ACT_RUN}
-            self.AnimTbl_Walk = {ACT_RUN}           
-        end 
-    end)
-    timer.Simple(1.9, function()
-        if IsValid(self) && IsValid(self:GetEnemy()) then 
-            self:VJ_ACT_PLAYACTIVITY("vjges_pounce_idle_low",true,1.5,true) 
-            self:VJ_ACT_PLAYACTIVITY("vjges_Idlenoise_02",true,1.5,true) 
-            ParticleEffectAttach("hunter_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
-        end
-    end)
-    timer.Simple(2, function()
+    if self.VJ_IsBeingControlled == false then
+        timer.Simple(1.7,function()
+	        if IsValid(self) && IsValid(self:GetEnemy()) then 
+	            self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true)           
+	        end    
+	        if IsValid(self) then 
+	            self.AnimTbl_Run = {ACT_RUN}
+	            self.AnimTbl_Walk = {ACT_RUN}           
+	        end 
+	    end)
+	elseif self.VJ_IsBeingControlled == true then
+		timer.Simple(0,function()
+	        if IsValid(self) then 
+	            self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.74,true)           
+	        end
+	    end)
+    end
+    if self.VJ_IsBeingControlled == false then
+	    timer.Simple(1.9, function()
+	        if IsValid(self) && IsValid(self:GetEnemy()) then 
+	            self:VJ_ACT_PLAYACTIVITY("vjges_pounce_idle_low",true,1.5,true) 
+	            self:VJ_ACT_PLAYACTIVITY("vjges_Idlenoise_02",true,1.5,true) 
+	            ParticleEffectAttach("hunter_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
+	            ParticleEffect("hunter_leap_dust",self:GetPos(),self:GetAngles())   
+	        end
+	    end)
+	elseif self.VJ_IsBeingControlled == true then
+		timer.Simple(0.1, function()
+	        if IsValid(self) && IsValid(self:GetEnemy()) then 
+	            self:VJ_ACT_PLAYACTIVITY("vjges_pounce_idle_low",true,1.5,true) 
+	            self:VJ_ACT_PLAYACTIVITY("vjges_Idlenoise_02",true,1.5,true) 
+	            ParticleEffectAttach("hunter_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
+	            ParticleEffect("hunter_leap_dust",self:GetPos(),self:GetAngles())   
+	        end
+	    end)
+	end
+    if self.VJ_IsBeingControlled == false then
+	    timer.Simple(1.94, function()
+	        if IsValid(self) then      
+	            if timer.Exists("Hunter_Land") then timer.Stop("Hunter_Land") end
+	            timer.Create("Hunter_Land", 0.14, 11, function()  
+	            	if self.HasEnemyIncapacitated == true then return end
+	            	local tr = util.TraceLine( {
+						start = self:GetPos() +self:OBBCenter(),
+						endpos = self:GetPos() +self:GetUp() *-10,
+						filter = self,
+						mask = MASK_SOLID,
+					} )
+					if tr.HitWorld then
+	            		self:VJ_ACT_PLAYACTIVITY("vjseq_Lunge_Land_Low_Nav_01",false,1.5,false) 
+	            		timer.Stop("Hunter_Land")
+	            	end
+	            end)
+	        end
+	    end)
+	elseif self.VJ_IsBeingControlled == true then
+	    timer.Simple(0, function()
+	        if IsValid(self) then      
+	            if timer.Exists("Hunter_Land") then timer.Stop("Hunter_Land") end
+	            timer.Create("Hunter_Land", 0.14, 11, function()
+	                if IsValid(self) then  
+		            	if self.HasEnemyIncapacitated == true then return end
+		            	local tr = util.TraceLine( {
+							start = self:GetPos() +self:OBBCenter(),
+							endpos = self:GetPos() +self:GetUp() *-10,
+							filter = self,
+							mask = MASK_SOLID,
+						} )
+						if tr.HitWorld then
+							self:VJ_ACT_PLAYACTIVITY("vjseq_Lunge_Land_Low_Nav_01",false,1.5,false) 
+		            		timer.Stop("Hunter_Land")
+		            	end
+		            end
+	            end)
+	        end
+	    end)
+	end
+    timer.Simple(self.CheckEnemyTimer, function()
         if IsValid(self) then 
             if timer.Exists("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange") then timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") end --if the same timer is playing, stop it
             timer.Create("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
                 if !IsValid(self) then return end
-                local id = self.nEntityIndex
+                local id = self.nEntityIndex            
                 for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
                     if IsValid(self) && IsValid(v) then
                         if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0) or (v:IsNPC() && v ~= self) then
@@ -481,7 +553,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
                                                     net.WriteString(enemy:GetModel())
                                                 net.Broadcast()
                                             end)
-                                        end
+                                        end                                  
                                         self.pEnemyRagdoll = mdl
                                         if enemy:IsPlayer() then
                                             self:Pounce_Effects(false)
@@ -548,7 +620,13 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self:IgnoreIncappedEnemies()
+	if self.VJ_IsBeingControlled == false then
+		self.CheckEnemyTimer = 2
+	elseif self.VJ_IsBeingControlled == true then
+		self.CheckEnemyTimer = 0
+    end
+
+    self:IgnoreIncappedEnemies()
     if self:IsInWorld() then
         self.LastInWorldPos = self:GetPos()
     else
@@ -580,8 +658,6 @@ function ENT:CustomOnThink()
     end
     if self.IsGhosted then
         self.HasLeapAttack = false
-    else
-        self.HasLeapAttack = true
     end
     self.vecLastPos = self:GetPos()
     if self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
@@ -642,6 +718,7 @@ function ENT:CustomOnThink()
         	end
         end
         if IsValid(self.pIncapacitatedEnemy) then
+        	self.IsFlying = false
         	if CurTime() >= self.nextShredSound then
         		VJ_CreateSound(self, self.SoundTbl_Shred)
         		self.nextShredSound = CurTime() + 0.3
@@ -664,17 +741,19 @@ function ENT:CustomOnThink()
             end
         end
     else
-        self.HasMeleeAttack = true
+    	if !self.IsGhosted then
+            self.HasMeleeAttack = true
+        end
         self.CombatFaceEnemy = true
     end
 
     self:ManageHUD(self.VJ_TheController)
-    hook.Add("KeyPress", "Ghosting", function(ply, key)
+    hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
         if self.VJ_IsBeingControlled then
-            if key == IN_USE then
-        	    if self.IsGhosted == true then
+            if button == KEY_E then
+        	    if self.IsGhosted then
         	        self:SetGhost(false)
-        	    elseif self.IsGhosted == false then
+        	    else
         	        self:SetGhost(true)  
         	    end
             end
@@ -684,22 +763,25 @@ function ENT:CustomOnThink()
     if self.VJ_IsBeingControlled == true then
     	self:CapabilitiesRemove(CAP_MOVE_JUMP)
     	hook.Add("KeyPress", "hunter_Crouch", function(ply, key)
-    		if self.VJ_TheController == ply && !self.IsGhosted then
+    		if self.VJ_TheController == ply && !self.IsGhosted && !self.IsIncapacitating then
     			if key == IN_DUCK then
 		    	 	self.HasLeapAttack = true
 		    	 	self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Idle_Crouching_01"))}
 		    	 	self.AnimTbl_Walk = {ACT_RUN_CROUCH}
 		    	 	self.AnimTbl_Run = {ACT_RUN_CROUCH}
+		    	 	VJ_CreateSound(self,"HunterZombie.Warn",85,self:VJ_DecideSoundPitch(100,100))
+		    	 	self.TimeUntilLeapAttackVelocity = 0
 		    	end
     		end
     	end)
     	hook.Add("KeyRelease", "hunter_CrouchRelease", function(ply, key)
-    		if self.VJ_TheController == ply && !self.IsGhosted then
+    		if self.VJ_TheController == ply && !self.IsGhosted && !self.IsIncapacitating then
     			if key == IN_DUCK then
 		    	 	self.HasLeapAttack = false
 		    	 	self.AnimTbl_IdleStand = {ACT_IDLE}
 		    	 	self.AnimTbl_Walk = {ACT_WALK}
 		    	 	self.AnimTbl_Run = {ACT_RUN}
+		    	 	self.TimeUntilLeapAttackVelocity = 2
 		    	end
     		end
     	end)
