@@ -323,6 +323,26 @@ function ENT:CustomOnThink()
             end
         end
     end)
+	if self.VJ_IsBeingControlled == true then
+		hook.Add("KeyPress", "Spitter_Crouch", function(ply, key)
+			if self.VJ_TheController == ply then
+				if key == IN_DUCK then
+					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle"))}
+					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
+					self.AnimTbl_Run = {ACT_RUN_CROUCH}
+				end
+			end
+		end)
+		hook.Add("KeyRelease", "Spitter_CrouchRelease", function(ply, key)
+			if self.VJ_TheController == ply then
+				if key == IN_DUCK then
+					self.AnimTbl_IdleStand = {ACT_IDLE}
+					self.AnimTbl_Walk = {ACT_WALK}
+					self.AnimTbl_Run = {ACT_RUN}
+				end
+			end
+		end)
+	end
     
     self:SetBodygroup(1,1)
     if CurTime() >= self.nextBacteria then
