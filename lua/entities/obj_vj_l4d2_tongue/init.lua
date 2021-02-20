@@ -90,6 +90,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
             if data.HitEntity:LookupBone("ValveBiped.Bip01_Pelvis") then
                 if (owner.VJ_IsBeingControlled && data.HitEntity:GetClass() ~= "obj_vj_bullseye" && owner:IsEntityAlly(data.HitEntity) == false) || owner:Disposition(data.HitEntity) == D_HT then
                     if not owner:CanIncapacitate(data.HitEntity) then return end
+                    if owner.HasEnemyIncapacitated then return end
                     owner.HasEnemyIncapacitated = true
 
                     local enemy = data.HitEntity
@@ -127,13 +128,13 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     dragObj:SetCollisionGroup(1)
                     dragObj:SetPos(enemy:GetPos() +enemy:OBBCenter())
                     dragObj:Spawn()
-                    owner.pEnemyObj = dragObj 
+                    owner.pEnemyObj = dragObj
+                    dragObj:DrawShadow(false) 
                     dragObj:SetNoDraw(true)
-                    dragObj:DrawShadow(false)
                     enemy:SetGravity(0)
                     enemy:SetMoveType(MOVETYPE_FLY)
                     constraint.NoCollide(enemy, dragObj, 1, 1)
-                    --constraint.Keepupright(dragObj, dragObj:GetAngles(), 0, 999999)
+                    constraint.Keepupright(dragObj, dragObj:GetAngles(), 0, 999999)
 
                     hook.Add("PhysgunPickup", "smoker_AllowDragObjPickup", function(ply, ent)
                         if ent == owner.pEnemyObj then
@@ -217,6 +218,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                     tongue:SetAngles(enemy:GetAngles())
                     tongue:Spawn()
                     tongue:SetParent(mdl)
+                    tongue:AddEffects(EF_BONEMERGE)
                     tongue:ResetSequence(tongue:LookupSequence("NamVet_Idle_Tongued_Dragging_Ground"))
                     tongue:ResetSequenceInfo()
                     tongue:SetCycle(0)
