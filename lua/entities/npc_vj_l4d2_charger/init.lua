@@ -301,159 +301,163 @@ function ENT:PummelEnemy(v)
 		self.IsCharging = false
 	end
 	if timer.Exists("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange") then timer.Stop("Charger"..tostring(id).."_HasEnemyInRange") end --if the same timer is playing, stop it
-    timer.Create("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
+	timer.Create("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
 		if !IsValid(self) then return end
-	    local id = self.nEntityIndex
-	    for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
+		local id = self.nEntityIndex
+		for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
 			if IsValid(self) && IsValid(v) then
-			    if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0) or (v:IsNPC() && v ~= self) then
+				if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0) or (v:IsNPC() && v ~= self) then
 					if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
-		                local enemy = v
-		                if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
-		                    return
-		                end
-						if not self:CanIncapacitate(enemy) then
-						    timer.Stop("Charger"..tostring(id).."_HasEnemyInRange")
-						    return
+						if self.HasEnemyIncapacitated then return end
+						if self.VJ_IsBeingControlled && self.VJ_TheController == v then return end
+						local enemy = v
+						if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
+							return
 						end
-                        self.MovementType = VJ_MOVETYPE_STATIONARY 				
-						local camera = ents.Create("prop_dynamic")
-						camera:SetModel("models/error.mdl")
-						camera:SetPos(self:GetPos())
-						camera:Spawn()
-					    camera:Activate()
-						camera:SetRenderMode(RENDERMODE_NONE)
-						camera:DrawShadow(false)
-						camera:SetParent(self)
-						camera:Fire("SetParentAttachment","attach_blur")
-						self:DeleteOnRemove(camera)
-						local dist = self:GetPos():Distance(enemy:GetPos())
-						if dist <= self.IncapacitationRange then
-						timer.Stop("Charger"..tostring(id).."_HasEnemyInRange") 
-							self:SetLocalVelocity(self:GetForward() * 0) 
-					        self.pIncapacitatedEnemy = enemy
-					        enemy:SetLocalVelocity(self:GetForward() * 0)
-					        if enemy:IsNPC() then
-					        	for k, v in ipairs(ents.FindByClass("player")) do
-					        	    VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-					            end
-					            if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
-					            	enemy:GetActiveWeapon():SetNoDraw(true)
-					            else
-									enemy:DropWeapon()
+						if not self:CanIncapacitate(enemy) then
+							timer.Stop("Charger"..tostring(id).."_HasEnemyInRange")
+							return
+						end
+						if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
+							local dist = self:GetPos():Distance(enemy:GetPos())
+							if dist <= self.IncapacitationRange then
+								self.HasEnemyIncapacitated = true
+								timer.Stop("Charger"..tostring(id).."_HasEnemyInRange") 
+								self:SetLocalVelocity(self:GetForward() * 0) 
+								self.pIncapacitatedEnemy = enemy
+								enemy:SetLocalVelocity(self:GetForward() * 0)
+								self.MovementType = VJ_MOVETYPE_STATIONARY 				
+								local camera = ents.Create("prop_dynamic")
+								camera:SetModel("models/error.mdl")
+								camera:SetPos(self:GetPos())
+								camera:Spawn()
+								camera:Activate()
+								camera:SetRenderMode(RENDERMODE_NONE)
+								camera:DrawShadow(false)
+								camera:SetParent(self)
+								camera:Fire("SetParentAttachment","attach_blur")
+								self:DeleteOnRemove(camera)
+								if enemy:IsNPC() then
+									for k, v in ipairs(ents.FindByClass("player")) do
+										VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
+									end
+									if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+										enemy:GetActiveWeapon():SetNoDraw(true)
+									else
+										enemy:DropWeapon()
+									end
+								elseif enemy:IsPlayer() then
+									self:StripEnemyWeapons(enemy)
+									if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+										enemy:SetObserverMode(OBS_MODE_CHASE)
+										enemy:SpectateEntity(camera)
+										enemy:DrawViewModel(false)
+										enemy:DrawWorldModel(false)
+										enemy:SetFOV(80)
+									end
 								end
-							elseif enemy:IsPlayer() then
-								self:StripEnemyWeapons(enemy)
-					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-					                enemy:SetObserverMode(OBS_MODE_CHASE)
-					                enemy:SpectateEntity(camera)
-					                enemy:DrawViewModel(false)
-					                enemy:DrawWorldModel(false)
-					                enemy:SetFOV(80)
-					            end
+								self.pIncapacitatedEnemy = v
+								self.nextIncapSong = CurTime()
+								self:SetCustomCollisionCheck(true)
+								enemy:SetCustomCollisionCheck(true)
+								hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
+									if (ent1 == self and ent2 == enemy) then return false end
+								end)						 
+								local ang = self:GetAngles()
+								enemy:SetNoDraw(true)
+								local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
+								if IsValid(self.pEnemyRagdoll) then
+									net.Start("infected_RemoveCSEnt")
+										net.WriteString(tostring(self:EntIndex()))
+									net.Broadcast()
+									self.pEnemyRagdoll:Remove()
+								end
+								local mdl
+								if enemy:IsPlayer() && enemy:LookupBone("ValveBiped.Bip01_Pelvis") == nil then
+									mdl = ents.Create("prop_ragdoll")
+									mdl:SetModel(enemy:GetModel())
+									mdl:SetPos(tr.HitPos)
+									mdl:SetAngles(Angle(ang.x - 90, ang.y - 180, ang.z))
+									mdl:SetCollisionGroup(1)
+									mdl:Spawn()
+									local root = mdl:GetPhysicsObjectNum(0)
+									root:EnableMotion(false)
+									self.pEnemyRagdoll = mdl
+									mdl:Fire("StartRagdollBoogie")
+								else
+								   	mdl = ents.Create("prop_dynamic")
+									mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
+									mdl:SetPos(tr.HitPos)
+									mdl:SetAngles(Angle(ang.x, ang.y - 180, ang.z))
+									mdl:Spawn()
+									mdl:SetRenderMode(1)
+									mdl:SetColor(Color(0, 0, 0, 0))
+									if enemy:IsPlayer() then
+										mdl:SetParent(self)
+									else
+										mdl:SetParent(enemy)
+									end
+									local tm = 0.1
+									if self.VJ_IsBeingControlled then
+										tm = 0.7
+									end
+									timer.Simple(tm,function()
+										if IsValid(self) && IsValid(enemy) && IsValid(mdl) then
+											if self.PummelType == "Down" then
+												mdl:ResetSequence("Charger_pounded")
+												mdl:ResetSequenceInfo()
+												mdl:SetCycle(0)
+												mdl:SetPlaybackRate(1)
+												mdl:SetLocalPos(Vector(0, 0, 0))
+											elseif self.PummelType == "Up" then
+												mdl:ResetSequence("Charger_pounded_up")
+												mdl:ResetSequenceInfo()
+												mdl:SetCycle(0)
+												mdl:SetPlaybackRate(1)
+												mdl:SetLocalPos(Vector(0, 0, 0))
+											elseif self.PummelType == "North" then
+												mdl:ResetSequence("Charger_pounded_north")
+												mdl:ResetSequenceInfo()
+												mdl:SetCycle(0)
+												mdl:SetPlaybackRate(1)
+												mdl:SetLocalPos(Vector(0, 0, 0))
+											end
+										end
+									end)
+									timer.Simple(0.15, function()
+										if !IsValid(self) then return end
+										net.Start("infected_PounceEnemy")
+											net.WriteString(tostring(self:EntIndex()))
+											net.WriteEntity(mdl)
+											net.WriteString(enemy:GetModel())
+										net.Broadcast()
+									end)
+								end
+								self.pEnemyRagdoll = mdl
+								if enemy:IsPlayer() then
+									self:Pummel_Effects(false)
+									enemy:SetParent(self)
+									enemy:SetLocalPos(Vector(0, 0, 0))
+								else
+									self:SetParent(enemy)
+								end
+								enemy:CallOnRemove("Charger_ClearParent", function(ent)
+									if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
+										self:DismountCharger()
+									end
+									if ent:IsPlayer() then
+										ent:SetParent(nil)
+									end
+								end)			 
+								hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
+									if victim == self.pIncapacitatedEnemy then
+										enemy:SetParent(nil)
+										enemy:SetObserverMode(0)
+										enemy:DrawViewModel(true)
+										enemy:DrawWorldModel(true)
+									end
+								end)			
 							end
-							self.HasEnemyIncapacitated = true	
-							self.pIncapacitatedEnemy = v
-							self.nextIncapSong = CurTime()
-		                    self:SetCustomCollisionCheck(true)
-		                    enemy:SetCustomCollisionCheck(true)
-		                    hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
-		                        if (ent1 == self and ent2 == enemy) then return false end
-		                    end)		                 
-		                    local ang = self:GetAngles()
-		                    enemy:SetNoDraw(true)
-		                    local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
-		                    if IsValid(self.pEnemyRagdoll) then
-								net.Start("infected_RemoveCSEnt")
-									net.WriteString(tostring(self:EntIndex()))
-								net.Broadcast()
-		                    	self.pEnemyRagdoll:Remove()
-		                    end
-		                    local mdl
-		                    if enemy:IsPlayer() && enemy:LookupBone("ValveBiped.Bip01_Pelvis") == nil then
-			                    mdl = ents.Create("prop_ragdoll")
-			                    mdl:SetModel(enemy:GetModel())
-			                    mdl:SetPos(tr.HitPos)
-			                    mdl:SetAngles(Angle(ang.x - 90, ang.y - 180, ang.z))
-			                    mdl:SetCollisionGroup(1)
-			                    mdl:Spawn()
-			                    local root = mdl:GetPhysicsObjectNum(0)
-			                    root:EnableMotion(false)
-			                    self.pEnemyRagdoll = mdl
-			                    mdl:Fire("StartRagdollBoogie")
-			                else
-			                   	mdl = ents.Create("prop_dynamic")
-			                    mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
-			                    mdl:SetPos(tr.HitPos)
-			                    mdl:SetAngles(Angle(ang.x, ang.y - 180, ang.z))
-			                    mdl:Spawn()
-			                    mdl:SetRenderMode(1)
-			                    mdl:SetColor(Color(0, 0, 0, 0))
-		                        if enemy:IsPlayer() then
-				                    mdl:SetParent(self)
-		                        else
-		                            mdl:SetParent(enemy)
-		                        end
-		                        local tm = 0.1
-		                        if self.VJ_IsBeingControlled then
-		                        	tm = 0.7
-		                        end
-		                        timer.Simple(tm,function()
-		                        	if IsValid(self) && IsValid(enemy) && IsValid(mdl) then
-		                        		if self.PummelType == "Down" then
-								            mdl:ResetSequence("Charger_pounded")
-						                    mdl:ResetSequenceInfo()
-						                    mdl:SetCycle(0)
-								            mdl:SetPlaybackRate(1)
-						                    mdl:SetLocalPos(Vector(0, 0, 0))
-						                elseif self.PummelType == "Up" then
-								            mdl:ResetSequence("Charger_pounded_up")
-						                    mdl:ResetSequenceInfo()
-						                    mdl:SetCycle(0)
-								            mdl:SetPlaybackRate(1)
-						                    mdl:SetLocalPos(Vector(0, 0, 0))
-						                elseif self.PummelType == "North" then
-								            mdl:ResetSequence("Charger_pounded_north")
-						                    mdl:ResetSequenceInfo()
-						                    mdl:SetCycle(0)
-								            mdl:SetPlaybackRate(1)
-						                    mdl:SetLocalPos(Vector(0, 0, 0))
-						                end
-					                end
-					            end)
-			                    timer.Simple(0.15, function()
-			                    	if !IsValid(self) then return end
-				                    net.Start("infected_PounceEnemy")
-				                    	net.WriteString(tostring(self:EntIndex()))
-				                        net.WriteEntity(mdl)
-				                        net.WriteString(enemy:GetModel())
-				                    net.Broadcast()
-				                end)
-			                end
-			                self.pEnemyRagdoll = mdl
-		                    if enemy:IsPlayer() then
-		                    	self:Pummel_Effects(false)
-							    enemy:SetParent(self)
-							    enemy:SetLocalPos(Vector(0, 0, 0))
-							else
-							    self:SetParent(enemy)
-							end
-		                    enemy:CallOnRemove("Charger_ClearParent", function(ent)
-		        				if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
-		                    		self:DismountCharger()
-		                    	end
-		                        if ent:IsPlayer() then
-		                            ent:SetParent(nil)
-		                        end
-		                	end)             
-		                    hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
-		                        if victim == self.pIncapacitatedEnemy then
-		                            enemy:SetParent(nil)
-		                            enemy:SetObserverMode(0)
-		                            enemy:DrawViewModel(true)
-		                            enemy:DrawWorldModel(true)
-		                        end
-		                    end)			
 						end
 					end
 				end
@@ -590,47 +594,47 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Charger_Think()
 	if IsValid(self.pEnemyRagdoll) then
-        if self:GetSequence() == self:LookupSequence("Charger_Pound") then
-            self.pEnemyRagdoll:ResetSequence("Charger_pounded")
-            self.pEnemyRagdoll:ResetSequenceInfo()
-            self.pEnemyRagdoll:SetCycle(0)
-            self.pEnemyRagdoll:SetPlaybackRate(1)
-            self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
-        elseif self:GetSequence() == self:LookupSequence("Charger_Pound_Up")  then
-            self.pEnemyRagdoll:ResetSequence("Charger_pounded_up")
-            self.pEnemyRagdoll:ResetSequenceInfo()
-            self.pEnemyRagdoll:SetCycle(0)
-            self.pEnemyRagdoll:SetPlaybackRate(1)
-            self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
-        elseif self:GetSequence() == self:LookupSequence("Charger_Pound_North")  then
-            self.pEnemyRagdoll:ResetSequence("Charger_pounded_north")
-            self.pEnemyRagdoll:ResetSequenceInfo()
-            self.pEnemyRagdoll:SetCycle(0)
-            self.pEnemyRagdoll:SetPlaybackRate(1)
-            self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
-        end
-    end
+		if self:GetSequence() == self:LookupSequence("Charger_Pound") then
+			self.pEnemyRagdoll:ResetSequence("Charger_pounded")
+			self.pEnemyRagdoll:ResetSequenceInfo()
+			self.pEnemyRagdoll:SetCycle(0)
+			self.pEnemyRagdoll:SetPlaybackRate(1)
+			self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
+		elseif self:GetSequence() == self:LookupSequence("Charger_Pound_Up")  then
+			self.pEnemyRagdoll:ResetSequence("Charger_pounded_up")
+			self.pEnemyRagdoll:ResetSequenceInfo()
+			self.pEnemyRagdoll:SetCycle(0)
+			self.pEnemyRagdoll:SetPlaybackRate(1)
+			self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
+		elseif self:GetSequence() == self:LookupSequence("Charger_Pound_North")  then
+			self.pEnemyRagdoll:ResetSequence("Charger_pounded_north")
+			self.pEnemyRagdoll:ResetSequenceInfo()
+			self.pEnemyRagdoll:SetCycle(0)
+			self.pEnemyRagdoll:SetPlaybackRate(1)
+			self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:Charger_Think()
 	self:IgnoreIncappedEnemies()
 	if self.IsGhosted then
-        self:Ghost()
-    end
-    if self.IsGhosted then
-        self.HasLeapAttack = false
-    else
-        self.HasLeapAttack = true
-    end
+		self:Ghost()
+	end
+	if self.IsGhosted then
+		self.HasLeapAttack = false
+	else
+		self.HasLeapAttack = true
+	end
 
 	self.vecLastPos = self:GetPos()
 
 	if self:GetSequence() == self:LookupSequence(self.IncapAnimation) || self:GetSequence() == self:LookupSequence("Charger_Pound") then
-        self.IsIncapacitating = true
-    else
-        self.IsIncapacitating = false
-    end
+		self.IsIncapacitating = true
+	else
+		self.IsIncapacitating = false
+	end
 
 	if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
 		self:VJ_ACT_PLAYACTIVITY("Jump", true)   
@@ -649,7 +653,7 @@ function ENT:CustomOnThink()
 			if self.pEnemyRagdoll:GetClass() == "prop_ragdoll" then
 				self.pEnemyRagdoll:Fire("StartRagdollBoogie")
 				self.pEnemyRagdoll:SetPos(self:GetAttachment(3).Pos)
-            end
+			end
 		end
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
@@ -661,14 +665,14 @@ function ENT:CustomOnThink()
 			end
 			if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
 				enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
-			end    
+			end	
 			if enemy:Health() < enemy:GetMaxHealth() / 3 then
 				if IsValid(self.pEnemyRagdoll) then
 					if self.PummelType == "Down" then
-			            self.pEnemyRagdoll:ResetSequence("Charger_pounded_incap")
-	                    self.pEnemyRagdoll:ResetSequenceInfo()
-	                    self.pEnemyRagdoll:SetCycle(0)
-	                end
+						self.pEnemyRagdoll:ResetSequence("Charger_pounded_incap")
+						self.pEnemyRagdoll:ResetSequenceInfo()
+						self.pEnemyRagdoll:SetCycle(0)
+					end
 				end
 			end
 			if enemy:IsPlayer() && enemy:Alive() then
@@ -711,16 +715,16 @@ function ENT:CustomOnThink()
 	
 	self:ManageHUD(self.VJ_TheController)
 	hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
-        if self.VJ_IsBeingControlled then
-            if button == KEY_E then
-        	    if self.IsGhosted then
-        	        self:SetGhost(false)
-        	    else
-        	        self:SetGhost(true)  
-        	    end
-            end
-        end
-    end)
+		if self.VJ_IsBeingControlled then
+			if button == KEY_E then
+				if self.IsGhosted then
+					self:SetGhost(false)
+				else
+					self:SetGhost(true)  
+				end
+			end
+		end
+	end)
 
 	if self.VJ_IsBeingControlled == true then
 		self:CapabilitiesRemove(CAP_MOVE_JUMP)
@@ -730,23 +734,23 @@ end
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	if self.pIncapacitatedEnemy && dmginfo:GetAttacker() == self.pIncapacitatedEnemy then return end
 	if self:IsShoved() then return end
-    if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
-        local function GetDirection()
-            local directions = {
-                {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
-                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
-                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
-                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
-            }
-            table.sort(directions, function(a, b) return a[2] < b[2] end)
-            return directions[1][1]
-        end
-        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
-        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
-        	self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
-        	self:DismountCharger()
-        end
-    end
+	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
+		local function GetDirection()
+			local directions = {
+				{"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+				{"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},	 --East; move left
+				{"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+				{"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}	  --West; move right
+			}
+			table.sort(directions, function(a, b) return a[2] < b[2] end)
+			return directions[1][1]
+		end
+		self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+		if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+			self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+			self:DismountCharger()
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
