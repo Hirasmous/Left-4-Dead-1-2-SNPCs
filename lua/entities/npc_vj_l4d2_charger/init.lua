@@ -304,6 +304,7 @@ function ENT:PummelEnemy(v)
 	timer.Create("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
 		if !IsValid(self) then return end
 		local id = self.nEntityIndex
+		local tbControllers = {}
 		for _, x in ipairs(ents.FindByClass("npc_vj_l4d*")) do
 			if x.VJ_IsBeingControlled then
 				tbControllers[table.Count(tbControllers) + 1] = x.VJ_TheController
