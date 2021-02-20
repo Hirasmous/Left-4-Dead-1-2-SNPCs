@@ -60,6 +60,7 @@ Spitter:
 Tank:
 -Fix textures not being applied to model ✅
 -Implement rock bodygroup for range attack ❓
+-Make it shove according to damage position not attacker position
 
 Witch:
 -Change sequence "Standing_Idle"'s activity to something other than ACT_IDLE; it conflicts with "Idle_Standing_Crying" ✅
@@ -70,6 +71,7 @@ Witch:
 -Touch up the sitting variant 
 -Reset rage pose params after triggered ✅
 -Witch attacks env_fire entity
+-Make it shove according to damage position not attacker position (DMG_BLAST only)
 
 General:
 -Ignore incapped players/enemies if there are more enemies nearby ✅
