@@ -85,6 +85,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 	if self.idlesoundc then self.idlesoundc:Stop() end
 	self:StopParticles()
 
+	local tbControllers = {}
 	for _, x in ipairs(ents.FindByClass("npc_vj_l4d*")) do
 		if x.VJ_IsBeingControlled then
 			tbControllers[table.Count(tbControllers) + 1] = x.VJ_TheController
