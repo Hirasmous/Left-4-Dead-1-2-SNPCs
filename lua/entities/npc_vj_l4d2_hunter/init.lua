@@ -455,12 +455,17 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 			timer.Create("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
 				if !IsValid(self) then return end
 				local id = self.nEntityIndex
+				local tbControllers = {}
+				for _, x in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+					if x.VJ_IsBeingControlled then
+						tbControllers[table.Count(tbControllers) + 1] = x.VJ_TheController
+					end
+				end
 				for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
 					if IsValid(self) && IsValid(v) then
-						if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0) or (v:IsNPC() && v ~= self) then
-							if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
+						if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0 && not table.HasValue(tbControllers, v)) or (v:IsNPC() && v ~= self) then
+							if (self.VJ_IsBeingControlled && (v:GetClass() ~= "obj_vj_bullseye" || self:IsEntityAlly(v) == false)) || self:Disposition(v) == D_HT then
 								if self.HasEnemyIncapacitated then return end
-								if self.VJ_IsBeingControlled && self.VJ_TheController == v then return end
 								local enemy = v
 								if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
 									return
