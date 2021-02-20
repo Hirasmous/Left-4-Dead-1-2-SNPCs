@@ -17,7 +17,7 @@ ENT.SoundTbl_Alert = {"vj_l4d/boomer/voice/attack/boomer_spotprey_05.mp3","vj_l4
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
 ENT.SoundTbl_MeleeAttack = {"vj_l4d2/pz/hit/claw_hit_flesh_1.mp3"}
 ENT.SoundTbl_BeforeRangeAttack= {"vj_l4d/boomer/voice/warn/boomer_warning_01.mp3","vj_l4d/boomer/voice/warn/boomer_warning_12.mp3"}
-ENT.SoundTbl_RangeAttack= {"vj_l4d/boomer/vomit/boomer_vomit_01.mp3","vj_l4d/boomer/vomit/boomer_vomit_02.mp3","vj_l4d/boomer/vomit/boomer_vomit_03.mp3","vj_l4d/boomer/vomit/boomer_vomit_04.mp3","vj_l4d/boomer/vomit/boomer_vomit_09.mp3"}
+ENT.SoundTbl_RangeAttack= {"vj_l4d/boomer/vomit/boomer_vomit_01.mp3","vj_l4d/boomer/vomit/boomer_vomit_02.mp3","vj_l4d/boomer/vomit/boomer_vomit_03.mp3","vj_l4d/boomer/vomit/boomer_vomit_04.mp3","vj_l4d/boomer/vomit/boomer_vomit_09.mp3","player/boomer/vomit/attack/bv1.mp3"}
 ENT.SoundTbl_Pain = {"vj_l4d/boomer/voice/pain/boomer_pain_1.mp3","vj_l4d/boomer/voice/pain/boomer_pain_2.mp3","vj_l4d/boomer/voice/pain/boomer_pain_3.mp3","vj_l4d/boomer/voice/pain/boomer_painshort_02.mp3","vj_l4d/boomer/voice/pain/boomer_painshort_03.mp3","vj_l4d/boomer/voice/pain/boomer_painshort_04.mp3","vj_l4d/boomer/voice/pain/boomer_painshort_05.mp3","vj_l4d/boomer/voice/pain/boomer_painshort_06.mp3","vj_l4d/boomer/voice/pain/boomer_painshort_07.mp3"}
 ENT.SoundTbl_Death = {"vj_l4d/boomer/explode/explo_medium_09.mp3","vj_l4d/boomer/explode/explo_medium_10.mp3","vj_l4d/boomer/explode/explo_medium_14.mp3"}
 
