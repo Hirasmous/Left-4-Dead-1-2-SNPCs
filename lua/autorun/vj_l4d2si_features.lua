@@ -27,7 +27,6 @@ function NPC:IsShoved()
     return false
 end
 
-
 function NPC:SetGhost(bool)
 	self.IsGhosted = bool
 	self:DrawShadow(!bool)
@@ -36,6 +35,7 @@ function NPC:SetGhost(bool)
 	self.HasSounds = !bool
 	self.HasMeleeAttack = !bool
 	self.GhostRunAwayT = 0
+	self:SetNW2Bool("Ghosted",bool)
 	if bool then
 	    self:SetRenderMode(RENDERMODE_NONE)
 	    self:EmitSound("ui/menu_horror01.mp3")
@@ -44,22 +44,29 @@ function NPC:SetGhost(bool)
 		self:SetRenderMode(RENDERMODE_NORMAL)
 		self:EmitSound("ui/pickup_guitarriff10.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_NPC)
+        if self:GetClass() == "npc_vj_l4d2_hunter" or self:GetClass() == "npc_vj_l4d_hunter" then
+            self.HasLeapAttack = true
+        end
 	end
 end
 
 function NPC:CanSpawn()
 	local ent = self:GetEnemy()
     local CanSpawnWhileGhosted = false
-	if !self.VJ_IsBeingControlled then
+	if self.VJ_IsBeingControlled == false then
 		if IsValid(ent) then
-    		if (ent:IsPlayer() or ent:IsNPC()) then
-		        if ent:Visible(self) then
-		        	CanSpawnWhileGhosted = false
-		        else
-		        	CanSpawnWhileGhosted = true
-		        end
-		    end
+			if ent:GetPos():Distance(self:GetPos()) > 500 then
+	    		if (ent:IsPlayer() or ent:IsNPC()) then
+			        if ent:Visible(self) then
+			        	CanSpawnWhileGhosted = false
+			        else
+			        	CanSpawnWhileGhosted = true
+			        end
+			    end
+			end
 		end
+    else
+        CanSpawnWhileGhosted = true
     end
     return CanSpawnWhileGhosted       
 end
@@ -67,7 +74,7 @@ end
 function NPC:Ghost()
 	local ent = self:GetEnemy()
 	local CanSpawnWhileGhosted = self:CanSpawn()
-	if !self.VJ_IsBeingControlled then
+	if self.VJ_IsBeingControlled == false then
 		if IsValid(ent) then
 			if (ent:IsPlayer() or ent:IsNPC()) then
 		        if CurTime() > self.GhostRunAwayT then
@@ -191,6 +198,7 @@ function NPC:IgnoreIncappedEnemies()
         end
     end
 end
+
 
 function NPC:IsEntityAlly(ent)
     if ent:GetClass() == "obj_vj_bullseye" then
@@ -420,3 +428,8 @@ function NPC:GetEnemiesInRange()
     end
     return false
 end
+
+
+
+
+    
