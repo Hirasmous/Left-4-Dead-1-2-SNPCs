@@ -65,8 +65,7 @@ ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward_01"}}}
     -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
---ENT.SoundTbl_FootStep = {"player/footsteps/infected/run/concrete1.mp3","player/footsteps/infected/run/concrete2.mp3","player/footsteps/infected/run/concrete3.mp3","player/footsteps/infected/run/concrete4.mp3"}
-ENT.SoundTbl_FootStep = {"vj_l4d2/footsteps/infected/run/concrete1.mp3","vj_l4d2/footsteps/infected/run/concrete2.mp3","vj_l4d2/footsteps/infected/run/concrete3.mp3","vj_l4d2/footsteps/infected/run/concrete4.mp3"}
+ENT.SoundTbl_FootStep = {}
 ENT.SoundTbl_Idle = {"HunterZombie.Voice","HunterZombie.Growl"}
 ENT.SoundTbl_Alert = {"HunterZombie.Alert"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
@@ -133,6 +132,75 @@ function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
     self.nextBacteria = 0
     self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:GetGroundType(pos)
+	local tr = util.TraceLine({
+		start = pos,
+		endpos = pos -Vector(0,0,40),
+		filter = self,
+		mask = MASK_NPCWORLDSTATIC
+	})
+	local mat = tr.MatType
+	if tr.HitWorld then
+	    if mat == MAT_CONCRETE then
+	    	self.SoundTbl_FootStep = {
+	    		"vj_l4d2/footsteps/infected/run/concrete1.mp3",
+	    		"vj_l4d2/footsteps/infected/run/concrete2.mp3",
+	    		"vj_l4d2/footsteps/infected/run/concrete3.mp3",
+	    		"vj_l4d2/footsteps/infected/run/concrete4.mp3",
+	    	}
+	    elseif mat == MAT_GRASS then
+	    	self.SoundTbl_FootStep = {
+	    		"vj_l4d2/footsteps/infected/run/grass1.mp3",
+	    		"vj_l4d2/footsteps/infected/run/grass2.mp3",
+	    		"vj_l4d2/footsteps/infected/run/grass3.mp3",
+	    		"vj_l4d2/footsteps/infected/run/grass4.mp3",
+	    	}
+	    elseif mat == MAT_PLASTIC then
+	    	self.SoundTbl_FootStep = {
+	    		"vj_l4d2/footsteps/infected/run/cardboard1.mp3",
+	    		"vj_l4d2/footsteps/infected/run/cardboard2.mp3",
+	    		"vj_l4d2/footsteps/infected/run/cardboard3.mp3",
+	    		"vj_l4d2/footsteps/infected/run/cardboard4.mp3",
+	    	}
+	    elseif mat == MAT_DIRT then
+	    	self.SoundTbl_FootStep = {
+	    		"vj_l4d2/footsteps/infected/run/grass1.mp3",
+	    		"vj_l4d2/footsteps/infected/run/grass2.mp3",
+	    		"vj_l4d2/footsteps/infected/run/grass3.mp3",
+	    		"vj_l4d2/footsteps/infected/run/grass4.mp3",
+	    	}
+	    elseif mat == MAT_WOOD then
+	    	self.SoundTbl_FootStep = {
+	    		"vj_l4d2/footsteps/infected/run/wood1.mp3",
+	    		"vj_l4d2/footsteps/infected/run/wood2.mp3",
+	    		"vj_l4d2/footsteps/infected/run/wood3.mp3",
+	    		"vj_l4d2/footsteps/infected/run/wood4.mp3",
+	    	}
+	    elseif mat == MAT_SAND then
+	    	self.SoundTbl_FootStep = {
+	    		"vj_l4d2/footsteps/infected/run/sand1.mp3",
+	    		"vj_l4d2/footsteps/infected/run/sand2.mp3",
+	    		"vj_l4d2/footsteps/infected/run/sand3.mp3",
+	    		"vj_l4d2/footsteps/infected/run/sand4.mp3",
+	    	}
+	    elseif mat == MAT_METAL then
+	    	self.SoundTbl_FootStep = {
+	    		"vj_l4d2/footsteps/infected/run/metal1.mp3",
+	    		"vj_l4d2/footsteps/infected/run/metal2.mp3",
+	    		"vj_l4d2/footsteps/infected/run/metal3.mp3",
+	    		"vj_l4d2/footsteps/infected/run/metal4.mp3",
+	    	}
+	    elseif mat == MAT_GRATE then
+	    	self.SoundTbl_FootStep = {
+	    		"vj_l4d2/footsteps/infected/run/metalgrate1.mp3",
+	    		"vj_l4d2/footsteps/infected/run/metalgrate2.mp3",
+	    		"vj_l4d2/footsteps/infected/run/metalgrate3.mp3",
+	    		"vj_l4d2/footsteps/infected/run/metalgrate4.mp3",
+	    	}
+	    end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -632,7 +700,7 @@ function ENT:CustomOnThink()
 	elseif self.VJ_IsBeingControlled == true then
 		self.CheckEnemyTimer = 0
     end
-
+    self:GetGroundType(self:GetPos())
     self:IgnoreIncappedEnemies()
     if self:IsInWorld() then
         self.LastInWorldPos = self:GetPos()
