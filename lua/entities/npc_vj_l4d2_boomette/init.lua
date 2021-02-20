@@ -8,7 +8,6 @@ include('shared.lua')
 ENT.Model = {"models/vj_l4d2/boomer.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 	-- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
-ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkRight","Boomer.Concrete.WalkLeft"}
 ENT.SoundTbl_Idle = {"FemaleBoomerZombie.Groan","FemaleBoomerZombie.Voice"}
 ENT.SoundTbl_Alert = {"FemaleBoomerZombie.Alert","FemaleBoomerZombie.Rage"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/miss/claw_miss_1.wav","vj_l4d2/miss/claw_miss_2.wav"}
