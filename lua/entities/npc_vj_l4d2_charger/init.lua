@@ -730,6 +730,28 @@ function ENT:CustomOnThink()
 			end
 		end
 	end)
+	if self.VJ_IsBeingControlled == true then
+		hook.Add("KeyPress", "Charger_Crouch", function(ply, key)
+			if self.VJ_TheController == ply then
+				if key == IN_DUCK then
+					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle_Upper_Knife"))}
+					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
+					self.AnimTbl_Run = {ACT_RUN_CROUCH}
+					self.HasLeapAttack = false
+				end
+			end
+		end)
+		hook.Add("KeyRelease", "Charger_CrouchRelease", function(ply, key)
+			if self.VJ_TheController == ply then
+				if key == IN_DUCK then
+					self.AnimTbl_IdleStand = {ACT_IDLE}
+					self.AnimTbl_Walk = {ACT_WALK}
+					self.AnimTbl_Run = {ACT_RUN}
+					self.HasLeapAttack = true
+				end
+			end
+		end)
+	end
 
 	if self.VJ_IsBeingControlled == true then
 		self:CapabilitiesRemove(CAP_MOVE_JUMP)
