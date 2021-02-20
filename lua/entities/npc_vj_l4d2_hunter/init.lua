@@ -532,7 +532,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 				for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
 					if IsValid(self) && IsValid(v) then
 						if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0 && not table.HasValue(tbControllers, v)) or (v:IsNPC() && v ~= self) then
-							if (self.VJ_IsBeingControlled && (v:GetClass() ~= "obj_vj_bullseye" || self:IsEntityAlly(v) == false)) || self:Disposition(v) == D_HT then
+							if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
 								if self.HasEnemyIncapacitated then return end
 								local enemy = v
 								if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
