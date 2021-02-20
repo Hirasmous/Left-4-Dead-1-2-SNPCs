@@ -17,10 +17,10 @@ ENT.Owner = nil
 ENT.SoundTbl_Idle = {"player/spitter/swarm/spitter_acid_fadeout.mp3","player/spitter/swarm/spitter_acid_fadeout2.mp3"}
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
-	ParticleEffect("spitter_areaofdenial",self:GetPos() +self:GetUp()*2,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil) 
 	self:SetNoDraw(true)
-	self:DrawShadow(false)
 	self:DropToFloor()
+	self:DrawShadow(false)
+	ParticleEffectAttach("spitter_areaofdenial", PATTACH_ABSORIGIN_FOLLOW, self, 0)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnPhysicsCollide(data,phys)
