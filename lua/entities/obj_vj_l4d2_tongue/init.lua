@@ -91,6 +91,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
                 if (owner.VJ_IsBeingControlled && data.HitEntity:GetClass() ~= "obj_vj_bullseye" && owner:IsEntityAlly(data.HitEntity) == false) || owner:Disposition(data.HitEntity) == D_HT then
                     if not owner:CanIncapacitate(data.HitEntity) then return end
                     if owner.HasEnemyIncapacitated then return end
+			if owner.VJ_IsBeingControlled && owner.VJ_TheController == data.HitEntity then return end
                     owner.HasEnemyIncapacitated = true
 
                     local enemy = data.HitEntity
