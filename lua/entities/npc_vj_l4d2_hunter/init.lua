@@ -460,6 +460,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 						if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0) or (v:IsNPC() && v ~= self) then
 							if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
 								if self.HasEnemyIncapacitated then return end
+								if self.VJ_IsBeingControlled && self.VJ_TheController == v then return end
 								local enemy = v
 								if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
 									return
