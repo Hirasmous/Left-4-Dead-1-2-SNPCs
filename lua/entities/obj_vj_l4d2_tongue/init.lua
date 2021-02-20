@@ -95,7 +95,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 	if owner.HasEnemyIncapacitated == false then
 		if (data.HitEntity:IsPlayer() && data.HitEntity:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0 && not table.HasValue(tbControllers, data.HitEntity)) || (data.HitEntity:IsNPC() && data.HitEntity ~= owner) then
 			if data.HitEntity:LookupBone("ValveBiped.Bip01_Pelvis") then
-				if (owner.VJ_IsBeingControlled && (data.HitEntity:GetClass() ~= "obj_vj_bullseye" || owner:IsEntityAlly(data.HitEntity) == false)) || owner:Disposition(data.HitEntity) == D_HT then
+				if (owner.VJ_IsBeingControlled && data.HitEntity:GetClass() ~= "obj_vj_bullseye" && owner:IsEntityAlly(data.HitEntity) == false) || owner:Disposition(data.HitEntity) == D_HT then
 					if not owner:CanIncapacitate(data.HitEntity) then return end
 					if owner.HasEnemyIncapacitated then return end
 					owner.HasEnemyIncapacitated = true
