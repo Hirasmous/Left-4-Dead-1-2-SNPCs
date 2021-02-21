@@ -1,9 +1,9 @@
 AddCSLuaFile("shared.lua")
 include('shared.lua')
 /*-----------------------------------------------
-	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
-	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
-	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
+    *** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
+    No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
+    without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
 ENT.Model = {"models/vj_l4d2/witch.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_w_h")
@@ -37,12 +37,12 @@ ENT.FindEnemy_UseSphere = true -- Should the SNPC be able to see all around him?
 ENT.HasDeathAnimation = true
 ENT.AnimTbl_Death = {ACT_DIE_GUTSHOT}
 ENT.VJC_Data = {
-	CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
-	ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
-	FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
-	FirstP_Offset = Vector(3, 0, 5), -- The offset for the controller when the camera is in first person
+    CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
+    ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
+    FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
+    FirstP_Offset = Vector(3, 0, 5), -- The offset for the controller when the camera is in first person
 }
-	-- ====== Flinching Code ====== --
+    -- ====== Flinching Code ====== --
 ENT.CanFlinch = 1 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
 ENT.FlinchChance = 1 -- Chance of it flinching from 1 to x | 1 will make it always flinch
 ENT.AnimTbl_Flinch = {"vjges_flinch_01","vjges_flinch_02"} -- If it uses normal based animation, use this
@@ -50,14 +50,14 @@ ENT.NextMoveAfterFlinchTime = "LetBaseDecide" -- How much time until it can move
 ENT.HasHitGroupFlinching = false -- It will flinch when hit in certain hitgroups | It can also have certain animations to play in certain hitgroups
 ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching, should it do the regular flinch if it doesn't hit any of the specified hitgroups?
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward_02"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward_01"}}}
-	-- ====== Sound File Paths ====== --
+    -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
 ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkLeft","Boomer.Concrete.WalkRight"}
 ENT.SoundTbl_Idle = {"WanderWitchZombie.Despair"}
 ENT.SoundTbl_CombatIdle = {"WitchZombie.Rage"}
 ENT.SoundTbl_Alert = {
-	"npc/witch/voice/attack/female_distantscream1.mp3",
-	"npc/witch/voice/attack/female_distantscream2.mp3",
+    "npc/witch/voice/attack/female_distantscream1.mp3",
+    "npc/witch/voice/attack/female_distantscream2.mp3",
 }
 ENT.SoundTbl_Surprised = {"WitchZombie.Surprised"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
@@ -109,6 +109,8 @@ ENT.nextPoseReset = -1
 ENT.nextPoseChange = -1
 ENT.PoseParams_Rage = 0
 ENT.pTargetEntity = nil
+ENT.WitchState = "Stand"
+ENT.FootStepType = "CommonLight"
 
 util.AddNetworkString("L4D2WitchHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -150,6 +152,12 @@ function ENT:CustomOnTouch(ent)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnAcceptInput(key,activator,caller,data)
+    if key == "event_land" then
+        VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
     local randattack = math.random(1,2)
     if randattack == 1 then
@@ -173,6 +181,7 @@ function ENT:EnableAggression(enemy)
     self:VJ_DoSetEnemy(enemy or self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity"), false, true)
     self.HasPoseParameterLooking = true
     self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
+    self:VJ_ACT_PLAYACTIVITY("Wander_Acquire")
     local ent = self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity")
     if ent:IsNPC() then
         PrintMessage(HUD_PRINTTALK, ent:GetClass().." startled the ".. self:GetName())
@@ -199,6 +208,7 @@ function ENT:DisableAggression()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+    self:GetGroundType(self:GetPos())
     if self:IsOnFire() then
         self:PlayWitchMusic(3, true)
         self.AnimTbl_Run = {self:GetSequenceActivity(self:LookupSequence("Run_OnFire"))}
@@ -293,7 +303,7 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo, hitgroup)
         self:EnableAggression(dmginfo:GetAttacker())
     end
     if self:IsShoved() then return end
-    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+    if dmginfo:IsDamageType(DMG_BLAST) or self.bTriggered == false && dmginfo:IsDamageType(DMG_GENERIC) || dmginfo:IsDamageType(DMG_CLUB) then
         local function GetDirection()
             local directions = {
                 {"Shoved_Backward_03", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
@@ -318,7 +328,7 @@ function ENT:CustomOnRemove()
     self:SetNWEntity("Witch"..self:EntIndex().."_TriggerEntity", nil)
 end
 /*-----------------------------------------------
-	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
-	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
-	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
+    *** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
+    No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
+    without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/

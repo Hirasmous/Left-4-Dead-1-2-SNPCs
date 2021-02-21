@@ -9,6 +9,7 @@ ENT.Model = {"models/vj_l4d2/witch.mdl"} -- The game will pick a random model fr
 ENT.StartHealth = GetConVarNumber("vj_l4d2_w_h")
 ENT.HasBloodPool = false -- Does it have a blood pool?
 ENT.HullType = HULL_HUMAN
+ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
 ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through walls and objects? | Can be useful if you want to make it know where the enemy is at all times
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
@@ -23,7 +24,6 @@ ENT.BecomeEnemyToPlayer = false -- Should the friendly SNPC become enemy towards
 ENT.BecomeEnemyToPlayerLevel = 1 -- How many times does the player have to hit the SNPC for it to become enemy?
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
 ENT.AllowPrintingInChat = false -- Should this SNPC be allowed to post in player's chat? Example: "Blank no longer likes you."
-ENT.AnimTbl_IdleStand = {ACT_IDLE_RELAXED}
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ENT.VJ_NPC_Class = {"CLASS_ZOMBIE"} -- NPCs with the same class with be allied to each other
 ENT.BloodColor = "Red" -- The blood type, this will determine what it should use (decal, particle, etc.)
@@ -37,6 +37,7 @@ ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn
 ENT.FindEnemy_UseSphere = true -- Should the SNPC be able to see all around him? (360) | Objects and walls can still block its sight!
 ENT.HasDeathAnimation = true
 ENT.AnimTbl_Death = {ACT_DIE_GUTSHOT}
+ENT.MeleeAttackAnimationAllowOtherTasks = true
 ENT.VJC_Data = {
     CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
     ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
@@ -54,7 +55,7 @@ ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shove
     -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
 ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkLeft","Boomer.Concrete.WalkRight"}
-ENT.SoundTbl_Idle = {"WanderWitchZombie.Despair"}
+ENT.SoundTbl_Idle = {"WitchZombie.Despair"}
 ENT.SoundTbl_CombatIdle = {"WitchZombie.Rage"}
 ENT.SoundTbl_Alert = {
     "npc/witch/voice/attack/female_distantscream1.mp3",
@@ -110,12 +111,18 @@ ENT.nextPoseReset = -1
 ENT.nextPoseChange = -1
 ENT.PoseParams_Rage = 0
 ENT.pTargetEntity = nil
+ENT.WitchEyeGlow = "witch_eye_glow_calm" -- Witch glow particle
+ENT.WitchEyeGlow_Color = "255 229 0 255" -- Witch glow color
+ENT.WitchState = "Sit"
+ENT.WitchEffectsSpawned = false
+ENT.FootStepType = "CommonLight"
 
 util.AddNetworkString("L4D2WitchHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
     self:SetNWEntity("Witch"..self:EntIndex().."_TriggerEntity", nil)
+    self:StopParticles()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
@@ -140,6 +147,12 @@ function ENT:CustomOnTouch(ent)
         if ent ~= self && (ent:IsNPC() || (ent:IsPlayer() && ent:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0)) && not self:IsEntityAlly(ent) then
             self:EnableAggression(ent)
         end
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnAcceptInput(key,activator,caller,data)
+    if key == "event_land" then
+        VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -170,12 +183,13 @@ function ENT:EnableAggression(enemy)
     self:VJ_DoSetEnemy(enemy or self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity"), false, true)
     self.HasPoseParameterLooking = true
     self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
-    self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+    self:VJ_ACT_PLAYACTIVITY("Wander_Acquire")
+    self.AnimTbl_IdleStand = {ACT_IDLE_AGITATED}
     local ent = self:GetNWEntity("Witch"..self:EntIndex().."_TriggerEntity")
     if ent:IsNPC() then
-        PrintMessage(HUD_PRINTTALK, ent:GetClass().." startled the ".. self:GetName())
+        PrintMessage(HUD_PRINTTALK, ent:GetName().." startled the ".. self:GetName() .. "!")
     elseif ent:IsPlayer() then
-        PrintMessage(HUD_PRINTTALK, ent:GetName().." startled the ".. self:GetName())
+        PrintMessage(HUD_PRINTTALK, ent:Nick().." startled the ".. self:GetName() .. "!")
     end
     self.bTriggered = true
 end
@@ -197,7 +211,67 @@ function ENT:DisableAggression()
     end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:WitchGlowingEyes(GColor,Particle)
+    self.glowlight_l = ents.Create("light_dynamic")
+    self.glowlight_l:SetKeyValue("_light",GColor)
+    self.glowlight_l:SetKeyValue("brightness","0.1")
+    self.glowlight_l:SetKeyValue("distance","100")
+    self.glowlight_l:SetKeyValue("style","0")
+    self.glowlight_l:SetPos(self:GetPos())
+    self.glowlight_l:SetParent(self)
+    self.glowlight_l:Spawn()
+    self.glowlight_l:Activate()
+    self.glowlight_l:Fire("SetParentAttachment","leye")
+    self.glowlight_l:Fire("TurnOn","",0)
+    self:DeleteOnRemove(self.glowlight_l)
+
+    self.glowlight_r = ents.Create("light_dynamic")
+    self.glowlight_r:SetKeyValue("_light",GColor)
+    self.glowlight_r:SetKeyValue("brightness","0.1")
+    self.glowlight_r:SetKeyValue("distance","100")
+    self.glowlight_r:SetKeyValue("style","0")
+    self.glowlight_r:SetPos(self:GetPos())
+    self.glowlight_r:SetParent(self)
+    self.glowlight_r:Spawn()
+    self.glowlight_r:Activate()
+    self.glowlight_r:Fire("SetParentAttachment","reye")
+    self.glowlight_r:Fire("TurnOn","",0)
+    self:DeleteOnRemove(self.glowlight_r)
+
+    self.glow_leye = ents.Create("info_particle_system")
+    self.glow_leye:SetParent(self)
+    self.glow_leye:SetPos(self:GetPos())
+    self.glow_leye:SetKeyValue("effect_name",Particle)
+    self.glow_leye:SetKeyValue("start_active","1")
+    self.glow_leye:Fire("SetParentAttachment","leye")
+    self.glow_leye:Spawn()
+    self.glow_leye:Activate()
+    self:DeleteOnRemove(self.glow_leye)
+
+    self.glow_reye = ents.Create("info_particle_system")
+    self.glow_reye:SetParent(self)
+    self.glow_reye:SetPos(self:GetPos())
+    self.glow_reye:SetKeyValue("effect_name",Particle)
+    self.glow_reye:SetKeyValue("start_active","1")
+    self.glow_reye:Fire("SetParentAttachment","reye")
+    self.glow_reye:Spawn()
+    self.glow_reye:Activate()
+    self:DeleteOnRemove(self.glow_reye)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
+    self:GetGroundType(self:GetPos()) -- in the features.lua
+    if IsValid(self:GetEnemy()) then
+        if self.WitchEffectsSpawned then
+            self:WitchGlowingEyes("153 5 0","witch_eye_glow")
+            self.WitchEffectsSpawned = false
+        end
+    else
+        if !self.WitchEffectsSpawned then
+            self:WitchGlowingEyes("246 214 0 255","witch_eye_glow_calm")
+            self.WitchEffectsSpawned = true
+        end
+    end
     if self:IsOnFire() then
         self:PlayWitchMusic(3, true)
         self.AnimTbl_Run = {self:GetSequenceActivity(self:LookupSequence("Run_OnFire"))}
@@ -295,7 +369,7 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo, hitgroup)
         self:EnableAggression(dmginfo:GetAttacker())
     end
     if self:IsShoved() then return end
-    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+    if dmginfo:IsDamageType(DMG_BLAST) or self.bTriggered == false && dmginfo:IsDamageType(DMG_GENERIC) || dmginfo:IsDamageType(DMG_CLUB) then
         local function GetDirection()
             local directions = {
                 {"Shoved_Backward_03", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
