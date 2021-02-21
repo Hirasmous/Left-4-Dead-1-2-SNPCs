@@ -6,7 +6,8 @@ include('shared.lua')
 	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
 ENT.Model = {"models/vj_l4d2/boomette.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
-	-- ====== Sound File Paths ====== --
+ENT.DeathCorpseModel = {"models/vj_l4d2/limbs/exploded_boomette.mdl"}
+-- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
 ENT.SoundTbl_Idle = {"FemaleBoomerZombie.Groan","FemaleBoomerZombie.Voice"}
 ENT.SoundTbl_Alert = {"FemaleBoomerZombie.Alert","FemaleBoomerZombie.Rage"}
