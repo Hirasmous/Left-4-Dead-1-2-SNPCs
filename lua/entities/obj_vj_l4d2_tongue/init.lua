@@ -109,6 +109,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					owner.pIncapacitatedEnemy = enemy
 					owner.incapAngles = owner:GetAngles()
 					owner.EnemyMoveType = enemy:GetMoveType()
+					owner.vecEnemyStartPos = enemy:GetPos()
 					if enemy:IsOnGround() then
 						owner.lastEnemyGround = CurTime()
 						owner.lastEnemyFloat = -1
@@ -129,15 +130,15 @@ function ENT:PhysicsCollide(data, physobj, entity)
 
 					local dragObj = ents.Create("prop_physics")
 					dragObj:SetModel("models/dav0r/hoverball.mdl")
-					dragObj:PhysicsInit(SOLID_VPHYSICS)
+					dragObj:PhysicsInit(SOLID_BBOX)
 					dragObj:SetMoveType(MOVETYPE_FLY)
-					dragObj:SetSolid(SOLID_VPHYSICS)
+					dragObj:SetSolid(SOLID_BBOX)
 					dragObj:SetCollisionGroup(1)
-					dragObj:SetPos(enemy:GetPos() +enemy:OBBCenter())
+					dragObj:SetPos(enemy:GetPos() + enemy:OBBCenter())
 					dragObj:Spawn()
 					owner.pEnemyObj = dragObj
 					dragObj:DrawShadow(false) 
-					dragObj:SetNoDraw(true)
+					dragObj:SetNoDraw(false)
 					enemy:SetGravity(0)
 					enemy:SetMoveType(MOVETYPE_FLY)
 					constraint.NoCollide(enemy, dragObj, 1, 1)
@@ -181,7 +182,9 @@ function ENT:PhysicsCollide(data, physobj, entity)
 						end
 					elseif enemy:IsNPC() then
 						if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
-							enemy:GetActiveWeapon():SetNoDraw(true)
+							if IsValid(enemy:GetActiveWeapon()) then
+								enemy:GetActiveWeapon():SetNoDraw(true)
+							end
 						else
 							enemy:DropWeapon()
 						end
