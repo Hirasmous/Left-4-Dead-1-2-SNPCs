@@ -18,6 +18,243 @@ local tblIncapSongs = {
 	["jockey"] = 25
 }
 
+function NPC:GetGroundType(pos)
+    local tr = util.TraceLine({
+        start = pos,
+        endpos = pos -Vector(0,0,40),
+        filter = self,
+        mask = MASK_NPCWORLDSTATIC
+    })
+    local mat = tr.MatType
+    if tr.HitWorld then
+        if self.FootStepType == "CommonLight" then
+            if mat == MAT_CONCRETE then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/concrete1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/concrete2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/concrete3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/concrete4.mp3",
+                }
+            elseif mat == MAT_GRASS then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/grass1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/grass2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/grass3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/grass4.mp3",
+                }
+            elseif mat == MAT_PLASTIC then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/cardboard1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/cardboard2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/cardboard3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/cardboard4.mp3",
+                }
+            elseif mat == MAT_DIRT then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/dirt1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/dirt2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/dirt3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/dirt4.mp3",
+                }
+            elseif mat == MAT_WOOD then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/wood1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/wood2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/wood3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/wood4.mp3",
+                }
+            elseif mat == MAT_SAND then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/sand1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/sand2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/sand3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/sand4.mp3",
+                }
+            elseif mat == MAT_SNOW then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/sand1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/sand2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/sand3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/sand4.mp3",
+                }
+            elseif mat == MAT_METAL then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/metal1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/metal2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/metal3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/metal4.mp3",
+                }
+            elseif mat == MAT_GRATE then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/metalgrate1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/metalgrate2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/metalgrate3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/metalgrate4.mp3",
+                }
+            elseif mat == MAT_BLOODYFLESH then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/mud1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud4.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh4.mp3",
+                }
+            elseif mat == MAT_FLESH then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/mud1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud4.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh4.mp3",
+                }
+            elseif mat == MAT_ALIENFLESH then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/mud1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/mud4.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/flesh4.mp3",
+                }
+            elseif mat == MAT_TILE then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/tile1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/tile2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/tile3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/tile4.mp3",
+                }
+            elseif mat == MAT_SLOSH then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/boomer/run/wade1.mp3",
+                    "vj_l4d2/footsteps/boomer/run/wade2.mp3",
+                    "vj_l4d2/footsteps/boomer/run/wade3.mp3",
+                    "vj_l4d2/footsteps/boomer/run/wade4.mp3",
+                }
+            end
+        elseif self.FootStepType == "Common" then
+            if mat == MAT_CONCRETE then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/concrete1.mp3",
+                    "vj_l4d2/footsteps/infected/run/concrete2.mp3",
+                    "vj_l4d2/footsteps/infected/run/concrete3.mp3",
+                    "vj_l4d2/footsteps/infected/run/concrete4.mp3",
+                }
+            elseif mat == MAT_GRASS then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/grass1.mp3",
+                    "vj_l4d2/footsteps/infected/run/grass2.mp3",
+                    "vj_l4d2/footsteps/infected/run/grass3.mp3",
+                    "vj_l4d2/footsteps/infected/run/grass4.mp3",
+                }
+            elseif mat == MAT_PLASTIC then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/cardboard1.mp3",
+                    "vj_l4d2/footsteps/infected/run/cardboard2.mp3",
+                    "vj_l4d2/footsteps/infected/run/cardboard3.mp3",
+                    "vj_l4d2/footsteps/infected/run/cardboard4.mp3",
+                }
+            elseif mat == MAT_DIRT then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/grass1.mp3",
+                    "vj_l4d2/footsteps/infected/run/grass2.mp3",
+                    "vj_l4d2/footsteps/infected/run/grass3.mp3",
+                    "vj_l4d2/footsteps/infected/run/grass4.mp3",
+                }
+            elseif mat == MAT_WOOD then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/wood1.mp3",
+                    "vj_l4d2/footsteps/infected/run/wood2.mp3",
+                    "vj_l4d2/footsteps/infected/run/wood3.mp3",
+                    "vj_l4d2/footsteps/infected/run/wood4.mp3",
+                }
+            elseif mat == MAT_SAND then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/sand1.mp3",
+                    "vj_l4d2/footsteps/infected/run/sand2.mp3",
+                    "vj_l4d2/footsteps/infected/run/sand3.mp3",
+                    "vj_l4d2/footsteps/infected/run/sand4.mp3",
+                }
+            elseif mat == MAT_SNOW then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/sand1.mp3",
+                    "vj_l4d2/footsteps/infected/run/sand2.mp3",
+                    "vj_l4d2/footsteps/infected/run/sand3.mp3",
+                    "vj_l4d2/footsteps/infected/run/sand4.mp3",
+                }
+            elseif mat == MAT_METAL then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/metal1.mp3",
+                    "vj_l4d2/footsteps/infected/run/metal2.mp3",
+                    "vj_l4d2/footsteps/infected/run/metal3.mp3",
+                    "vj_l4d2/footsteps/infected/run/metal4.mp3",
+                }
+            elseif mat == MAT_GRATE then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/metalgrate1.mp3",
+                    "vj_l4d2/footsteps/infected/run/metalgrate2.mp3",
+                    "vj_l4d2/footsteps/infected/run/metalgrate3.mp3",
+                    "vj_l4d2/footsteps/infected/run/metalgrate4.mp3",
+                }
+            elseif mat == MAT_BLOODYFLESH then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/mud1.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud2.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud3.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud4.mp3",
+                }
+            elseif mat == MAT_FLESH then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/mud1.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud2.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud3.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud4.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh1.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh2.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh3.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh4.mp3",
+                }
+            elseif mat == MAT_ALIENFLESH then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/mud1.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud2.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud3.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud4.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh1.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh2.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh3.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh4.mp3",
+                }
+            elseif mat == MAT_TILE then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/mud1.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud2.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud3.mp3",
+                    "vj_l4d2/footsteps/infected/run/mud4.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh1.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh2.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh3.mp3",
+                    "vj_l4d2/footsteps/infected/run/flesh4.mp3",
+                }
+            elseif mat == MAT_SLOSH then
+                self.SoundTbl_FootStep = {
+                    "vj_l4d2/footsteps/infected/run/wade1.mp3",
+                    "vj_l4d2/footsteps/infected/run/wade2.mp3",
+                    "vj_l4d2/footsteps/infected/run/wade3.mp3",
+                    "vj_l4d2/footsteps/infected/run/wade4.mp3",
+                }
+            end
+        end
+    end
+end
+
 function NPC:IsShoved()
     local seq = self:GetSequenceName(self:GetSequence())
     local s, e = string.find(seq, "Shoved_")
