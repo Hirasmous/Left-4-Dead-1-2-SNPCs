@@ -518,7 +518,6 @@ function ENT:MultipleMeleeAttacks()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
 	self.vecLastPos = self:GetPos()
 	if self.IsGhosted then
@@ -635,12 +634,8 @@ function ENT:CustomOnThink()
 			effectData:SetStart(self:GetAttachment(3).Pos)
 			effectData:SetEntity(self)
 			effectData:SetAttachment(3)
+			effectData:SetOrigin(self.pEnemyRagdoll:GetBonePosition(self.pEnemyRagdoll:LookupBone("ValveBiped.Bip01_Spine4")))
 			util.Effect("tongue_beam", effectData)
-			if self.IsChokingEnemy then
-				effectData:SetOrigin(self.pEnemyRagdoll:GetPos() +self.pEnemyRagdoll:OBBCenter())
-			else
-				effectData:SetOrigin(self.pEnemyRagdoll:GetPos())
-			end
 		end
 
 		if self.IncapSong == nil or self.IncapSong:IsPlaying() == false then
@@ -693,7 +688,9 @@ function ENT:CustomOnThink()
 			end
 
 			if self.IsChokingEnemy || self.IsEnemyStuck then
-				self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
+				if self.pEnemyRagdoll:GetPoseParameter("tongue_angle") > 0.8 then
+					self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
+				end
 			end
 
 			if IsValid(self.pTongueController) then
@@ -761,7 +758,6 @@ function ENT:CustomOnThink()
 						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
 					else
 						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
-						self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
 						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
 					end
 					for k, v in ipairs(ents.FindByClass("player")) do
@@ -803,8 +799,11 @@ function ENT:CustomOnThink()
 				end
 			end
 
-			--make enemy face opposite
-			FaceTarget(enemy, self, true)
+			local posZ = Vector(self:GetPos().x, self:GetPos().y, enemy:GetPos().z)
+			--make enemy face same direction
+			if enemy:GetPos():Distance(posZ) > 50 then
+				FaceTarget(enemy, self, true)
+			end
 
 			--check if path to us is blocked
 			local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
@@ -812,7 +811,9 @@ function ENT:CustomOnThink()
 			local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
 			--check if enemy is 
 			local tr3 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 10 - enemy:GetForward() * 10, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-
+			--check if enemy is hitting ceiling
+			local tr4 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() + enemy:GetUp() * 65, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+			
 			--call if enemy is stuck
 			local function FreezeEnemy()
 				if ene:IsPlayer() then
@@ -875,10 +876,7 @@ function ENT:CustomOnThink()
 					if tr1.Hit == true then
 						enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 75)
 					else
-						local velo
 						if tr3.Hit == false then
-						   	local posZ = Vector(self:GetPos().x, self:GetPos().y, enemy:GetPos().z)
-						   	local distZ = math.abs(self:GetPos().z - enemy:GetPos().z)
 						   	if enemy:GetPos():Distance(posZ) <= 150 then
 						   		enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 50)
 						   	else
@@ -910,6 +908,16 @@ function ENT:CustomOnThink()
 			local timeDiff = math.abs(self.lastEnemyFloat - self.lastEnemyGround)
 			if timeDiff > 0.45 && timeDiff < 0.55 then
 				ResetEnemyEFlags()
+			end
+
+			local tngTr = util.TraceLine({start = self:GetPos() + self:OBBMaxs() + self:GetForward() * 10, endpos = enemy:GetPos() + ene:OBBCenter(), filter = {self, enemy, ene, self.pEnemyRagdoll}})
+			if tngTr.Hit == true then
+				timer.Simple(0.5, function()
+					if !IsValid(self) || !IsValid(enemy) then return end
+					if self.IsEnemyStuck == false then
+						FreezeEnemy()
+					end
+				end)
 			end
 
 			if self.IsEnemyStuck == false then
