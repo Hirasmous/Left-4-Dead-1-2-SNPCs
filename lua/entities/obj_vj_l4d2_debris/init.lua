@@ -24,7 +24,7 @@ ENT.ShakeWorldOnDeathFrequency = 200 -- The frequency
 ENT.DecalTbl_DeathDecals = {"ManhackCut"}
 ENT.SoundTbl_Idle = {"HulkZombie.Throw.FlyLoop"}
 ENT.SoundTbl_OnCollide = {"player/tank/hit/thrown_projectile_hit_01.mp3"}
-ENT.MassAmount = 1
+ENT.MassAmount = 5
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:GetMassAmount()
 	return self.MassAmount
@@ -35,12 +35,12 @@ function ENT:SetMassAmount(mass)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomPhysicsObjectOnInitialize(phys)
-	phys:SetBuoyancyRatio(0)
+	phys:SetBuoyancyRatio(2)
 	phys:EnableDrag(false)	
-        phys:EnableGravity(true) 
-        phys:SetMass(self:GetMassAmount())                     
-        phys:Wake() 
-        phys:AddAngleVelocity( Vector( math.random(-200,-120,110)))
+    phys:EnableGravity(true) 
+    phys:SetMass(self:GetMassAmount())                     
+    phys:Wake() 
+    phys:AddAngleVelocity( Vector( math.random(-200,-120,110)))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
