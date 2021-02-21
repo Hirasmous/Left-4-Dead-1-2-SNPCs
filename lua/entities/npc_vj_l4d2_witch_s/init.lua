@@ -370,12 +370,16 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo, hitgroup)
     end
     if self:IsShoved() then return end
     if dmginfo:IsDamageType(DMG_BLAST) or self.bTriggered == false && dmginfo:IsDamageType(DMG_GENERIC) || dmginfo:IsDamageType(DMG_CLUB) then
+        local dpos = dmginfo:GetAttacker():GetPos()
+        if dmginfo:IsDamageType(DMG_BLAST) then
+            dpos = dmginfo:GetDamagePosition()
+        end
         local function GetDirection()
             local directions = {
-                {"Shoved_Backward_03", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
-                {"Shoved_Leftward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
-                {"Shoved_Forward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
-                {"Shoved_Rightward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
+                {"Shoved_Backward_03", dpos:Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+                {"Shoved_Leftward_01", dpos:Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
+                {"Shoved_Forward_01", dpos:Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+                {"Shoved_Rightward_01", dpos:Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
             }
             table.sort(directions, function(a, b) return a[2] < b[2] end)
             return directions[1][1]
