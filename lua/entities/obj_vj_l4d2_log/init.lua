@@ -6,7 +6,7 @@ include("shared.lua")
 	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
 --------------------------------------------------*/
-ENT.Model = {"models/props_foliage/tree_trunk.mdl"} -- The models it should spawn with | Picks a random one from the table} -- The models it should spawn with | Picks a random one from the table
+ENT.Model = {"models/vj_l4d2/tree_trunk.mdl"} -- The models it should spawn with | Picks a random one from the table} -- The models it should spawn with | Picks a random one from the table
 ENT.PhysicsInitType = SOLID_VPHYSICS
 ENT.MoveType = MOVETYPE_VPHYSICS -- Move type, recommended to keep it as it is
 ENT.MoveCollideType = COLLISION_GROUP_PROJECTILE -- Move type | Some examples: MOVECOLLIDE_FLY_BOUNCE, MOVECOLLIDE_FLY_SLIDE
@@ -50,7 +50,7 @@ end
 function ENT:DeathEffects(data,phys)
 	ParticleEffect("tank_rock_throw_impact_stump",data.HitPos,Angle(0,0,0),nil)     
         local chunk1 = ents.Create("prop_physics")
-	chunk1:SetModel("models/props_foliage/tree_trunk_chunk01.mdl")  
+	chunk1:SetModel("models/vj_l4d2/tree_trunk_chunk01.mdl")  
         chunk1:SetPos(self:GetPos())
         chunk1:Spawn()
 	chunk1:SetCollisionGroup(COLLISION_GROUP_NONE)
@@ -59,7 +59,7 @@ function ENT:DeathEffects(data,phys)
 		chunk1phys:SetVelocity(self:GetUp() *1)
 	end
         local chunk2 = ents.Create("prop_physics")
-	chunk2:SetModel("models/props_foliage/tree_trunk_chunk02.mdl")  
+	chunk2:SetModel("models/vj_l4d2/tree_trunk_chunk02.mdl")  
         chunk2:SetPos(self:GetPos())
         chunk2:Spawn()
 	chunk2:SetCollisionGroup(COLLISION_GROUP_NONE)
@@ -68,7 +68,7 @@ function ENT:DeathEffects(data,phys)
 		chunk2phys:SetVelocity(self:GetUp() *1)
 	end
         local chunk3 = ents.Create("prop_physics")
-	chunk3:SetModel("models/props_foliage/tree_trunk_chunk03.mdl")  
+	chunk3:SetModel("models/vj_l4d2/tree_trunk_chunk03.mdl")  
         chunk3:SetPos(self:GetPos())
         chunk3:Spawn()
 	chunk3:SetCollisionGroup(COLLISION_GROUP_NONE)
@@ -77,7 +77,7 @@ function ENT:DeathEffects(data,phys)
 		chunk3phys:SetVelocity(self:GetUp() *1)
 	end
         local chunk4 = ents.Create("prop_physics")
-	chunk4:SetModel("models/props_foliage/tree_trunk_chunk04.mdl")  
+	chunk4:SetModel("models/vj_l4d2/tree_trunk_chunk04.mdl")  
         chunk4:SetPos(self:GetPos())
         chunk4:Spawn()
 	chunk4:SetCollisionGroup(COLLISION_GROUP_NONE)
@@ -86,7 +86,7 @@ function ENT:DeathEffects(data,phys)
 		chunk4phys:SetVelocity(self:GetUp() *1)
 	end
         local chunk5 = ents.Create("prop_physics")
-	chunk5:SetModel("models/props_foliage/tree_trunk_chunk06.mdl")  
+	chunk5:SetModel("models/vj_l4d2/tree_trunk_chunk06.mdl")  
         chunk5:SetPos(self:GetPos())
         chunk5:Spawn()
 	chunk5:SetCollisionGroup(COLLISION_GROUP_NONE)
