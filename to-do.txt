@@ -7,7 +7,7 @@ Boomer:
 -Player still has vomit overlay/puke particles after death on respawn 
 
 Boomette:
--Fix broken model
+-Fix broken model ✅
 
 Charger:
 -Add shove code to repo ✅
