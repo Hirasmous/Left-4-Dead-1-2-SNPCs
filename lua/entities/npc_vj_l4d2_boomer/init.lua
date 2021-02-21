@@ -49,8 +49,8 @@ ENT.AnimTbl_RangeAttack = {"vjges_Vomit_Attack"} -- Range Attack Animations
 -- ====== Distance Variables ====== --
 ENT.TimeUntilRangeAttackProjectileRelease = 1.5 -- How much time until the projectile code is ran?
 ENT.RangeAttackPos_Up = 47
-ENT.RangeDistance = 345 -- This is how far away it can shoot
-ENT.RangeToMeleeDistance = 200 -- How close does it have to be until it uses melee?
+ENT.RangeDistance = 250 -- This is how far away it can shoot
+ENT.RangeToMeleeDistance = 100 -- How close does it have to be until it uses melee?
 ENT.NextRangeAttackTime = 20 -- How much time until it can use a range attack?
 ENT.DeathCorpseModel = {"models/vj_l4d2/limbs/exploded_boomer.mdl"}
 ENT.RangeAttackAnimationFaceEnemy = false -- Should it face the enemy while playing the range attack animation?
@@ -371,13 +371,13 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
     util.ScreenShake(att.Pos, 100, 100, 0.5, 1500)       
     ParticleEffect("boomer_explode",self:GetPos() +self:GetUp()*40,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil) 
     self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_head.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
-    self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_rarm.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
-    self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak1.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
-    self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak2.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
-    self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_steak3.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
-    for _, x in ipairs(ents.FindInSphere(self:GetPos(),135)) do
+    self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_rarm.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
+    self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_steak1.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
+    self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_steak2.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
+    self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_steak3.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
+    for _, x in ipairs(ents.FindInSphere(self:GetPos(), 135)) do
         if IsValid(x) && IsValid(self) then
-            if self:IsLineOfSightClear(x) && self:Visible(x) then
+            if self:IsLineOfSightClear(x) then
                 table.insert(self.Vomited_Enemies,x)
                 self:VomitEnemy(x)
                 self.Enemy_IsPuked = true
