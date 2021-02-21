@@ -114,6 +114,7 @@ ENT.UseTheSameGeneralSoundPitch = false
 ENT.Climbing = false
 ENT.NextClimb = 0
 ENT.AllowClimbing = true
+ENT.DebrisType = "Rock"
 ENT.SoundTracks = nil
 ENT.SoundTrack = {"vj_l4d2/music/tank/taank.mp3","vj_l4d2/music/tank/tank.mp3"}
 util.AddNetworkString("L4D2TankHUD")
@@ -121,6 +122,29 @@ util.AddNetworkString("L4D2TankHUD")
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
     if GetConVarNumber("vj_l4d2_musictype") == 1 then self.SoundTrack = {"vj_l4d2/music/tank/tank_metal.mp3","vj_l4d2/music/tank/taank_metal.mp3"} end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CheckRangeAttack(pos)
+	 local tr = util.TraceLine({
+        start = pos,
+        endpos = pos -Vector(0,0,40),
+        filter = self,
+        mask = MASK_NPCWORLDSTATIC
+    })
+    local mat = tr.MatType
+    if tr.HitWorld then
+    	if self.HasRangeAttack then
+    		if mat == MAT_GRASS or mat == MAT_DIRT or mat == MAT_SNOW or mat == MAT_SAND then
+    			self.DebrisType = "Log"
+    			self.HasRangeAttack = true
+    		elseif mat == MAT_CONCRETE then
+    			self.DebrisType = "Rock"
+    			self.HasRangeAttack = true
+    		else 
+    			self.HasRangeAttack = false
+    		end
+    	end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -177,12 +201,17 @@ function ENT:RangeAttackCode_OverrideProjectilePos(TheProjectile)
     TheProjectile:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos) 
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:RemoveConcrete() 
-    self.Concrete:Remove()
+function ENT:RemoveDebris() 
+	if IsValid(self.Concrete) then
+        self.Concrete:Remove()
+    end
+    if IsValid(self.Log) then
+        self.Log:Remove()
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode()
-    local ent = ents.Create("obj_vj_l4d2_debris")
+    local ent = ents.Create(self.RangeAttackEntityToSpawn)
     ent:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos)
     -- ent:SetAngles(self:GetAttachment(self:LookupAttachment("debris")).Ang)
     ent:SetOwner(self)
@@ -196,17 +225,17 @@ function ENT:CustomRangeAttackCode()
     if randattackr == 1 then                              
         self.AnimTbl_RangeAttack = {"throw_02"}
         self.TimeUntilRangeAttackProjectileRelease = 2.5   
-        self:RemoveConcrete()
+        self:RemoveDebris()
     end         
     if randattackr == 3 then                              
         self.AnimTbl_RangeAttack = {"throw_03"}
         self.TimeUntilRangeAttackProjectileRelease = 1.97
-        self:RemoveConcrete()
+        self:RemoveDebris()
     end    
     if randattackr == 2 then                              
         self.AnimTbl_RangeAttack = {"throw_04"} 
         self.TimeUntilRangeAttackProjectileRelease = 2.8
-        self:RemoveConcrete()              
+        self:RemoveDebris()              
     end
 end   
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -214,17 +243,33 @@ function ENT:CustomOnRangeAttack_AfterStartTimer()
 	self:SetNW2Float("RockT",CurTime() +self.NextRangeAttackTime)
 	timer.Simple(0.7,function()
 		if IsValid(self) then
-		    ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward"))              
-		    self.Concrete = ents.Create("prop_vj_animatable")
-			self.Concrete:SetPos(self:GetPos())
-		    self.Concrete:SetModel("models/vj_l4d2/concrete_chunk01a.mdl")
-			self.Concrete:SetOwner(self)
-		    self.Concrete:SetParent(self)
-		    self.Concrete:Spawn()
-		    self.Concrete:Activate()
-		    self.Concrete:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
-		    self.Concrete:SetSolid(SOLID_NONE)
-			self.Concrete:AddEffects(EF_BONEMERGE) 
+			ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward")) 
+			if self.DebrisType == "Rock" then
+			    self.Concrete = ents.Create("prop_vj_animatable")
+				self.Concrete:SetPos(self:GetPos())
+			    self.Concrete:SetModel("models/vj_l4d2/concrete_chunk01a.mdl")
+				self.Concrete:SetOwner(self)
+			    self.Concrete:SetParent(self)
+			    self.Concrete:Spawn()
+			    self.Concrete:Activate()
+			    self.Concrete:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
+			    self.Concrete:SetSolid(SOLID_NONE)
+				self.Concrete:AddEffects(EF_BONEMERGE) 
+				self.RangeAttackEntityToSpawn = "obj_vj_l4d2_debris"
+			elseif self.DebrisType == "Log" then
+			    self.Log = ents.Create("prop_vj_animatable")
+				self.Log:SetPos(self:GetPos())
+			    self.Log:SetModel("models/props_foliage/tree_trunk.mdl")
+				self.Log:SetOwner(self)
+			    self.Log:SetParent(self)
+			    self.Log:Spawn()
+			    self.Log:Activate()
+			    self.Log:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
+			    self.Log:SetSolid(SOLID_NONE)
+				self.Log:AddEffects(EF_BONEMERGE)
+				self.Log:SetModelScale(1.2)
+				self.RangeAttackEntityToSpawn = "obj_vj_l4d2_log"
+			end
 		end
     end)        
 end
@@ -253,13 +298,16 @@ function ENT:MultipleMeleeAttacks()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
-    if math.random(1,2) == 1 then
-        self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.74,true)
-        VJ_CreateSound(self,self.SoundTbl_Alert,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
-    end
+	if self.VJ_IsBeingControlled == false then
+	    if math.random(1,2) == 1 then
+	        self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.74,true)
+	        VJ_CreateSound(self,self.SoundTbl_Alert,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+	    end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnThink_AIEnabled()  
+function ENT:CustomOnThink()  
+	self:CheckRangeAttack(self:GetPos())
     self:Tank_Soundtrack(false)  
     if self:IsOnFire() && self.Immune_Fire == false && math.random (1,15) == 15 then  
 		VJ_CreateSound(self,self.SoundTbl_HulkPainFire,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))  
@@ -367,10 +415,14 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
             return directions[1][1]
         end
         self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+        timer.Simple(0.1,function()
+	    	if IsValid(self) then
+			    if IsValid(self.Concrete) then
+					self:RemoveDebris()
+				end
+			end
+	    end)
     end
-    if IsValid(self.Concrete) then
-		self:RemoveConcrete()
-	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
@@ -388,9 +440,13 @@ function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)
     if self:IsMoving() && self:GetActivity() == ACT_RUN then
         self.AnimTbl_Death = {"Death_2"}
 	end
-	if IsValid(self.Concrete) then
-		self:RemoveConcrete()
-	end
+	timer.Simple(0.1,function()
+    	if IsValid(self) then
+		    if IsValid(self.Concrete) then
+				self:RemoveDebris()
+			end
+		end
+    end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnKilled(dmginfo,hitgroup)    
