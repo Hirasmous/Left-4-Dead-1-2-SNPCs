@@ -44,6 +44,7 @@ ENT.MeleeAttackKnockBack_Up1 = 240 -- How far it will push you up | First in mat
 ENT.MeleeAttackKnockBack_Up2 = 260 -- How far it will push you up | Second in math.random
 ENT.MeleeAttackKnockBack_Right1 = 0 -- How far it will push you right | First in math.random
 ENT.MeleeAttackKnockBack_Right2 = 0 -- How far it will push you right | Second in math.random
+ENT.MeleeAttackAnimationAllowOtherTasks = true
 ENT.HasRangeAttack = true -- Should the SNPC have a range attack?
 ENT.RangeUseAttachmentForPos = true -- Should the projectile spawn on a attachment?
 ENT.RangeUseAttachmentForPosID = "debris" -- The attachment used on the range attack if RangeUseAttachmentForPos is set to true
@@ -215,7 +216,7 @@ function ENT:CustomOnRangeAttack_AfterStartTimer()
 		if IsValid(self) then
 		    ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward"))              
 		    self.Concrete = ents.Create("prop_vj_animatable")
-			self.Concrete:SetLocalPos(self:GetPos())
+			self.Concrete:SetPos(self:GetPos())
 		    self.Concrete:SetModel("models/props_debris/concrete_chunk01a.mdl")
 			self.Concrete:SetOwner(self)
 		    self.Concrete:SetParent(self)
@@ -229,7 +230,13 @@ function ENT:CustomOnRangeAttack_AfterStartTimer()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
-    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,1.74,true)
+    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,VJ_GetSequenceDuration(self,ACT_ARM),true)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnAcceptInput(key,activator,caller,data)
+    if key == "event_land" then
+        VJ_CreateSound(self,"player/tank/fall/tank_death_bodyfall_01.mp3",85,self:VJ_DecideSoundPitch(100,100))
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
@@ -322,6 +329,28 @@ function ENT:CustomOnThink_AIEnabled()
 			self.NextClimb = CurTime() + 0.1 //5
 		end
 	end
+	if self.VJ_IsBeingControlled == true then
+		hook.Add("KeyPress", "Tank_Crouch", function(ply, key)
+			if self.VJ_TheController == ply then
+				if key == IN_DUCK then
+					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle"))}
+					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
+					self.AnimTbl_Run = {ACT_RUN_CROUCH}
+					self.FootStepTimeRun = 0.5
+				end
+			end
+		end)
+		hook.Add("KeyRelease", "Tank_CrouchRelease", function(ply, key)
+			if self.VJ_TheController == ply then
+				if key == IN_DUCK then
+					self.AnimTbl_IdleStand = {ACT_IDLE}
+					self.AnimTbl_Walk = {ACT_WALK}
+					self.AnimTbl_Run = {ACT_RUN}
+					self.FootStepTimeRun = 0.2
+				end
+			end
+		end)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
@@ -339,6 +368,9 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
         end
         self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
     end
+    if IsValid(self.Concrete) then
+		self:RemoveConcrete()
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
@@ -355,6 +387,9 @@ end
 function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)      
     if self:IsMoving() && self:GetActivity() == ACT_RUN then
         self.AnimTbl_Death = {"Death_2"}
+	end
+	if IsValid(self.Concrete) then
+		self:RemoveConcrete()
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------

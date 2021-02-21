@@ -64,7 +64,7 @@ ENT.HitGroupFlinching_DefaultWhenNotHit = false -- If it uses hitgroup flinching
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward"}}}
 	-- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
-ENT.SoundTbl_FootStep = {"Boomer.Concrete.WalkLeft","Boomer.Concrete.WalkRight"}
+ENT.SoundTbl_FootStep = {}
 ENT.SoundTbl_Idle = {"JockeyZombie.Recognize"}
 ENT.SoundTbl_Alert = {"JockeyZombie.Alert","JockeyZombie.Warn"}
 ENT.SoundTbl_LeapAttackDamage = {"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"}
@@ -114,6 +114,8 @@ ENT.GhostRunAwayT = CurTime()
 ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
+ENT.CanPounce = true
+ENT.FootStepType = "CommonLight"
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
@@ -126,79 +128,15 @@ function ENT:CustomOnInitialize()
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:GetGroundType(pos)
-	local tr = util.TraceLine({
-		start = pos,
-		endpos = pos -Vector(0,0,40),
-		filter = self,
-		mask = MASK_NPCWORLDSTATIC
-	})
-	local mat = tr.MatType
-	if tr.HitWorld then
-	    if mat == MAT_CONCRETE then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/boomer/run/concrete1.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/concrete2.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/concrete3.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/concrete4.mp3",
-	    	}
-	    elseif mat == MAT_GRASS then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/boomer/run/grass1.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/grass2.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/grass3.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/grass4.mp3",
-	    	}
-	    elseif mat == MAT_PLASTIC then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/boomer/run/cardboard1.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/cardboard2.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/cardboard3.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/cardboard4.mp3",
-	    	}
-	    elseif mat == MAT_DIRT then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/boomer/run/dirt1.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/dirt2.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/dirt3.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/dirt4.mp3",
-	    	}
-	    elseif mat == MAT_WOOD then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/boomer/run/wood1.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/wood2.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/wood3.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/wood4.mp3",
-	    	}
-	    elseif mat == MAT_SAND then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/boomer/run/sand1.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/sand2.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/sand3.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/sand4.mp3",
-	    	}
-	    elseif mat == MAT_METAL then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/boomer/run/metal1.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/metal2.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/metal3.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/metal4.mp3",
-	    	}
-	    elseif mat == MAT_GRATE then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/boomer/run/metalgrate1.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/metalgrate2.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/metalgrate3.mp3",
-	    		"vj_l4d2/footsteps/boomer/run/metalgrate4.mp3",
-	    	}
-	    end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_emit FootStep" then
 		self:FootStepSoundCode()
 	end
+	if key == "event_land" then
+        if !self.IsGhosted then
+            VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
@@ -405,15 +343,17 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self:GetGroundType(self:GetPos())
+	self:GetGroundType(self:GetPos()) -- in the features.lua
 	self:IgnoreIncappedEnemies()
 	if self.IsGhosted then
 		self:Ghost()
 	end
 	if self.IsGhosted then
         self.HasLeapAttack = false
+        self.CanPounce = false
     else
         self.HasLeapAttack = true
+        self.CanPounce = true
     end
 
 	self.vecLastPos = self:GetPos()
@@ -517,7 +457,7 @@ function ENT:CustomOnThink()
 		self:ResetJockey()
 	end
 
-	if self.IsPouncing == true && self.HasEnemyIncapacitated == false then
+	if self.IsPouncing == true && self.HasEnemyIncapacitated == false && self.CanPounce == true then
 		for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
 			if IsValid(v) then
 				if (v:IsPlayer() && v:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0) or (v:IsNPC() && v ~= self) then

@@ -10,8 +10,6 @@ ENT.Model = {"models/vj_l4d2/boomer.mdl"} -- The game will pick a random model f
 -- Leave blank if you don't want any sounds to play
 ENT.SoundTbl_Idle = {"FemaleBoomerZombie.Groan","FemaleBoomerZombie.Voice"}
 ENT.SoundTbl_Alert = {"FemaleBoomerZombie.Alert","FemaleBoomerZombie.Rage"}
-ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/miss/claw_miss_1.wav","vj_l4d2/miss/claw_miss_2.wav"}
-ENT.SoundTbl_MeleeAttack = {"vj_l4d2/hit/claw_hit_flesh_1.wav","vj_l4d2/hit/claw_hit_flesh_2.wav","vj_l4d2/hit/claw_hit_flesh_3.wav","vj_l4d2/hit/claw_hit_flesh_4.wav"}
 ENT.SoundTbl_RangeAttack= {"FemaleVomit.Use"}
 ENT.SoundTbl_BeforeRangeAttack= {"FemaleBoomerZombie.Warn"}
 ENT.SoundTbl_Pain = {"FemaleBoomerZombie.Pain","FemaleBoomerZombie.PainShort"}

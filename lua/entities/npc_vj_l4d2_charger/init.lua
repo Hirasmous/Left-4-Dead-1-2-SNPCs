@@ -20,7 +20,7 @@ ENT.PoseParameterLooking_TurningSpeed = 10 -- How fast does the parameter turn?
 ENT.DeathCorpseAlwaysCollide = false -- Should the corpse always collide?
 ENT.CallForHelp = false -- Does the SNPC call for help?
 ENT.PoseParameterLooking_Names = {pitch={"body_pitch"},yaw={"body_yaw"},roll={}} -- Custom pose parameters to use, can put as many as needed
-ENT.DisableFootStepSoundTimer = false -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
+ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
 ENT.VJC_Data = {
 	CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
 	ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
@@ -300,6 +300,7 @@ function ENT:PummelEnemy(v)
 	if self.IsCharging then
 		self.IsCharging = false
 	end
+	if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
 	if timer.Exists("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange") then timer.Stop("Charger"..tostring(id).."_HasEnemyInRange") end --if the same timer is playing, stop it
 	timer.Create("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
 		if !IsValid(self) then return end

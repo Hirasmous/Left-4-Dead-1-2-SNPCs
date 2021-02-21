@@ -102,6 +102,8 @@ ENT.GhostRunAwayT = CurTime()
 ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
+ENT.FootStepType = "Common"
+
 util.AddNetworkString("L4D2SpitterHUD")
 util.AddNetworkString("L4D2SpitterHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -122,84 +124,20 @@ function ENT:CustomOnInitialize()
     	glowlight:Activate()
     	glowlight:Fire("SetParentAttachment","mouth")
     	glowlight:Fire("TurnOn","",0)
-    	glowlight:DeleteOnRemove(self)
+    	self:DeleteOnRemove(glowlight)
     end
     self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:GetGroundType(pos)
-	local tr = util.TraceLine({
-		start = pos,
-		endpos = pos -Vector(0,0,40),
-		filter = self,
-		mask = MASK_NPCWORLDSTATIC
-	})
-	local mat = tr.MatType
-	if tr.HitWorld then
-	    if mat == MAT_CONCRETE then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/concrete1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/concrete2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/concrete3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/concrete4.mp3",
-	    	}
-	    elseif mat == MAT_GRASS then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/grass1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass4.mp3",
-	    	}
-	    elseif mat == MAT_PLASTIC then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/cardboard1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/cardboard2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/cardboard3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/cardboard4.mp3",
-	    	}
-	    elseif mat == MAT_DIRT then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/grass1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass4.mp3",
-	    	}
-	    elseif mat == MAT_WOOD then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/wood1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/wood2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/wood3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/wood4.mp3",
-	    	}
-	    elseif mat == MAT_SAND then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/sand1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/sand2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/sand3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/sand4.mp3",
-	    	}
-	    elseif mat == MAT_METAL then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/metal1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metal2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metal3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metal4.mp3",
-	    	}
-	    elseif mat == MAT_GRATE then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/metalgrate1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metalgrate2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metalgrate3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metalgrate4.mp3",
-	    	}
-	    end
-	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_emit FootStep" then
 		self:FootStepSoundCode()
 	end
+	if key == "event_land" then
+        if !self.IsGhosted then
+            VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
@@ -287,7 +225,7 @@ function ENT:MultipleMeleeAttacks()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-    self:GetGroundType(self:GetPos())
+    self:GetGroundType(self:GetPos()) -- in the features.lua
     if self.IsGhosted then
         self:Ghost()
     end
@@ -323,7 +261,8 @@ function ENT:CustomOnThink()
             end
         end
     end)
-	if self.VJ_IsBeingControlled == true then
+
+    if self.VJ_IsBeingControlled == true then
 		hook.Add("KeyPress", "Spitter_Crouch", function(ply, key)
 			if self.VJ_TheController == ply then
 				if key == IN_DUCK then
@@ -386,6 +325,7 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
     acid:Activate()
     acid:Spawn()  
     acid:SetNoDraw(true)  
+    acid.Dead = true
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***

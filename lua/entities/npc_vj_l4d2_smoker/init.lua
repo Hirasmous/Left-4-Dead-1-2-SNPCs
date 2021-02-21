@@ -129,6 +129,7 @@ ENT.GhostRunAwayT = CurTime()
 ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
+ENT.FootStepType = "Common"
 
 util.AddNetworkString("L4D2SmokerHUD")
 util.AddNetworkString("L4D2SmokerHUDGhost")
@@ -144,75 +145,6 @@ function ENT:CustomOnInitialize()
         ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
     end
     self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:GetGroundType(pos)
-	local tr = util.TraceLine({
-		start = pos,
-		endpos = pos -Vector(0,0,40),
-		filter = self,
-		mask = MASK_NPCWORLDSTATIC
-	})
-	local mat = tr.MatType
-	if tr.HitWorld then
-	    if mat == MAT_CONCRETE then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/concrete1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/concrete2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/concrete3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/concrete4.mp3",
-	    	}
-	    elseif mat == MAT_GRASS then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/grass1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass4.mp3",
-	    	}
-	    elseif mat == MAT_PLASTIC then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/cardboard1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/cardboard2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/cardboard3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/cardboard4.mp3",
-	    	}
-	    elseif mat == MAT_DIRT then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/grass1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/grass4.mp3",
-	    	}
-	    elseif mat == MAT_WOOD then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/wood1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/wood2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/wood3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/wood4.mp3",
-	    	}
-	    elseif mat == MAT_SAND then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/sand1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/sand2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/sand3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/sand4.mp3",
-	    	}
-	    elseif mat == MAT_METAL then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/metal1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metal2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metal3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metal4.mp3",
-	    	}
-	    elseif mat == MAT_GRATE then
-	    	self.SoundTbl_FootStep = {
-	    		"vj_l4d2/footsteps/infected/run/metalgrate1.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metalgrate2.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metalgrate3.mp3",
-	    		"vj_l4d2/footsteps/infected/run/metalgrate4.mp3",
-	    	}
-	    end
-	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -390,7 +322,7 @@ function ENT:DismountSmoker()
     if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:Health() > 0 then
         util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pIncapacitatedEnemy:GetPos(), false, self:EntIndex(), 3)
     else
-    	VJ_CreateSound(self, "player/smoker/miss/smoker_reeltonguein_05.mp3", 75, self:VJ_DecideSoundPitch(100,95))
+        VJ_CreateSound(self, "player/smoker/miss/smoker_reeltonguein_05.mp3", 75, self:VJ_DecideSoundPitch(100,95))
     end
     self.HasRangeAttack = true
     self:Incap_Effects(true)
@@ -518,433 +450,434 @@ function ENT:MultipleMeleeAttacks()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self:IgnoreIncappedEnemies()
-	self.vecLastPos = self:GetPos()
-	if self.IsGhosted then
-		self:Ghost()
-	end
-	if self.IsGhosted then
-		self.HasRangeAttack = false
-		self:StopParticles()
-	else
-		self.HasRangeAttack = true
-	end
+    self:GetGroundType(self:GetPos()) -- in features.lua
+    self:IgnoreIncappedEnemies()
+    self.vecLastPos = self:GetPos()
+    if self.IsGhosted then
+        self:Ghost()
+    end
+    if self.IsGhosted then
+        self.HasRangeAttack = false
+        self:StopParticles()
+    else
+        self.HasRangeAttack = true
+    end
 
-	local function FaceTarget(ent, tgt, bBack)
-		local spos = ent:GetPos()
-		local ang = ent:GetAngles()
-		local tpos = tgt:GetPos()
-		local quadrants = {
-			[1] = Vector(spos.x + 45, spos.y - 45, spos.z),
-			[2] = Vector(spos.x + 45, spos.y + 45, spos.z),
-			[3] = Vector(spos.x - 45, spos.y + 45, spos.z),
-			[4] = Vector(spos.x - 45, spos.y - 45, spos.z)
-		}
-		local distX = math.max(spos.x, tpos.x) - math.min(spos.x, tpos.x)
-		local distY = math.max(spos.y, tpos.y) - math.min(spos.y, tpos.y)
-		local deg = math.deg(math.atan(distY / distX))
-		local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
-		if math.floor(tpos:Distance(quadrants[1])) == math.floor(quad) then
-			deg = -deg
-		elseif math.floor(tpos:Distance(quadrants[2])) == math.floor(quad) then
-			deg = deg
-		elseif math.floor(tpos:Distance(quadrants[3])) == math.floor(quad) then
-			deg = 180 - deg
-		elseif math.floor(tpos:Distance(quadrants[4])) == math.floor(quad) then
-			deg = -180 + deg
-		end
-		if bBack == true then
-			deg = deg + 180
-		end
-		if ent:IsPlayer() then
-			ent:SetEyeAngles(Angle(ang.x, deg, ang.z))
-		else
-			ent:SetAngles(Angle(ang.x, deg, ang.z))
-		end
-	end
+    local function FaceTarget(ent, tgt, bBack)
+        local spos = ent:GetPos()
+        local ang = ent:GetAngles()
+        local tpos = tgt:GetPos()
+        local quadrants = {
+            [1] = Vector(spos.x + 45, spos.y - 45, spos.z),
+            [2] = Vector(spos.x + 45, spos.y + 45, spos.z),
+            [3] = Vector(spos.x - 45, spos.y + 45, spos.z),
+            [4] = Vector(spos.x - 45, spos.y - 45, spos.z)
+        }
+        local distX = math.max(spos.x, tpos.x) - math.min(spos.x, tpos.x)
+        local distY = math.max(spos.y, tpos.y) - math.min(spos.y, tpos.y)
+        local deg = math.deg(math.atan(distY / distX))
+        local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
+        if math.floor(tpos:Distance(quadrants[1])) == math.floor(quad) then
+            deg = -deg
+        elseif math.floor(tpos:Distance(quadrants[2])) == math.floor(quad) then
+            deg = deg
+        elseif math.floor(tpos:Distance(quadrants[3])) == math.floor(quad) then
+            deg = 180 - deg
+        elseif math.floor(tpos:Distance(quadrants[4])) == math.floor(quad) then
+            deg = -180 + deg
+        end
+        if bBack == true then
+            deg = deg + 180
+        end
+        if ent:IsPlayer() then
+            ent:SetEyeAngles(Angle(ang.x, deg, ang.z))
+        else
+            ent:SetAngles(Angle(ang.x, deg, ang.z))
+        end
+    end
 
-	local function SetPitch(ent, poseName, tgt)
-		local spos = ent:GetPos()
-		local bpos = spos + ent:OBBCenter()
-		local tblPos = {
-			[1] = Vector(bpos.x, bpos.y, bpos.z + 1),
-			[2] = Vector(bpos.x, bpos.y, bpos.z - 1)
-		}
-		local quadrants = {
-			[1] = Vector(spos.x + 45, spos.y, spos.z),
-			[2] = Vector(spos.x - 45, spos.y, spos.z),
-			[3] = Vector(spos.x, spos.y + 45, spos.z),
-			[4] = Vector(spos.x, spos.y - 45, spos.z)
-		}
-		tgt = tgt or self
-		local tpos = tgt:GetPos()
-		local distX = math.max(bpos.x, tpos.x) - math.min(bpos.x, tpos.x)
-		local distY = math.max(bpos.y, tpos.y) - math.min(bpos.y, tpos.y)
-		local distZ = math.max(bpos.z, tpos.z) - math.min(bpos.z, tpos.z)
-		local degX = math.deg(math.atan(distZ / distX))
-		local degY = math.deg(math.atan(distZ / distY))
-		local pos = math.min(tpos:Distance(tblPos[1]), tpos:Distance(tblPos[2]))
-		local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
-		if quad == tpos:Distance(quadrants[1]) || quad == tpos:Distance(quadrants[2]) then
-			degX = math.Round(degX)
-			if tpos.z < spos.z then
-				degX = -degX
-			end
-			ent:SetPoseParameter(poseName, math.Remap(degX, 0, 90, 0, 1))
-		elseif quad == tpos:Distance(quadrants[3]) || quad == tpos:Distance(quadrants[4]) then
-			degY = math.Round(degY)
-			if tpos.z < spos.z then
-				degY = -degY
-			end
-			ent:SetPoseParameter(poseName, math.Remap(degY, 0, 90, 0, 1))
-		end
-	end
+    local function SetPitch(ent, poseName, tgt)
+        local spos = ent:GetPos()
+        local bpos = spos + ent:OBBCenter()
+        local tblPos = {
+            [1] = Vector(bpos.x, bpos.y, bpos.z + 1),
+            [2] = Vector(bpos.x, bpos.y, bpos.z - 1)
+        }
+        local quadrants = {
+            [1] = Vector(spos.x + 45, spos.y, spos.z),
+            [2] = Vector(spos.x - 45, spos.y, spos.z),
+            [3] = Vector(spos.x, spos.y + 45, spos.z),
+            [4] = Vector(spos.x, spos.y - 45, spos.z)
+        }
+        tgt = tgt or self
+        local tpos = tgt:GetPos()
+        local distX = math.max(bpos.x, tpos.x) - math.min(bpos.x, tpos.x)
+        local distY = math.max(bpos.y, tpos.y) - math.min(bpos.y, tpos.y)
+        local distZ = math.max(bpos.z, tpos.z) - math.min(bpos.z, tpos.z)
+        local degX = math.deg(math.atan(distZ / distX))
+        local degY = math.deg(math.atan(distZ / distY))
+        local pos = math.min(tpos:Distance(tblPos[1]), tpos:Distance(tblPos[2]))
+        local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
+        if quad == tpos:Distance(quadrants[1]) || quad == tpos:Distance(quadrants[2]) then
+            degX = math.Round(degX)
+            if tpos.z < spos.z then
+                degX = -degX
+            end
+            ent:SetPoseParameter(poseName, math.Remap(degX, 0, 90, 0, 1))
+        elseif quad == tpos:Distance(quadrants[3]) || quad == tpos:Distance(quadrants[4]) then
+            degY = math.Round(degY)
+            if tpos.z < spos.z then
+                degY = -degY
+            end
+            ent:SetPoseParameter(poseName, math.Remap(degY, 0, 90, 0, 1))
+        end
+    end
    
-	if self.VJ_IsBeingControlled == false then
-		if IsValid(self:GetEnemy()) then
-			if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
-				self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
-				self.RunAwayT = CurTime() +1
-				self.DisableChasingEnemy = true
-			end
-		else
-			self.DisableChasingEnemy = false
-			self.IsTakingCover = false
-		end
-	end
+    if self.VJ_IsBeingControlled == false then
+        if IsValid(self:GetEnemy()) then
+            if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
+                self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
+                self.RunAwayT = CurTime() +1
+                self.DisableChasingEnemy = true
+            end
+        else
+            self.DisableChasingEnemy = false
+            self.IsTakingCover = false
+        end
+    end
 
-	--Incapacitating check
-	if self:GetSequence() == self:LookupSequence(self.IncapAnimation) || self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
-		self.IsIncapacitating = true
-	else
-		self.IsIncapacitating = false
-	end
+    --Incapacitating check
+    if self:GetSequence() == self:LookupSequence(self.IncapAnimation) || self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
+        self.IsIncapacitating = true
+    else
+        self.IsIncapacitating = false
+    end
 
-	if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
-		self:VJ_ACT_PLAYACTIVITY("Jump", true)   
-	end
+    if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
+        self:VJ_ACT_PLAYACTIVITY("Jump", true)   
+    end
 
-	if self.HasEnemyIncapacitated == true then 
-		self.HasIdleSounds = false
-		self.HasMeleeAttack = false
-		self.HasRangeAttack = false
+    if self.HasEnemyIncapacitated == true then 
+        self.HasIdleSounds = false
+        self.HasMeleeAttack = false
+        self.HasRangeAttack = false
 
-		if IsValid(self.pEnemyRagdoll) then
-			local effectData = EffectData()
-			effectData:SetStart(self:GetAttachment(3).Pos)
-			effectData:SetEntity(self)
-			effectData:SetAttachment(3)
-			effectData:SetOrigin(self.pEnemyRagdoll:GetBonePosition(self.pEnemyRagdoll:LookupBone("ValveBiped.Bip01_Spine4")))
-			util.Effect("tongue_beam", effectData)
-		end
+        if IsValid(self.pEnemyRagdoll) then
+            local effectData = EffectData()
+            effectData:SetStart(self:GetAttachment(3).Pos)
+            effectData:SetEntity(self)
+            effectData:SetAttachment(3)
+            effectData:SetOrigin(self.pEnemyRagdoll:GetBonePosition(self.pEnemyRagdoll:LookupBone("ValveBiped.Bip01_Spine4")))
+            util.Effect("tongue_beam", effectData)
+        end
 
-		if self.IncapSong == nil or self.IncapSong:IsPlaying() == false then
-			self:Smoker_PlayIncapSong_Choke()
-		end
-		if IsValid(self.pIncapacitatedEnemy) then
-			local enemy = self.pIncapacitatedEnemy
+        if self.IncapSong == nil or self.IncapSong:IsPlaying() == false then
+            self:Smoker_PlayIncapSong_Choke()
+        end
+        if IsValid(self.pIncapacitatedEnemy) then
+            local enemy = self.pIncapacitatedEnemy
 
-			local function FacePos(ent, ePos, tPos, deg)
-				local pos = ePos
-				local ang = ent:GetAngles()
-				local deg = deg or 0
-				local tblPos = {
-					[1] = Vector(pos.x, pos.y, pos.z + 1),
-					[2] = Vector(pos.x, pos.y, pos.z - 1)
-				}
-				local quadrants = {
-					[1] = Vector(pos.x + 45, pos.y, pos.z),
-					[2] = Vector(pos.x - 45, pos.y, pos.z),
-					[3] = Vector(pos.x, pos.y + 45, pos.z),
-					[4] = Vector(pos.x, pos.y - 45, pos.z)
-				}
-				local distX = math.max(pos.x, tPos.x) - math.min(pos.x, tPos.x)
-				local distY = math.max(pos.y, tPos.y) - math.min(pos.y, tPos.y)
-				local distZ = math.max(pos.z, tPos.z) - math.min(pos.z, tPos.z)
-				local degX = math.deg(math.atan(distZ / distX))
-				local degY = math.deg(math.atan(distZ / distY))
-				local pos = math.min(tPos:Distance(tblPos[1]), tPos:Distance(tblPos[2]))
-				local quad = math.min(tPos:Distance(quadrants[1]), tPos:Distance(quadrants[2]), tPos:Distance(quadrants[3]), tPos:Distance(quadrants[4]))
-				if quad == tPos:Distance(quadrants[1]) || quad == tPos:Distance(quadrants[2]) then
-					if pos == tPos:Distance(tblPos[1]) then
-						ent:SetAngles(Angle(-degX + deg, ang.y, ang.z))
-					elseif pos == tPos:Distance(tblPos[2]) then
-						ent:SetAngles(Angle(degX + deg, ang.y, ang.z))
-					end
-				elseif quad == tPos:Distance(quadrants[3]) || quad == tPos:Distance(quadrants[4]) then
-					if pos == tPos:Distance(tblPos[1]) then
-						ent:SetAngles(Angle(-degY + deg, ang.y, ang.z))
-					elseif pos == tPos:Distance(tblPos[2]) then
-						ent:SetAngles(Angle(degY + deg, ang.y, ang.z))
-					end
-				end
-			end
+            local function FacePos(ent, ePos, tPos, deg)
+                local pos = ePos
+                local ang = ent:GetAngles()
+                local deg = deg or 0
+                local tblPos = {
+                    [1] = Vector(pos.x, pos.y, pos.z + 1),
+                    [2] = Vector(pos.x, pos.y, pos.z - 1)
+                }
+                local quadrants = {
+                    [1] = Vector(pos.x + 45, pos.y, pos.z),
+                    [2] = Vector(pos.x - 45, pos.y, pos.z),
+                    [3] = Vector(pos.x, pos.y + 45, pos.z),
+                    [4] = Vector(pos.x, pos.y - 45, pos.z)
+                }
+                local distX = math.max(pos.x, tPos.x) - math.min(pos.x, tPos.x)
+                local distY = math.max(pos.y, tPos.y) - math.min(pos.y, tPos.y)
+                local distZ = math.max(pos.z, tPos.z) - math.min(pos.z, tPos.z)
+                local degX = math.deg(math.atan(distZ / distX))
+                local degY = math.deg(math.atan(distZ / distY))
+                local pos = math.min(tPos:Distance(tblPos[1]), tPos:Distance(tblPos[2]))
+                local quad = math.min(tPos:Distance(quadrants[1]), tPos:Distance(quadrants[2]), tPos:Distance(quadrants[3]), tPos:Distance(quadrants[4]))
+                if quad == tPos:Distance(quadrants[1]) || quad == tPos:Distance(quadrants[2]) then
+                    if pos == tPos:Distance(tblPos[1]) then
+                        ent:SetAngles(Angle(-degX + deg, ang.y, ang.z))
+                    elseif pos == tPos:Distance(tblPos[2]) then
+                        ent:SetAngles(Angle(degX + deg, ang.y, ang.z))
+                    end
+                elseif quad == tPos:Distance(quadrants[3]) || quad == tPos:Distance(quadrants[4]) then
+                    if pos == tPos:Distance(tblPos[1]) then
+                        ent:SetAngles(Angle(-degY + deg, ang.y, ang.z))
+                    elseif pos == tPos:Distance(tblPos[2]) then
+                        ent:SetAngles(Angle(degY + deg, ang.y, ang.z))
+                    end
+                end
+            end
 
-			if self.IncapAnimation ~= self:GetSequenceName(self:GetSequence()) then
-				SetPitch(self.pEnemyTongueAttach, "tongue_angle", self)
-				SetPitch(self.pEnemyRagdoll, "tongue_angle", self)
-			else
-				self.pEnemyTongueAttach:ClearPoseParameters()
-			end
+            if self.IncapAnimation ~= self:GetSequenceName(self:GetSequence()) then
+                SetPitch(self.pEnemyTongueAttach, "tongue_angle", self)
+                SetPitch(self.pEnemyRagdoll, "tongue_angle", self)
+            else
+                self.pEnemyTongueAttach:ClearPoseParameters()
+            end
 
-			if self.IsChokingEnemy || self.IsEnemyStuck then
-				if self.pEnemyRagdoll:GetPoseParameter("tongue_angle") > 0.8 then
-					self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
-				end
-			end
+            if self.IsChokingEnemy || self.IsEnemyStuck then
+                if self.pEnemyRagdoll:GetPoseParameter("tongue_angle") > 0.8 then
+                    self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
+                end
+            end
 
-			if IsValid(self.pTongueController) then
-				local tCtrl = self.pTongueController
-				tCtrl:SetPos(self:GetAttachment(3).Pos)
-				FacePos(tCtrl, tCtrl:GetPos(), enemy:GetPos() + enemy:OBBCenter())
-				FaceTarget(tCtrl, enemy)
-			end
+            if IsValid(self.pTongueController) then
+                local tCtrl = self.pTongueController
+                tCtrl:SetPos(self:GetAttachment(3).Pos)
+                FacePos(tCtrl, tCtrl:GetPos(), enemy:GetPos() + enemy:OBBCenter())
+                FaceTarget(tCtrl, enemy)
+            end
 
-			if CurTime() >= self.nextSegmentCreation then
-				local flDistance = self:GetAttachment(3).Pos:Distance((enemy:GetPos() + enemy:OBBCenter()))
-				local instances = 0
-				local pos = self:GetAttachment(3).Pos
-				local ang = self:GetAngles()
-				local dSeg = 15
-				if flDistance >= dSeg then
-					math.Round(flDistance, 1)
-					instances = flDistance / dSeg
-				end
-				local iteration = dSeg
-				if instances > 0 then
-					for i = 1, instances do
-						if !IsValid(self) then return end
-						local seg = ents.Create("obj_vj_l4d2_tongue_collision")
-						seg:SetPos(pos + self.pTongueController:GetForward() * iteration)
-						seg:SetAngles(ang)
-						seg:Spawn()
-						seg:SetOwner(self)
-						FacePos(seg, seg:GetPos(), enemy:GetPos() + enemy:OBBCenter())
-						timer.Simple(1, function()
-							if !IsValid(seg) then return end
-							seg:Remove()
-						end)
-						iteration = iteration + dSeg
-					end
-				end
+            if CurTime() >= self.nextSegmentCreation then
+                local flDistance = self:GetAttachment(3).Pos:Distance((enemy:GetPos() + enemy:OBBCenter()))
+                local instances = 0
+                local pos = self:GetAttachment(3).Pos
+                local ang = self:GetAngles()
+                local dSeg = 15
+                if flDistance >= dSeg then
+                    math.Round(flDistance, 1)
+                    instances = flDistance / dSeg
+                end
+                local iteration = dSeg
+                if instances > 0 then
+                    for i = 1, instances do
+                        if !IsValid(self) then return end
+                        local seg = ents.Create("obj_vj_l4d2_tongue_collision")
+                        seg:SetPos(pos + self.pTongueController:GetForward() * iteration)
+                        seg:SetAngles(ang)
+                        seg:Spawn()
+                        seg:SetOwner(self)
+                        FacePos(seg, seg:GetPos(), enemy:GetPos() + enemy:OBBCenter())
+                        timer.Simple(1, function()
+                            if !IsValid(seg) then return end
+                            seg:Remove()
+                        end)
+                        iteration = iteration + dSeg
+                    end
+                end
 
-				self.nextSegmentCreation = CurTime() + 1
-			end
+                self.nextSegmentCreation = CurTime() + 1
+            end
 
-			if enemy:Health() <= 0 then self:DismountSmoker() return end
+            if enemy:Health() <= 0 then self:DismountSmoker() return end
 
-			if self.HasEnemyIncapacitated == false then return end
+            if self.HasEnemyIncapacitated == false then return end
 
-			local dist = self:GetPos():Distance(enemy:GetPos())  
+            local dist = self:GetPos():Distance(enemy:GetPos())  
 
-			--add anim support for player control	
-			if self.VJ_IsBeingControlled then
-				if dist <= self.IncapacitationRange then
-					self.CombatFaceEnemy = true
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
-				else
-					self.CombatFaceEnemy = false
-					self:SetAngles(self.incapAngles)
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle"))}
-				end
-			end 
+            --add anim support for player control   
+            if self.VJ_IsBeingControlled then
+                if dist <= self.IncapacitationRange then
+                    self.CombatFaceEnemy = true
+                    self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
+                else
+                    self.CombatFaceEnemy = false
+                    self:SetAngles(self.incapAngles)
+                    self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle"))}
+                end
+            end 
 
-			if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
-				if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
-					self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
-					self.IsChokingEnemy = true
-					if not self.IsEnemyFloating then
-						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
-						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
-					else
-						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
-						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
-					end
-					for k, v in ipairs(ents.FindByClass("player")) do
-						if enemy:IsNPC() then
-							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-						end
-					end
-					if enemy:IsPlayer() then
-						self:Incap_Effects(false)
-						enemy:SpectateEntity(self.Camera)
-						enemy:SetFOV(80)
-					end
-				end
-				if self.IsEnemyStuck then
-					if self.IncapSong2 then
-						self.IncapSong2:Stop()
-					end
-					self:PlayIncapSong()
-				end
-			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
-				if self.IncapSong2 then
-					self.IncapSong2:Stop()
-				end
-				self:PlayIncapSong()
-				if dist > self.IncapacitationRange then
-					self:VJ_ACT_PLAYACTIVITY("Tongue_Attack_Drag_Survivor_Idle", true)   
-				end
-			end
+            if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
+                if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
+                    self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
+                    self.IsChokingEnemy = true
+                    if not self.IsEnemyFloating then
+                        self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
+                        self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
+                    else
+                        self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
+                        self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
+                    end
+                    for k, v in ipairs(ents.FindByClass("player")) do
+                        if enemy:IsNPC() then
+                            VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+                        end
+                    end
+                    if enemy:IsPlayer() then
+                        self:Incap_Effects(false)
+                        enemy:SpectateEntity(self.Camera)
+                        enemy:SetFOV(80)
+                    end
+                end
+                if self.IsEnemyStuck then
+                    if self.IncapSong2 then
+                        self.IncapSong2:Stop()
+                    end
+                    self:PlayIncapSong()
+                end
+            elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
+                if self.IncapSong2 then
+                    self.IncapSong2:Stop()
+                end
+                self:PlayIncapSong()
+                if dist > self.IncapacitationRange then
+                    self:VJ_ACT_PLAYACTIVITY("Tongue_Attack_Drag_Survivor_Idle", true)   
+                end
+            end
 
-			local ene = self.pIncapacitatedEnemy
+            local ene = self.pIncapacitatedEnemy
 
-			--check enemy type		   
-			if enemy:IsPlayer() then
-				enemy = self.pEnemyObj
-				ene:SetPos(enemy:GetPos())
-			else
-				if IsValid(self.pEnemyObj) then
-					self.pEnemyObj:Remove()
-				end
-			end
+            --check enemy type         
+            if enemy:IsPlayer() then
+                enemy = self.pEnemyObj
+                ene:SetPos(enemy:GetPos())
+            else
+                if IsValid(self.pEnemyObj) then
+                    self.pEnemyObj:Remove()
+                end
+            end
 
-			local posZ = Vector(self:GetPos().x, self:GetPos().y, enemy:GetPos().z)
-			--make enemy face same direction
-			if enemy:GetPos():Distance(posZ) > 50 then
-				FaceTarget(enemy, self, true)
-			end
+            local posZ = Vector(self:GetPos().x, self:GetPos().y, enemy:GetPos().z)
+            --make enemy face same direction
+            if enemy:GetPos():Distance(posZ) > 50 then
+                FaceTarget(enemy, self, true)
+            end
 
-			--check if path to us is blocked
-			local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			--check if enemy is on ground
-			local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			--check if enemy is 
-			local tr3 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 10 - enemy:GetForward() * 10, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			--check if enemy is hitting ceiling
-			local tr4 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() + enemy:GetUp() * 65, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			
-			--call if enemy is stuck
-			local function FreezeEnemy()
-				if ene:IsPlayer() then
-					enemy:GetPhysicsObject():Sleep()
-					enemy:GetPhysicsObject():EnableMotion(false)
-				end
-				enemy:SetPos(enemy:GetPos())
-				enemy:SetLocalVelocity(Vector(0, 0, 0))
-				self.IsEnemyStuck = true
-				self.nextDamageTime = CurTime()
-			end
+            --check if path to us is blocked
+            local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+            --check if enemy is on ground
+            local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+            --check if enemy is 
+            local tr3 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 10 - enemy:GetForward() * 10, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+            --check if enemy is hitting ceiling
+            local tr4 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() + enemy:GetUp() * 65, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+            
+            --call if enemy is stuck
+            local function FreezeEnemy()
+                if ene:IsPlayer() then
+                    enemy:GetPhysicsObject():Sleep()
+                    enemy:GetPhysicsObject():EnableMotion(false)
+                end
+                enemy:SetPos(enemy:GetPos())
+                enemy:SetLocalVelocity(Vector(0, 0, 0))
+                self.IsEnemyStuck = true
+                self.nextDamageTime = CurTime()
+            end
 
-			local function ResetEnemyEFlags()
-				if not ene:IsPlayer() then
-					enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
-					timer.Simple(0.2, function()
-						if !IsValid(enemy) then return end
-						if ene ~= enemy then return end
-						enemy:StopMoving()
-						enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
-					end)
-					self.lastEFlagsReset = CurTime() + 2
-				end
-			end
+            local function ResetEnemyEFlags()
+                if not ene:IsPlayer() then
+                    enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
+                    timer.Simple(0.2, function()
+                        if !IsValid(enemy) then return end
+                        if ene ~= enemy then return end
+                        enemy:StopMoving()
+                        enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
+                    end)
+                    self.lastEFlagsReset = CurTime() + 2
+                end
+            end
 
-			if tr1.Hit == true then
-				self.lastTr1Hit = CurTime()
-			else
-				self.lastTr1Hit = -1
-			end
+            if tr1.Hit == true then
+                self.lastTr1Hit = CurTime()
+            else
+                self.lastTr1Hit = -1
+            end
 
-			local function CheckPath()
-				if enemy:GetPos().z > self:GetPos().z + 5 then
-					if tr2.Hit == true then
-						--on ledge?
-						self.IsEnemyFloating = false
-						enemy:SetMoveType(MOVETYPE_FLY)
-						if tr1.Hit == false then
-							enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
-						else
-							enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
-						end
-					else
-						--floating
-						self.IsEnemyFloating = true
-						enemy:SetMoveType(MOVETYPE_FLY)
-						if tr3.Hit == false then
-							enemy:SetLocalVelocity(-enemy:GetForward() * 50 - enemy:GetUp() * 100)
-						else
-							enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
-						end
-					end
-				else
-					enemy:SetMoveType(MOVETYPE_FLY)
-					if tr2.Hit == true then
-						self.IsEnemyFloating = false
-					else
-						self.IsEnemyFloating = true
-					end
-					if tr1.Hit == true then
-						enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 75)
-					else
-						if tr3.Hit == false then
-						   	if enemy:GetPos():Distance(posZ) <= 150 then
-						   		enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 50)
-						   	else
-								enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
-							end
-						else
-							enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
-						end
-					end
-				end
-			end
+            local function CheckPath()
+                if enemy:GetPos().z > self:GetPos().z + 5 then
+                    if tr2.Hit == true then
+                        --on ledge?
+                        self.IsEnemyFloating = false
+                        enemy:SetMoveType(MOVETYPE_FLY)
+                        if tr1.Hit == false then
+                            enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+                        else
+                            enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
+                        end
+                    else
+                        --floating
+                        self.IsEnemyFloating = true
+                        enemy:SetMoveType(MOVETYPE_FLY)
+                        if tr3.Hit == false then
+                            enemy:SetLocalVelocity(-enemy:GetForward() * 50 - enemy:GetUp() * 100)
+                        else
+                            enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
+                        end
+                    end
+                else
+                    enemy:SetMoveType(MOVETYPE_FLY)
+                    if tr2.Hit == true then
+                        self.IsEnemyFloating = false
+                    else
+                        self.IsEnemyFloating = true
+                    end
+                    if tr1.Hit == true then
+                        enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 75)
+                    else
+                        if tr3.Hit == false then
+                            if enemy:GetPos():Distance(posZ) <= 150 then
+                                enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 50)
+                            else
+                                enemy:SetLocalVelocity(-enemy:GetForward() * 100 - enemy:GetUp() * 25)
+                            end
+                        else
+                            enemy:SetLocalVelocity(-enemy:GetForward() * 100 + enemy:GetUp() * 25)
+                        end
+                    end
+                end
+            end
 
-			if self.IsChokingEnemy == false then
-				if self.IsEnemyFloating == true then
-					self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
-				else
-					self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Dragging_Ground"))
-				end
-			end
+            if self.IsChokingEnemy == false then
+                if self.IsEnemyFloating == true then
+                    self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
+                else
+                    self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Dragging_Ground"))
+                end
+            end
 
-			--tracks terrestrial status
-			if self.IsEnemyFloating == true then
-				self.lastEnemyFloat = CurTime()
-			else
-				self.lastEnemyGround = CurTime()
-			end
+            --tracks terrestrial status
+            if self.IsEnemyFloating == true then
+                self.lastEnemyFloat = CurTime()
+            else
+                self.lastEnemyGround = CurTime()
+            end
 
-			--reset if t status changes
-			local timeDiff = math.abs(self.lastEnemyFloat - self.lastEnemyGround)
-			if timeDiff > 0.45 && timeDiff < 0.55 then
-				ResetEnemyEFlags()
-			end
+            --reset if t status changes
+            local timeDiff = math.abs(self.lastEnemyFloat - self.lastEnemyGround)
+            if timeDiff > 0.45 && timeDiff < 0.55 then
+                ResetEnemyEFlags()
+            end
 
-			local tngTr = util.TraceLine({start = self:GetPos() + self:OBBMaxs() + self:GetForward() * 10, endpos = enemy:GetPos() + ene:OBBCenter(), filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			if tngTr.Hit == true then
-				timer.Simple(0.5, function()
-					if !IsValid(self) || !IsValid(enemy) then return end
-					if self.IsEnemyStuck == false then
-						FreezeEnemy()
-					end
-				end)
-			end
+            local tngTr = util.TraceLine({start = self:GetPos() + self:OBBMaxs() + self:GetForward() * 10, endpos = enemy:GetPos() + ene:OBBCenter(), filter = {self, enemy, ene, self.pEnemyRagdoll}})
+            if tngTr.Hit == true then
+                timer.Simple(0.5, function()
+                    if !IsValid(self) || !IsValid(enemy) then return end
+                    if self.IsEnemyStuck == false then
+                        FreezeEnemy()
+                    end
+                end)
+            end
 
-			if self.IsEnemyStuck == false then
-				--check if enemy is stuck
-				if CurTime() >= self.nextEnemyPosCheck then
-					if self.vecEnemyPos:Distance(enemy:GetPos()) < 10 then
-						FreezeEnemy()
-					end
-					self.vecEnemyPos = enemy:GetPos()
-					self.nextEnemyPosCheck = CurTime() + 2
-				end
-				--if enemy is too far to be clawed
-				if dist > self.IncapacitationRange then
-					CheckPath()
-					if enemy:IsPlayer() then
-						enemy:GetPhysicsObject():EnableMotion(true)
-					end
-				else
-					FreezeEnemy()
-				end
-			else
-				enemy:SetLocalVelocity(Vector(0, 0, 0))
-			end
-		else
-			self:DismountSmoker()
-		end
-	else
+            if self.IsEnemyStuck == false then
+                --check if enemy is stuck
+                if CurTime() >= self.nextEnemyPosCheck then
+                    if self.vecEnemyPos:Distance(enemy:GetPos()) < 10 then
+                        FreezeEnemy()
+                    end
+                    self.vecEnemyPos = enemy:GetPos()
+                    self.nextEnemyPosCheck = CurTime() + 2
+                end
+                --if enemy is too far to be clawed
+                if dist > self.IncapacitationRange then
+                    CheckPath()
+                    if enemy:IsPlayer() then
+                        enemy:GetPhysicsObject():EnableMotion(true)
+                    end
+                else
+                    FreezeEnemy()
+                end
+            else
+                enemy:SetLocalVelocity(Vector(0, 0, 0))
+            end
+        else
+            self:DismountSmoker()
+        end
+    else
         --fail-safe
         if self.IsIncapacitating == true then
             net.Start("infected_RemoveCSEnt")
@@ -973,34 +906,34 @@ function ENT:CustomOnThink()
     hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
         if self.VJ_IsBeingControlled then
             if button == KEY_E then
-        	    if self.IsGhosted then
-        	        self:SetGhost(false)
-        	    else
-        	        self:SetGhost(true)  
-        	    end
+                if self.IsGhosted then
+                    self:SetGhost(false)
+                else
+                    self:SetGhost(true)  
+                end
             end
         end
     end)
-	if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "Smoker_Crouch", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle_Upper_Knife"))}
-					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-					self.AnimTbl_Run = {ACT_RUN_CROUCH}
-				end
-			end
-		end)
-		hook.Add("KeyRelease", "Smoker_CrouchRelease", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {ACT_IDLE}
-					self.AnimTbl_Walk = {ACT_WALK}
-					self.AnimTbl_Run = {ACT_RUN}
-				end
-			end
-		end)
-	end
+    if self.VJ_IsBeingControlled == true then
+        hook.Add("KeyPress", "Smoker_Crouch", function(ply, key)
+            if self.VJ_TheController == ply then
+                if key == IN_DUCK then
+                    self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle_Upper_Knife"))}
+                    self.AnimTbl_Walk = {ACT_RUN_CROUCH}
+                    self.AnimTbl_Run = {ACT_RUN_CROUCH}
+                end
+            end
+        end)
+        hook.Add("KeyRelease", "Smoker_CrouchRelease", function(ply, key)
+            if self.VJ_TheController == ply then
+                if key == IN_DUCK then
+                    self.AnimTbl_IdleStand = {ACT_IDLE}
+                    self.AnimTbl_Walk = {ACT_WALK}
+                    self.AnimTbl_Run = {ACT_RUN}
+                end
+            end
+        end)
+    end
 
     if self.VJ_IsBeingControlled == false then
         self.TimeUntilRangeAttackProjectileRelease = 2
@@ -1073,7 +1006,7 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, corpseEnt)
-	corpseEnt:GetPhysicsObject():SetVelocity(corpseEnt:GetPhysicsObject():GetVelocity() +self:GetUp() *15000 +VectorRand() *15000)
+    corpseEnt:GetPhysicsObject():SetVelocity(corpseEnt:GetPhysicsObject():GetVelocity() +self:GetUp() *15000 +VectorRand() *15000)
     local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
     if IsValid(ent) then
         if ent:IsNPC() then
