@@ -61,6 +61,7 @@ Spitter:
 Tank:
 -Fix textures not being applied to model ✅
 -Implement rock bodygroup for range attack ✅ (didn't have to)
+-Different debris type
 -Make it shove according to damage position not attacker position ✅
 
 Witch:
