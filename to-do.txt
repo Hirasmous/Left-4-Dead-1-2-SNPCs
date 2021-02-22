@@ -107,8 +107,8 @@ Bugs:
 
 ConVars:
 -Should incapped NPC enemies drop their weapons? ✅
--Spitter goo damage ✅
--Other incap damage ✅
+-Spitter goo damage slider
+-Other special infected damage sliders
 
 Before release:
 -Make HUD fit any screen size ✅
