@@ -19,7 +19,7 @@ function ENT:CustomOnThink()
 	for k, v in ipairs(sphere) do
 		if (v:IsPlayer()) then
 	    if math.random(1, 6) == 1 then
-		    VJ_EmitSound(v,VJ_PICKRANDOMTABLE({"ambient/voices/cough1.mp3","ambient/voices/cough2.mp3","ambient/voices/cough3.mp3","ambient/voices/cough4.mp3"}),70,math.random(100,100))
+		    VJ_EmitSound(v,VJ_PICKRANDOMTABLE({"ambient/voices/cough1.wav","ambient/voices/cough2.wav","ambient/voices/cough3.wav","ambient/voices/cough4.wav"}),70,math.random(100,100))
 		end
 	    end
     end  		
