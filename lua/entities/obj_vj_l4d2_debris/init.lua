@@ -56,7 +56,7 @@ function ENT:DeathEffects(data,phys)
 	chunk1:SetCollisionGroup(COLLISION_GROUP_NONE)
         local chunk1phys = chunk1:GetPhysicsObject()
 	if IsValid(chunk1phys) then
-		chunk1phys:SetVelocity(self:GetUp() *1)
+		chunk1phys:SetVelocity(self:GetUp() *100 +VectorRand() *150)
 	end
         local chunk2 = ents.Create("prop_physics")
 	chunk2:SetModel("models/props_debris/concrete_chunk08a.mdl")  
@@ -65,7 +65,7 @@ function ENT:DeathEffects(data,phys)
 	chunk2:SetCollisionGroup(COLLISION_GROUP_NONE)
         local chunk2phys = chunk2:GetPhysicsObject()
 	if IsValid(chunk2phys) then
-		chunk2phys:SetVelocity(self:GetUp() *1)
+		chunk2phys:SetVelocity(self:GetUp() *100 +VectorRand() *150)
 	end
         local chunk3 = ents.Create("prop_physics")
 	chunk3:SetModel("models/props_debris/concrete_chunk09a.mdl")  
@@ -74,7 +74,7 @@ function ENT:DeathEffects(data,phys)
 	chunk3:SetCollisionGroup(COLLISION_GROUP_NONE)
         local chunk3phys = chunk3:GetPhysicsObject()
 	if IsValid(chunk3phys) then
-		chunk3phys:SetVelocity(self:GetUp() *1)
+		chunk3phys:SetVelocity(self:GetUp() *100 +VectorRand() *150)
 	end
         local chunk4 = ents.Create("prop_physics")
 	chunk4:SetModel("models/props_debris/concrete_chunk02a.mdl")  
@@ -83,7 +83,7 @@ function ENT:DeathEffects(data,phys)
 	chunk4:SetCollisionGroup(COLLISION_GROUP_NONE)
         local chunk4phys = chunk4:GetPhysicsObject()
 	if IsValid(chunk4phys) then
-		chunk4phys:SetVelocity(self:GetUp() *1)
+		chunk4phys:SetVelocity(self:GetUp() *100 +VectorRand() *150)
 	end
         local chunk5 = ents.Create("prop_physics")
 	chunk5:SetModel("models/props_debris/concrete_chunk02a.mdl")  
@@ -92,7 +92,7 @@ function ENT:DeathEffects(data,phys)
 	chunk5:SetCollisionGroup(COLLISION_GROUP_NONE)
         local chunk5phys = chunk5:GetPhysicsObject()
 	if IsValid(chunk5phys) then
-		chunk5phys:SetVelocity(self:GetUp() *1)
+		chunk5phys:SetVelocity(self:GetUp() *100 +VectorRand() *150)
 	end 
         timer.Simple(10,function() if IsValid(chunk1) then chunk1:Remove() end end)    
         timer.Simple(10,function() if IsValid(chunk2) then chunk2:Remove() end end)
