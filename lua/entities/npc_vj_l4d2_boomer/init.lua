@@ -107,6 +107,7 @@ ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "CommonLight"
+
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -171,10 +172,14 @@ function ENT:ManageHUD(ply)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:VomitEffect(hPlayer)
-    util.AddNetworkString("nDoBoomerBlast")
-    net.Start("nDoBoomerBlast")
-    net.Send(hPlayer)
+function ENT:VomitEffect(hPlayer,bool)
+	if bool then 
+		if IsValid(hPlayer) then
+		    util.AddNetworkString("nDoBoomerBlast")
+		    net.Start("nDoBoomerBlast")
+		    net.Send(hPlayer)
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:VomitBile()    
@@ -192,6 +197,7 @@ function ENT:VomitBile()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:VomitEnemy(v)
+	if !IsValid(v) then return false end
     if self.VJ_TheController == v then return end 
     if (v:IsPlayer() or v:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
         --[[local numBones = v:GetBoneCount()
@@ -219,7 +225,7 @@ function ENT:VomitEnemy(v)
         end]]
         ParticleEffectAttach("boomer_vomit_survivor",PATTACH_ABSORIGIN_FOLLOW,v,0)
         if v:IsPlayer() then
-            self:VomitEffect(v)
+            self:VomitEffect(v,true)
             VJ_CreateSound(v,"vj_l4d2/music/terror/pukricide.mp3",100,self:VJ_DecideSoundPitch(100,100))
         elseif v:IsNPC() then
             VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.mp3",90,self:VJ_DecideSoundPitch(100,100))  
@@ -331,6 +337,12 @@ function ENT:CustomOnThink()
 			end
 		end)
 	end
+
+	if self.VJ_IsBeingControlled then
+		self.ConstantlyFaceEnemy = false
+	else
+		self.ConstantlyFaceEnemy = true
+	end
         
     if self.VJ_IsBeingControlled == false then
 	    self.TimeUntilRangeAttackProjectileRelease = 1.5
@@ -342,7 +354,6 @@ function ENT:CustomOnThink()
 	    self.RangeAttackAnimationDelay = 0
 	end 
 
-    self:SetBodygroup(1,1)
 	if CurTime() >= self.nextBacteria then
 	    self:PlayBacteria()
 	end
@@ -351,6 +362,10 @@ end
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	if self:IsShoved() then return end
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+    	self.NextRangeAttackTime = 1
+    	self:StopAttacks(true)
+    	self.vAct_StopAttacks = true
+    	self:StopParticles()
         local function GetDirection()
             local directions = {
                 {"Shoved_Backward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
@@ -362,22 +377,41 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
             return directions[1][1]
         end
         self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+        timer.Simple(VJ_GetSequenceDuration(self,GetDirection()),function()
+        	if IsValid(self) then
+        		self.NextRangeAttackTime = 20
+        	end
+        end)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnKilled(dmginfo,hitgroup)
+	for i = 1, 20 do 
+        local ent = ents.Create("obj_vj_l4d2_bile")
+        ent:SetPos(self:GetPos())
+        ent:SetOwner(self)
+        ent:Spawn()
+        ent:Activate()
+        local phys = ent:GetPhysicsObject()
+        if IsValid(phys) then
+            phys:SetVelocity(self:GetUp() *150 +VectorRand() *180)
+        end
+    end
     local iAtt = self:LookupAttachment(left && "lfoot" || "rfoot")
     local att = self:GetAttachment(iAtt)
     util.ScreenShake(att.Pos, 100, 100, 0.5, 1500)       
+
     ParticleEffect("boomer_explode",self:GetPos() +self:GetUp()*40,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil) 
-    self:CreateGibEntity("obj_vj_gib","models/vj_l4d2/limbs/exploded_boomer_head.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
+    self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_head.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_rarm.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_steak1.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_steak2.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
     self:CreateGibEntity("prop_ragdoll","models/vj_l4d2/limbs/exploded_boomer_steak3.mdl",{Pos=self:LocalToWorld(Vector(0,0,20)), Ang=self:GetAngles(), Vel=Vector(math.Rand(-100,100),math.Rand(-100,100),math.Rand(450,550))})
-    for _, x in ipairs(ents.FindInSphere(self:GetPos(), 135)) do
+    
+    for _, x in ipairs(ents.FindInSphere(self:GetPos(),135)) do
         if IsValid(x) && IsValid(self) then
             if self:IsLineOfSightClear(x) then
+            	if !IsValid(x) then return false end
                 table.insert(self.Vomited_Enemies,x)
                 self:VomitEnemy(x)
                 self.Enemy_IsPuked = true
@@ -386,13 +420,14 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
     end 
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    local ent = self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
+	ParticleEffectAttach("boomer_leg_smoke",PATTACH_ABSORIGIN_FOLLOW,corpseEnt,corpseEnt:LookupAttachment("forward"))
+    local attacker = dmginfo:GetAttacker()
+    if IsValid(attacker) then
+        if attacker:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+        elseif attacker:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
         end
     end
 end

@@ -287,6 +287,12 @@ function ENT:CustomOnThink()
     if CurTime() >= self.nextBacteria then
         self:PlayBacteria()
     end
+
+    if self.VJ_IsBeingControlled then
+		self.ConstantlyFaceEnemy = false
+	else
+		self.ConstantlyFaceEnemy = true
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
@@ -307,12 +313,12 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt) 
-    local ent = self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+    local attacker = dmginfo:GetAttacker()
+    if IsValid(attacker) then
+        if attacker:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+        elseif attacker:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
         end
     end
 end

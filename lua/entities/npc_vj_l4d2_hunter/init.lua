@@ -363,6 +363,7 @@ function ENT:DismountHunter()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_BeforeStartTimer() 
+    if self:IsShoved() then return end
     if self.VJ_IsBeingControlled == false then
         self.AnimTbl_Run = {ACT_RUN_CROUCH}
         self.AnimTbl_Walk = {ACT_RUN_CROUCH}  
@@ -375,7 +376,8 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
     self:SetNW2Float("PounceT",CurTime() +self.NextLeapAttackTime)
     if self.VJ_IsBeingControlled == false then
         timer.Simple(1.89,function()
-            if IsValid(self) && IsValid(self:GetEnemy()) then 
+            if IsValid(self) && IsValid(self:GetEnemy()) then
+                if self:IsShoved() then return end 
                 self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.7,true) 
             end    
             if IsValid(self) then 
@@ -393,6 +395,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
     if self.VJ_IsBeingControlled == false then
         timer.Simple(1.9, function()
             if IsValid(self) && IsValid(self:GetEnemy()) then 
+                if self:IsShoved() then return end 
                 self:VJ_ACT_PLAYACTIVITY("Pounce_Idle_01",false,1.2,false)
                 ParticleEffectAttach("hunter_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
                 ParticleEffect("hunter_leap_dust",self:GetPos(),self:GetAngles())   
@@ -410,6 +413,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
     if self.VJ_IsBeingControlled == false then
         timer.Simple(1.94, function()
             if IsValid(self) && IsValid(self:GetEnemy()) then 
+                if self:IsShoved() then return end 
                 if timer.Exists("Hunter_Land") then timer.Stop("Hunter_Land") end
                 timer.Create("Hunter_Land", 0.14, 11, function()  
                     if !IsValid(self) then return end
@@ -453,6 +457,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 
     timer.Simple(self.CheckEnemyTimer, function()
         if IsValid(self) then 
+            if self:IsShoved() then return end
             if timer.Exists("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange") then timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") end --if the same timer is playing, stop it
             timer.Create("Hunter"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
                 if !IsValid(self) then return end
@@ -806,6 +811,12 @@ function ENT:CustomOnThink()
         self.CombatFaceEnemy = true
     end
 
+    if self.VJ_IsBeingControlled then
+		self.ConstantlyFaceEnemy = false
+	else
+		self.ConstantlyFaceEnemy = true
+	end
+
     self:ManageHUD(self.VJ_TheController)
     hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
         if self.VJ_IsBeingControlled then
@@ -866,6 +877,8 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
     if self.pIncapacitatedEnemy && dmginfo:GetAttacker() == self.pIncapacitatedEnemy then return end
     if self:IsShoved() then return end
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+        self:StopAttacks(true)
+        self.vAct_StopAttacks = true
         local function GetDirection()
             local directions = {
                 {"Shoved_Backward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
@@ -887,6 +900,7 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
             table.sort(directions_incapping, function(a, b) return a[2] < b[2] end)
             return directions_incapping[1][1] 
         end
+        self:StopAttacks(true)
         if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
             self:VJ_ACT_PLAYACTIVITY(GetDirection_Incapping(),true,VJ_GetSequenceDuration(self,GetDirection_Incapping()),false)
             self:DismountHunter()
@@ -901,12 +915,12 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, GetCorpse)
-    local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+    local attacker = dmginfo:GetAttacker()
+    if IsValid(attacker) then
+        if attacker:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+        elseif attacker:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
         end
     end
     self:DismountHunter()

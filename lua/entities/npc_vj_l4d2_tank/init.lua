@@ -37,6 +37,7 @@ ENT.CustomBlood_Pool = {"blood_bleedout"}-- Blood pool types after it dies
 ENT.MeleeAttackDistance = 32 -- How close does it have to be until it attacks?
 ENT.MeleeAttackDamageDistance = 65 -- How far does the damage go?
 ENT.MeleeAttackDamage = GetConVarNumber("vj_l4d2_t_d")
+ENT.MeleeAttackDamageType = DMG_CRUSH -- Type of Damage
 ENT.HasMeleeAttackKnockBack = true -- If true, it will cause a knockback to its enemy
 ENT.MeleeAttackKnockBack_Forward1 = 450 -- How far it will push you forward | First in math.random
 ENT.MeleeAttackKnockBack_Forward2 = 550 -- How far it will push you forward | Second in math.random
@@ -79,7 +80,10 @@ ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shove
 	-- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
 ENT.SoundTbl_Alert = {"HulkZombie.Yell"}
-ENT.SoundTbl_FootStep = {"Tank.Default.RunRight","Tank.Default.RunLeft"}
+ENT.SoundTbl_FootStep = {
+	"Tank.Default.RunRight",
+	"Tank.Default.RunLeft",
+}
 ENT.SoundTbl_Idle = {"HulkZombie.Voice","HulkZombie.Breathe","HulkZombie.Growl"}
 ENT.SoundTbl_CombatIdle = {"HulkZombie.Yell","HulkZombie.Voice","HulkZombie.Breathe","HulkZombie.Growl"}
 ENT.SoundTbl_MeleeAttack = {"HulkZombie.Punch"}
@@ -98,7 +102,6 @@ ENT.AlertSoundChance = 4
 ENT.PainSoundChance = 1
 ENT.NextSoundTime_Pain1 = 0.5
 ENT.NextSoundTime_Pain2 = 1
-ENT.FootStepSoundLevel = 80
 ENT.AlertSoundLevel = 100
 ENT.IdleSoundLevel = 85
 ENT.DeathSoundLevel = 85
@@ -259,7 +262,7 @@ function ENT:CustomOnRangeAttack_AfterStartTimer()
 			elseif self.DebrisType == "Log" then
 			    self.Log = ents.Create("prop_vj_animatable")
 				self.Log:SetPos(self:GetPos())
-			    self.Log:SetModel("models/props_foliage/tree_trunk.mdl")
+			    self.Log:SetModel("models/vj_l4d2/tree_trunk.mdl")
 				self.Log:SetOwner(self)
 			    self.Log:SetParent(self)
 			    self.Log:Spawn()
@@ -310,12 +313,13 @@ function ENT:CustomOnThink()
 	self:CheckRangeAttack(self:GetPos())
     self:Tank_Soundtrack(false)  
     if self:IsOnFire() && self.Immune_Fire == false && math.random (1,15) == 15 then  
-		VJ_CreateSound(self,self.SoundTbl_HulkPainFire,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))  
-        self:SetMaterial("models/infected/hulk/ci_burning")              
-	end
+        --self:SetSubMaterial("models/infected/hulk/ci_burning")
+        self.SoundTbl_Pain = {"HulkZombie.PainFire"} 
+    else
+    	self.SoundTbl_Pain = {"HulkZombie.Pain"} 
+    end
 
-	-------------------------------------------------------------------------------------------------  THIS CODE IS FROM DRVREJ I DO NOT OWN IT ---------------------------------------------------------------------------------------------------------------------------          
-	//print(self:GetBlockingEntity())
+	--[[//print(self:GetBlockingEntity())
 	// IsValid(self:GetBlockingEntity()) && !self:GetBlockingEntity():IsNPC() && !self:GetBlockingEntity():IsPlayer()
 	if self.AllowClimbing == true && self.Dead == false && self.Climbing == false && CurTime() > self.NextClimb then
 		//print("-------------------------------------------------------------------------------------")
@@ -376,6 +380,11 @@ function ENT:CustomOnThink()
 			end
 			self.NextClimb = CurTime() + 0.1 //5
 		end
+	end]]
+	if self.VJ_IsBeingControlled then
+		self.ConstantlyFaceEnemy = false
+	else
+		self.ConstantlyFaceEnemy = true
 	end
 	if self.VJ_IsBeingControlled == true then
 		hook.Add("KeyPress", "Tank_Crouch", function(ply, key)
@@ -426,12 +435,12 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    local ent = self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+    local attacker = dmginfo:GetAttacker()
+    if IsValid(attacker) then
+        if attacker:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+        elseif attacker:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
         end
     end
 end                   

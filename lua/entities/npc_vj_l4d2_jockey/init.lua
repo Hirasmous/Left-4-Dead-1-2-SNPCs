@@ -703,6 +703,12 @@ function ENT:CustomOnThink()
 		self.CombatFaceEnemy = true
 	end
 
+	if self.VJ_IsBeingControlled then
+		self.ConstantlyFaceEnemy = false
+	else
+		self.ConstantlyFaceEnemy = true
+	end
+
 	self:ManageHUD(self.VJ_TheController)
 	hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
         if self.VJ_IsBeingControlled then
@@ -779,12 +785,12 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+    local attacker = dmginfo:GetAttacker()
+    if IsValid(attacker) then
+        if attacker:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+        elseif attacker:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
         end
     end
     self:ResetJockey()

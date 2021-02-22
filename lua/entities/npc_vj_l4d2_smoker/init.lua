@@ -405,12 +405,14 @@ function ENT:DismountSmoker()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_BeforeStartTimer(seed) 
+    if self:IsShoved() then return end
     if self.VJ_IsBeingControlled == false then
         self:VJ_ACT_PLAYACTIVITY("vjseq_Tongue_Attack_Antic",false,VJ_GetSequenceDuration(self,"vjseq_Tongue_Attack_Antic"),false)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
+    if self:IsShoved() then return end
     self:SetNW2Int("TongueT",CurTime() +self.NextRangeAttackTime)
     timer.Simple(0.5,function() if IsValid(self) then VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/smoker/miss/smoker_reeltonguein_01.mp3","player/smoker/miss/smoker_reeltonguein_02.mp3","player/smoker/miss/smoker_reeltonguein_03.mp3","player/smoker/miss/smoker_reeltonguein_04.mp3","player/smoker/miss/smoker_reeltonguein_05.mp3"}),self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,100)) end end)
     timer.Simple(1,function() 
@@ -902,6 +904,12 @@ function ENT:CustomOnThink()
         self:PlayBacteria()
     end
 
+    if self.VJ_IsBeingControlled then
+		self.ConstantlyFaceEnemy = false
+	else
+		self.ConstantlyFaceEnemy = true
+	end
+
     self:ManageHUD(self.VJ_TheController)
     hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
         if self.VJ_IsBeingControlled then
@@ -968,6 +976,7 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
     if self.pIncapacitatedEnemy && dmginfo:GetAttacker() == self.pIncapacitatedEnemy then return end
     if self:IsShoved() then return end
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+        self.NextRangeAttackTime = 1
         local function GetDirection()
             local directions = {
                 {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
@@ -983,6 +992,11 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
             self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
             self:DismountSmoker()
         end
+        timer.Simple(VJ_GetSequenceDuration(self,GetDirection()),function()
+            if IsValid(self) then
+                self.NextRangeAttackTime = 13
+            end
+        end)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1007,12 +1021,12 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, corpseEnt)
     corpseEnt:GetPhysicsObject():SetVelocity(corpseEnt:GetPhysicsObject():GetVelocity() +self:GetUp() *15000 +VectorRand() *15000)
-    local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
-    if IsValid(ent) then
-        if ent:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-        elseif ent:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
+    local attacker = dmginfo:GetAttacker()
+    if IsValid(attacker) then
+        if attacker:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+        elseif attacker:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
         end
     end
     self:DismountSmoker()

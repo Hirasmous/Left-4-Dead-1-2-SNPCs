@@ -48,7 +48,7 @@ ENT.LeapAttackVelocityForward = 0 -- How much forward force should it apply?
 ENT.LeapAttackVelocityUp = 0 -- How much upward force should it apply?
 ENT.NextAnyAttackTime_Leap = 1 -- How much time until it can use any attack again? | Counted in Seconds
 ENT.LeapAttackAnimationDelay = 0 -- It will wait certain amount of time before playing the animation
-ENT.LeapAttackAnimationFaceEnemy = true -- Should it face the enemy while playing the leap attack animation?
+ENT.LeapAttackAnimationFaceEnemy = false -- Should it face the enemy while playing the leap attack animation?
 ENT.LeapAttackAnimationDecreaseLengthAmount = 0 -- This will decrease the time until starts chasing again. Use it to fix animation pauses until it chases the enemy.
 ENT.LeapAttackExtraTimers = {0.4,0.6,0.8,1} -- Extra leap attack timers | it will run the damage code after the given amount of seconds
 ENT.StopLeapAttackAfterFirstHit = true
@@ -718,6 +718,12 @@ function ENT:CustomOnThink()
 	if CurTime() >= self.nextBacteria then
 		self:PlayBacteria()
 	end
+
+	if self.VJ_IsBeingControlled then
+		self.ConstantlyFaceEnemy = false
+	else
+		self.ConstantlyFaceEnemy = true
+	end
 	
 	self:ManageHUD(self.VJ_TheController)
 	hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
@@ -782,14 +788,14 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-	local ent = dmginfo:GetAttacker() or dmginfo:GetInflictor() or self:GetEnemy()
-	if IsValid(ent) then
-		if ent:IsNPC() then
-			PrintMessage(HUD_PRINTTALK, ent:GetClass().." killed ".. self:GetName())
-		elseif ent:IsPlayer() then
-			PrintMessage(HUD_PRINTTALK, ent:GetName().." killed ".. self:GetName())
-		end
-	end
+	local attacker = dmginfo:GetAttacker()
+    if IsValid(attacker) then
+        if attacker:IsNPC() then
+            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+        elseif attacker:IsPlayer() then
+            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
+        end
+    end
 	self:DismountCharger()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
