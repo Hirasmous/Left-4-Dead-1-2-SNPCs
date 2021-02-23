@@ -85,8 +85,10 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	VJ.AddConVar("vj_l4d2_w_d",100)
 
     -- Other 
-    VJ.AddConVar("vj_l4d2_musictype",0) -- Turned off by default
-    VJ.AddConVar("vj_l4d2_npcs_dropweapons",0) -- Turned off by default
+    VJ.AddConVar("vj_l4d2_musictype",1)
+    VJ.AddConVar("vj_l4d2_tanktype",1)
+    VJ.AddConVar("vj_l4d2_npcs_dropweapons",1) -- Turned on by default
+    VJ.AddConVar("vj_l4d2_incapdamage",1) -- Turned on by default
     VJ.AddConVar("vj_l4d2_ghosted",0) -- Turned off by default
 end
 
@@ -97,7 +99,7 @@ end
 
 if CLIENT then
 	hook.Add("PopulateToolMenu", "VJ_L4D2_MENU", function()	
-		spawnmenu.AddToolMenuOption("DrVrej", "SNPC Configures", "Left 4 Dead 1/2 ", "Left 4 Dead 1/2 Special Infected SNPCs", "", "", function(Panel)
+		spawnmenu.AddToolMenuOption("DrVrej", "SNPC Configures", "Left 4 Dead 1/2 ", "Left 4 Dead 1/2", "", "", function(Panel)
 			if !game.SinglePlayer() then
 			if !LocalPlayer():IsAdmin() or !LocalPlayer():IsSuperAdmin() then
 				Panel:AddControl( "Label", {Text = "You are not an admin!"})
@@ -105,9 +107,22 @@ if CLIENT then
 				return
 				end
 			end
-			Panel:AddControl("Checkbox", {Label = "Metalized Music (Tank)", Command = "vj_l4d2_musictype"})
+			local tank_musictype = {Options = {}, CVars = {}, Label = "Tank music type", MenuButton = "0"}
+			tank_musictype.Options["Default"] = {vj_l4d2_musictype = 1}
+			tank_musictype.Options["Sacrifice"] = {vj_l4d2_musictype = 2}
+			tank_musictype.Options["SuicideBlitz"] = {vj_l4d2_musictype = 3}
+
+			local tank_type = {Options = {}, CVars = {}, Label = "Tank type", MenuButton = "0"}
+			tank_type.Options["Default"] = {vj_l4d2_tanktype = 1}
+			tank_type.Options["TheSacrifice"] = {vj_l4d2_tanktype = 2}
+
+
 			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs drop their weapons?", Command = "vj_l4d2_npcs_dropweapons"})
+			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs/Players take damage?", Command = "vj_l4d2_incapdamage"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
+			Panel:AddControl("Slider", { Label 	= "Tank health", Command = "vj_l4d2_t_h", Type = "Float", Min = "3500", Max = "6000"})
+			Panel:AddControl("ComboBox", tank_musictype)
+			Panel:AddControl("ComboBox", tank_type)
 		end, {})
 	end)
 end
