@@ -5,7 +5,7 @@ include('shared.lua')
 	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
 	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
-ENT.Model = {"models/vj_l4d2/hulk.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
+ENT.Model = {} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_t_h")
 ENT.HullType = HULL_HUMAN
 ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
@@ -122,9 +122,41 @@ ENT.SoundTracks = nil
 ENT.SoundTrack = {"vj_l4d2/music/tank/taank.mp3","vj_l4d2/music/tank/tank.mp3"}
 util.AddNetworkString("L4D2TankHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnPreInitialize()
+	self:Tank_Initialize()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
-    if GetConVarNumber("vj_l4d2_musictype") == 1 then self.SoundTrack = {"vj_l4d2/music/tank/tank_metal.mp3","vj_l4d2/music/tank/taank_metal.mp3"} end
+    if GetConVarNumber("vj_l4d2_tanktype") == 3 then
+    	self:SetBodygroup(0,1)
+    end
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:Tank_Initialize()
+	if GetConVarNumber("vj_l4d2_musictype") == 1 then 
+    	self.SoundTrack = {"vj_l4d2/music/tank/taank.mp3","vj_l4d2/music/tank/tank.mp3"}
+    elseif GetConVarNumber("vj_l4d2_musictype") == 2 then 
+    	self.SoundTrack = {"vj_l4d2/music/tank/onebadtank.mp3"}
+    elseif GetConVarNumber("vj_l4d2_musictype") == 3 then 
+    	self.SoundTrack = {"vj_l4d2/music/tank/midnighttank.mp3"}
+    end
+
+    if self:GetClass() == "npc_vj_l4d2_tank" then
+	    if GetConVarNumber("vj_l4d2_tanktype") == 1 then 
+	    	self.Model = {"models/vj_l4d2/hulk.mdl"}
+	    elseif GetConVarNumber("vj_l4d2_tanktype") == 2 then 
+	    	self.Model = {"models/vj_l4d2/hulk_sacrifice.mdl"}
+	    end
+    end
+
+    if self:GetClass() == "npc_vj_l4d_tank" then
+    	if GetConVarNumber("vj_l4d2_tanktype") == 1 then 
+	    	self.Model = {"models/vj_l4d/hulk.mdl"}
+	    elseif GetConVarNumber("vj_l4d2_tanktype") == 2 then 
+	    	self.Model = {"models/vj_l4d2/hulk_sacrifice.mdl"}
+	    end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CheckRangeAttack(pos)
@@ -173,33 +205,6 @@ function ENT:Controller_Initialize(ply)
     end
 end  
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Tank_Soundtrack(fadeout) 
-	if fadeout == false then
-		for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_tank")) do
-	        if v.SoundTracks && v.SoundTracks:IsPlaying() then
-	            return
-	        end
-	    end 
-	    for k, v in ipairs(ents.FindByClass("npc_vj_l4d_tank")) do
-	        if v.SoundTracks && v.SoundTracks:IsPlaying() then
-	            return
-	        end
-	    end
-	    local soundtracks = table.Random(self.SoundTrack)
-		local filter = RecipientFilter()
-		filter:AddAllPlayers()
-        self.soundtrack = CreateSound(game.GetWorld(),soundtracks, filter)
-		self.SoundTracks = self.soundtrack
-		self.soundtrack:SetSoundLevel(0)		
-		self.soundtrack:PlayEx(1,100)
-	end
-	if fadeout == true then
-		if self.SoundTracks && self.SoundTracks:IsPlaying() then
-		    self.SoundTracks:FadeOut(1.5)
-		end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RangeAttackCode_OverrideProjectilePos(TheProjectile)
     TheProjectile:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos) 
 end
@@ -227,18 +232,25 @@ function ENT:CustomRangeAttackCode()
     local randattackr = math.random(1,3)
     if randattackr == 1 then                              
         self.AnimTbl_RangeAttack = {"throw_02"}
-        self.TimeUntilRangeAttackProjectileRelease = 2.5   
-        self:RemoveDebris()
-    end         
-    if randattackr == 3 then                              
+        self.TimeUntilRangeAttackProjectileRelease = 2.5     
+        self:RemoveDebris()      
+    elseif randattackr == 3 then                              
         self.AnimTbl_RangeAttack = {"throw_03"}
-        self.TimeUntilRangeAttackProjectileRelease = 1.97
-        self:RemoveDebris()
-    end    
-    if randattackr == 2 then                              
+        self.TimeUntilRangeAttackProjectileRelease = 1.97  
+        self:RemoveDebris() 
+    elseif randattackr == 2 then                              
         self.AnimTbl_RangeAttack = {"throw_04"} 
         self.TimeUntilRangeAttackProjectileRelease = 2.8
-        self:RemoveDebris()              
+        self:RemoveDebris() 
+    elseif randattackr == 1 then                              
+        self.AnimTbl_RangeAttack = {"throw_01"} 
+        self.TimeUntilRangeAttackProjectileRelease = 1    
+        self:RemoveDebris()    
+        timer.Simple(1,function()
+	    	if IsValid(self) then
+				self:RemoveDebris()
+			end
+	    end) 
     end
 end   
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -313,7 +325,6 @@ function ENT:CustomOnThink()
 	self:CheckRangeAttack(self:GetPos())
     self:Tank_Soundtrack(false)  
     if self:IsOnFire() && self.Immune_Fire == false && math.random (1,15) == 15 then  
-        --self:SetSubMaterial("models/infected/hulk/ci_burning")
         self.SoundTbl_Pain = {"HulkZombie.PainFire"} 
     else
     	self.SoundTbl_Pain = {"HulkZombie.Pain"} 
@@ -380,12 +391,12 @@ function ENT:CustomOnThink()
 			end
 			self.NextClimb = CurTime() + 0.1 //5
 		end
-	end]]
+	end
 	if self.VJ_IsBeingControlled then
 		self.ConstantlyFaceEnemy = false
 	else
 		self.ConstantlyFaceEnemy = true
-	end
+	end]]
 	if self.VJ_IsBeingControlled == true then
 		hook.Add("KeyPress", "Tank_Crouch", function(ply, key)
 			if self.VJ_TheController == ply then
@@ -426,16 +437,14 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
         self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
         timer.Simple(0.1,function()
 	    	if IsValid(self) then
-			    if IsValid(self.Concrete) then
-					self:RemoveDebris()
-				end
+				self:RemoveDebris()
 			end
 	    end)
     end
-end
+end              
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    local attacker = dmginfo:GetAttacker()
+function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)      
+	local attacker = dmginfo:GetAttacker()
     if IsValid(attacker) then
         if attacker:IsNPC() then
             PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
@@ -443,17 +452,12 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
             PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
         end
     end
-end                   
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)      
     if self:IsMoving() && self:GetActivity() == ACT_RUN then
         self.AnimTbl_Death = {"Death_2"}
 	end
 	timer.Simple(0.1,function()
     	if IsValid(self) then
-		    if IsValid(self.Concrete) then
-				self:RemoveDebris()
-			end
+			self:RemoveDebris()
 		end
     end)
 end
