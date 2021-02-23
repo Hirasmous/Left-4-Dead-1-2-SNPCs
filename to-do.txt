@@ -98,6 +98,7 @@ General:
 -Add original viewmodels when controlling in first-person 
 -Resize materials (what happened to them?!)
 -Add spawners and/or random special infected spawn icons? ✅
+-Give player grenades (if he had them before) when stopping incapping 
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
