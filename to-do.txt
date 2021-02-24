@@ -15,18 +15,20 @@ Charger:
 -Keep charging until he hits a wall or travels certain dist ✅
 -Can pound the bullseye entity when being controlled (is this fixed?) ✅
 -Make the recharge for pounding less time? ✅
--Make it carry players until it hits a wall or travels a certain distance
+-Make it carry players until it hits a wall or travels a certain distance ✅
 -Charger doesn't incap player if player is moving backwards (sometimes)
 -No flinching or shoving while charging ✅
 -Incapped enemy spawns under ground when rescued from death ✅
 -Directional pummeling (Ceiling,wall) ✅
 -Fix third-person player control camera view when incapping
+-Make it carry enemies up hills/steep surfaces
+-Make the charger throw enemies in its path aside when carrying an enemy
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
 -Properly implement shove anims ✅
--Proper crouch charging 
--Gets stuck in incapped enemy when shoved off
+-Proper crouch charging ✅
+-Gets stuck in incapped enemy when shoved off ✅
 -Not make boomer bile damage enemy ✅
 -Fix third-person player control camera view when incapping
 
@@ -51,6 +53,7 @@ Smoker:
 -(L4D1) Restore tongue bodygroup after stopping incapping
 -Add attachment to "smoker_tongue_attach.mdl" (on the end of the tongue) 
 -Incapped player can still move freely around the world 
+-Adjust tongue collision entities so that they are in line with the tongue particle
 
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
@@ -70,9 +73,9 @@ Witch:
 -Add sitting pose parameters ✅
 -Add unique activity name for "Idle_Standing" ✅
 -Add unique activity name for "Agitated_02" ✅
--Touch up the sitting variant 
+-Touch up the sitting variant (add ResetSequenceInfo() when enemy is in range)
 -Reset rage pose params after triggered ✅
--Witch attacks env_fire entity
+-Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity)
 -Make it shove according to damage position not attacker position (DMG_BLAST only) ✅
 
 General:
