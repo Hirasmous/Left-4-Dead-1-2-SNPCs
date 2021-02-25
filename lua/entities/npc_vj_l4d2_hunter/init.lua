@@ -548,7 +548,6 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-
 	local function SetPitch(ent, poseName, tgt)
 		local spos = ent:GetPos()
 		local bpos = spos + ent:OBBCenter()
@@ -588,7 +587,7 @@ function ENT:CustomOnThink()
 
 	SetPitch(self, "horiz_vel", self:GetEnemy())
 
-	--self:GetGroundType(self:GetPos()) -- in the features.lua
+	self:GetGroundType(self:GetPos()) -- in the features.lua
 	if self.VJ_IsBeingControlled == false then
 		self.CheckEnemyTimer = 2
 	elseif self.VJ_IsBeingControlled == true then
