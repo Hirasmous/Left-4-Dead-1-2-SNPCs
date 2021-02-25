@@ -268,6 +268,9 @@ function ENT:ResetJockey()
 		self.IncapSong:Stop()
 		self.IncapSong = nil
 	end
+	if enemy:IsPlayer() then
+		enemy:SetFOV(GetConVarNumber("fov_desired"), 0.1)
+	end
 	self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
 	self:SetParent(nil)
 	self.AnimTbl_IdleStand = {ACT_IDLE}
