@@ -25,6 +25,9 @@ function ENT:Initialize()
 	self:SetOwner(self:GetOwner())
 	self:DrawShadow(false)
 	self:SetNoDraw(true) 
+	if string.find(self:GetOwner():GetClass(), "boome") then
+		self.DecalTbl_DeathDecals = {"VJ_Blood_Orange"}
+	end
 	
 	-- Physics Functions
 	local phys = self.Entity:GetPhysicsObject()
@@ -33,7 +36,7 @@ function ENT:Initialize()
 		phys:SetMass(1)
 		phys:SetBuoyancyRatio(0)
 		phys:EnableDrag(false)
-                phys:EnableGravity(true)
+		phys:EnableGravity(true)
 	end
 	
 	-- Misc Functions
@@ -55,11 +58,12 @@ function ENT:PhysicsCollide(data,physobj,entity)
 	self.Dead = true
 	if self.idlesoundc then self.idlesoundc:Stop() end
 	self:StopParticles()
-
-    util.Decal(VJ_PICKRANDOMTABLE(self.DecalTbl_DeathDecals), data.HitPos +data.HitNormal, data.HitPos -data.HitNormal)
-    ParticleEffect("blood_impact_boomer_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)        
-    ParticleEffect("blood_impact_red_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)        
-    ParticleEffect("blood_impact_infected_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)
+	local pos = data.HitPos
+	pos = Vector(pos.x + math.random(-30, 30), pos.y + math.random(-30, 30), pos.z)
+	util.Decal(VJ_PICKRANDOMTABLE(self.DecalTbl_DeathDecals), pos +data.HitNormal, pos -data.HitNormal)
+	ParticleEffect("blood_impact_boomer_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)		
+	ParticleEffect("blood_impact_red_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)		
+	ParticleEffect("blood_impact_infected_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)
 	
 	-- Effects
 	self:Remove()
