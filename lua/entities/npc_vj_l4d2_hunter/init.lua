@@ -444,7 +444,9 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 										if enemy:IsNPC() then
 											self:SetParent(enemy)						   
 											if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
-												enemy:GetActiveWeapon():SetNoDraw(true)
+												if IsValid(enemy:GetActiveWeapon()) then
+													enemy:GetActiveWeapon():SetNoDraw(true)
+												end
 											else
 												enemy:DropWeapon()
 											end
