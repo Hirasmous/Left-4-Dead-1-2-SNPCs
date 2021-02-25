@@ -98,6 +98,7 @@ end
 if SERVER then
     util.AddNetworkString("infected_PounceEnemy")
 	util.AddNetworkString("infected_RemoveCSEnt")
+	util.AddNetworkString("Infected_IncapLight")
 end
 
 if CLIENT then
