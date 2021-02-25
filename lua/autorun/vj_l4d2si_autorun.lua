@@ -53,11 +53,14 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	game.AddParticles("particles/l4d2_blood_fx.pcf")
 	game.AddParticles("particles/smoker_fx.pcf")
 	game.AddParticles("particles/smoker_fx2.pcf")
+	game.AddParticles("particles/smoker_fx_old.pcf")
 	game.AddParticles("particles/hunter_fx.pcf")
 	game.AddParticles("particles/charger_fx.pcf")
 	game.AddParticles("particles/spitter_fx.pcf")
 	game.AddParticles("particles/witch_fx.pcf")
 	game.AddParticles("particles/tank_fx.pcf")
+
+	PrecacheParticleSystem("smoker_tongue")
 
 	-- Boomer
 	VJ.AddConVar("vj_l4d2_b_h",50)
