@@ -666,7 +666,38 @@ function NPC:GetEnemiesInRange()
     return false
 end
 
+function NPC:IncapacitateEnemy(ent, parent)
+	local mdl = ents.Create("prop_dynamic")
+	mdl:SetModel(ent:GetModel())
+	mdl:SetSkin(ent:GetSkin())
+	for i = 1, table.Count(ent:GetBodyGroups()) do
+		mdl:SetBodygroup(ent:GetBodyGroups()[i]["id"], ent:GetBodygroup(ent:GetBodyGroups()[i]["id"]))
+	end
+	mdl:SetParent(parent)
+	mdl:AddEffects(EF_BONEMERGE)
+end
 
-
-
-    
+NPC.Light1 = nil
+function NPC:Incap_Lighting(ply, fadeout)
+	local spotlightpoint1
+	fadeout = fadeout or false
+	if fadeout == false then
+		spotlightpoint1 = ents.Create("env_projectedtexture")
+		self.Light1 = spotlightpoint1
+		self.Light1:Fire("LightColor", "145 25 12")
+		self.Light1:Fire("FOV", "80")
+		self:DeleteOnRemove(spotlightpoint1)
+		timer.Simple(0.05, function()
+			if !IsValid(self) then return end
+			net.Start("Infected_IncapLight")
+				net.WriteBool(fadeout)
+				net.WriteEntity(self)
+				net.WriteEntity(self.Light1)
+			net.Send(ply)
+		end)
+	else
+		if IsValid(self.Light1) then
+			self.Light1:Remove()
+		end
+	end
+end
