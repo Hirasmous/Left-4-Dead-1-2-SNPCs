@@ -204,7 +204,7 @@ if CLIENT then
 		if bDead == true then
 			_ents = ents.FindInSphere(pos, 135)
 		else
-			_ents = ents.FindInCone(pos, ents.GetByIndex(tonumber(id)):GetForward() * 275, 250, math.cos(20))
+			_ents = ents.FindInCone(pos, ents.GetByIndex(tonumber(id)):GetForward(), 450, 0.906)
 		end
 		function VomitCover()
 			local mat = Material("models/vj_l4d2/survivors/survivor_it", "alphatest")
