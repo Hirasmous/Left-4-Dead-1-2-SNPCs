@@ -655,6 +655,9 @@ function NPC:GetEnemiesInRange()
 						tbl[table.Count(tbl) + 1] = {v:EntIndex(), v:GetPos():Distance(self:GetPos())}
 						table.sort(tbl, function(a, b) return a[2] < b[2] end)
 						self.pTargetEntity = tbl[1][1]
+						if self:GetSequence() == self:SelectWeightedSequence(ACT_IDLE) then
+							self:ResetSequenceInfo()
+						end
 						return true
 					end
 				end
