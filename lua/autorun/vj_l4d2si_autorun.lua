@@ -125,6 +125,19 @@ if CLIENT then
 			Panel:AddControl("ComboBox", tank_type)
 		end, {})
 	end)
+	
+	net.Receive("Infected_IncapLight", function()
+		local fadeout = net.ReadBool()
+		local ent = net.ReadEntity()
+		local light = net.ReadEntity()
+		if fadeout == false then
+			light:SetPos(ent:GetPos() + ent:GetUp() * 110)
+			light:SetAngles(Angle(90, 0, 0))
+			light:Spawn()
+			light:SetParent(ent)
+			light:Activate()
+		end
+	end)
 end
 
 if CLIENT then
