@@ -80,6 +80,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 			VJ_CreateSound(self,VJ_PICKRANDOMTABLE({"player/smoker/hit/tongue_hit_1.mp3"}),95,owner:VJ_DecideSoundPitch(100,100))
 		end
 	end
+	
 	-- Removes
 	self.Dead = false
 	if self.idlesoundc then self.idlesoundc:Stop() end
@@ -209,16 +210,9 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					mdl:ResetSequence(mdl:LookupSequence("Idle_Tongued_Dragging_Ground"))
 					mdl:ResetSequenceInfo()
 					mdl:SetCycle(0)
-					mdl:SetLocalPos(Vector(0, 0, 0))
+					mdl:SetLocalPos(Vector(0, 0, -10))
 					mdl:SetLocalAngles(Angle(0, 0, 0))
-					timer.Simple(0.15, function()
-						if !IsValid(owner) then return end
-						net.Start("infected_PounceEnemy")
-							net.WriteString(tostring(owner:EntIndex()))
-							net.WriteEntity(mdl)
-							net.WriteString(enemy:GetModel())
-						net.Broadcast()
-					end)
+					owner:IncapacitateEnemy(enemy, mdl)
 
 					owner.pEnemyRagdoll = mdl
 
@@ -234,7 +228,16 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					tongue:SetCycle(0)
 					tongue:SetLocalPos(Vector(0, 0, 0))
 					tongue:SetLocalAngles(Angle(0, 0, 0))  
-					mdl:DeleteOnRemove(tongue)	
+					mdl:DeleteOnRemove(tongue)
+
+					timer.Simple(0.05, function()
+						if !IsValid(owner) then return end
+						net.Start("Smoker_CreateTongue")
+							net.WriteString(tostring(owner:EntIndex()))
+							net.WriteEntity(tongue)
+							net.WriteEntity(owner)
+						net.Broadcast()
+					end)
 
 					owner.pEnemyTongueAttach = tongue
 
@@ -321,8 +324,6 @@ function ENT:PhysicsCollide(data, physobj, entity)
 			end
 		end
 	end
-
-	-- Effects
 	self:Remove()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
