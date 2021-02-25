@@ -139,7 +139,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					dragObj:Spawn()
 					owner.pEnemyObj = dragObj
 					dragObj:DrawShadow(false) 
-					dragObj:SetNoDraw(false)
+					dragObj:SetNoDraw(true)
 					enemy:SetGravity(0)
 					enemy:SetMoveType(MOVETYPE_FLY)
 					constraint.NoCollide(enemy, dragObj, 1, 1)
