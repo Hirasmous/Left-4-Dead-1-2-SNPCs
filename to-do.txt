@@ -74,10 +74,12 @@ Witch:
 -Add sitting pose parameters ✅
 -Add unique activity name for "Idle_Standing" ✅
 -Add unique activity name for "Agitated_02" ✅
--Touch up the sitting variant (add ResetSequenceInfo() when enemy is in range)
+-Touch up the sitting variant (add ResetSequenceInfo() when enemy is in range) ✅
 -Reset rage pose params after triggered ✅
 -Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity)
 -Make it shove according to damage position not attacker position (DMG_BLAST only) ✅
+-Remove eye color changing
+-Make it only attack the enemy that triggered it
 
 General:
 -Ignore incapped players/enemies if there are more enemies nearby ✅
