@@ -118,3 +118,10 @@ Before release:
 -Make HUD fit any screen size ✅
 -Better jockey control
 -Improve witch (i.e. add special pose params) ✅
+
+Tensor:
+-Add new functions to features.lua
+-Update Charger
+-Update Smoker
+-Update bonemerging feature for all specials
+-Update incap lighting for all specials
