@@ -649,7 +649,7 @@ function ENT:CustomOnThink()
 						end
 					end
 					if enemy:IsPlayer() then
-						self:Incap_Effects(false)
+						self:Incap_Lighting(enemy, false)
 						enemy:SpectateEntity(self.Camera)
 						enemy:SetFOV(80)
 					end
