@@ -101,7 +101,8 @@ General:
 -Add original viewmodels when controlling in first-person 
 -Resize materials (what happened to them?!)
 -Add spawners and/or random special infected spawn icons? ✅
--Give player grenades (if he had them before) when stopping incapping 
+-Give player grenades (if he had them before) when stopping incapping
+-Make all special infected be able to incap players with non-ValveBiped skeletons
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
@@ -120,7 +121,7 @@ Before release:
 -Improve witch (i.e. add special pose params) ✅
 
 Tensor:
--Add new functions to features.lua
+-Add new functions to features.lua ✅
 -Update Charger
 -Update Smoker
 -Update bonemerging feature for all specials
