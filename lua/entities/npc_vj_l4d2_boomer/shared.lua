@@ -170,8 +170,8 @@ if CLIENT then
 		hook.Add("RenderScreenspaceEffects", "hkBoomer_VomitOverlay", function()
 			DrawMaterialOverlay("models/props_lab/Tank_Glass001", 1)
 		end)
-		timer.Create("tmBoomer_RemoveVomitOverlay", 0.1, 150, function()
-			local tm = "tmBoomer_RemoveVomitOverlay"
+		timer.Create("tmBoomer"..LocalPlayer():EntIndex().."_RemoveVomitOverlay", 0.1, 150, function()
+			local tm = "tmBoomer"..LocalPlayer():EntIndex().."_RemoveVomitOverlay"
 			if not LocalPlayer():Alive() then
 				hook.Remove("RenderScreenspaceEffects", "hkBoomer_VomitOverlay")
 				timer.Stop(tm)
@@ -187,13 +187,20 @@ if CLIENT then
 				end
 			end
 		end)
+		hook.Add("PreCleanupMap", "hkBoomer_CleanupOverlay", function()
+			hook.Remove("RenderScreenspaceEffects", "hkBoomer_VomitOverlay")
+			timer.Stop("tmBoomer"..LocalPlayer():EntIndex().."_RemoveVomitOverlay")
+		end)
 	end)
 
 	net.Receive("nBoomer_InitializeResidue", function()
 		local bDead = net.ReadBool()
 		local pos = net.ReadVector()
 		local id  = net.ReadString()
-		local _ents 
+		if timer.Exists("tmBoomer"..id.."_RemoveVomitResidue") then
+			return
+		end
+		local _ents
 		if bDead == true then
 			_ents = ents.FindInSphere(pos, 135)
 		else
@@ -220,7 +227,7 @@ if CLIENT then
 				hook.Remove("RenderScreenspaceEffects", "hkBoomer"..id.."_VomitResidue")
 			end
 		end)
-		hook.Add("PreCleanupMap", "hkBoomer_CleanupMap", function()
+		hook.Add("PreCleanupMap", "hkBoomer_CleanupResidue", function()
 			hook.Remove("RenderScreenspaceEffects", "hkBoomer"..id.."_VomitResidue")
 			timer.Stop("tmBoomer"..id.."_RemoveVomitResidue")
 		end)
