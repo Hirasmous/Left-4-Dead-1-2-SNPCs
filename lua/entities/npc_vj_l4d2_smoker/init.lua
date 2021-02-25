@@ -312,7 +312,7 @@ function ENT:DismountSmoker()
 		end
 	end
 	if enemy:IsPlayer() then
-		enemy:Incap_Lighting(enemy, true)
+		self:Incap_Lighting(enemy, true)
 		enemy:SetParent(nil)
 		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
 			enemy:SetObserverMode(0)
