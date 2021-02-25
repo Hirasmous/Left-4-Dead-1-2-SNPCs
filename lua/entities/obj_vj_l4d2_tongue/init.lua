@@ -80,7 +80,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 			VJ_CreateSound(self,VJ_PICKRANDOMTABLE({"player/smoker/hit/tongue_hit_1.mp3"}),95,owner:VJ_DecideSoundPitch(100,100))
 		end
 	end
-	
+
 	-- Removes
 	self.Dead = false
 	if self.idlesoundc then self.idlesoundc:Stop() end
@@ -162,8 +162,9 @@ function ENT:PhysicsCollide(data, physobj, entity)
 							VJ_CreateSound(v,"vj_l4d2/music/tags/tonguetiedhit.mp3",95,owner:VJ_DecideSoundPitch(100,100))
 						end
 					end
+
 					local camera = ents.Create("prop_dynamic")
-					camera:SetModel("models/error.mdl")
+					camera:SetModel("models/dav0r/camera.mdl")
 					camera:SetPos(owner:GetPos())
 					camera:Spawn()
 					camera:Activate()
@@ -172,7 +173,9 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					camera:SetParent(owner)
 					camera:Fire("SetParentAttachment","spine")
 					owner.Camera = camera
+
 					if enemy:IsPlayer() then
+						owner:Incap_Lighting(enemy, false, dragObj)
 						owner:StripEnemyWeapons(enemy)
 						if owner.VJ_IsBeingControlled == false && owner.VJ_TheController ~= enemy then
 							enemy:SetObserverMode(OBS_MODE_CHASE)
@@ -261,7 +264,8 @@ function ENT:PhysicsCollide(data, physobj, entity)
 						if ent:IsPlayer() then
 							ent:SetParent(nil)
 						end
-					end)		  
+					end)
+
 					hook.Add("PlayerDeath", "player_RemoveCSEnt", function(victim, inflictor, attacker)
 						if victim == owner.pIncapacitatedEnemy then
 							victim:SetParent(nil)
