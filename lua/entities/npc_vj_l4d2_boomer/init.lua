@@ -1,9 +1,9 @@
 AddCSLuaFile("shared.lua")
 include('shared.lua')
 /*-----------------------------------------------
-	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
-	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
-	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
+    *** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
+    No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
+    without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
 ENT.Model = {"models/vj_l4d2/boomer.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_b_h")
@@ -21,10 +21,10 @@ ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time
 ENT.CallForHelp = false -- Does the SNPC call for help?
 ENT.InvestigateSoundDistance = 0 -- How far away can the SNPC hear sounds? | This number is timed by the calculated volume of the detectable sound.
 ENT.VJC_Data = {
-	CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
-	ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
-	FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
-	FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
+    CameraMode = 1, -- Sets the default camera mode | 1 = Third Person, 2 = First Person
+    ThirdP_Offset = Vector(40, 10, -50), -- The offset for the controller when the camera is in third person
+    FirstP_Bone = "ValveBiped.Bip01_Head1", -- If left empty, the base will attempt to calculate a position for first person
+    FirstP_Offset = Vector(0, 0, 5), -- The offset for the controller when the camera is in first person
 }
 ENT.ConstantlyFaceEnemy = true -- Should it face the enemy constantly?
 ENT.ConstantlyFaceEnemy_Postures = "Moving" -- "Both" = Moving or standing | "Moving" = Only when moving | "Standing" = Only when standing
@@ -54,7 +54,7 @@ ENT.RangeToMeleeDistance = 100 -- How close does it have to be until it uses mel
 ENT.NextRangeAttackTime = 20 -- How much time until it can use a range attack?
 ENT.DeathCorpseModel = {"models/vj_l4d2/limbs/exploded_boomer.mdl"}
 ENT.RangeAttackAnimationFaceEnemy = false -- Should it face the enemy while playing the range attack animation?
-	-- ====== Flinching Code ====== --
+    -- ====== Flinching Code ====== --
 ENT.AnimTbl_Flinch = {"vjges_flinch_01","vjges_flinch_02","vjges_flinch_03"} -- If it uses normal based animation, use this
 ENT.CanFlinch = 0 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
 ENT.FlinchChance = 1 -- Chance of it flinching from 1 to x | 1 will make it always flinch
@@ -62,7 +62,7 @@ ENT.NextMoveAfterFlinchTime = "LetBaseDecide" -- How much time until it can move
 ENT.HasHitGroupFlinching = false -- It will flinch when hit in certain hitgroups | It can also have certain animations to play in certain hitgroups
 ENT.HitGroupFlinching_DefaultWhenNotHit = true -- If it uses hitgroup flinching, should it do the regular flinch if it doesn't hit any of the specified hitgroups?
 ENT.HitGroupFlinching_Values = {{HitGroup = {HITGROUP_HEAD}, Animation = {"Shoved_Backward_01"}},{HitGroup = {HITGROUP_CHEST}, Animation = {"Shoved_Backward_01"}},{HitGroup = {HITGROUP_STOMACH}, Animation = {"Shoved_Backward_01"}}}
-	-- ====== Sound File Paths ====== --
+    -- ====== Sound File Paths ====== --
 -- Leave blank if you don't want any sounds to play
 ENT.SoundTbl_FootStep = {}
 ENT.SoundTbl_Idle = {"BoomerZombie.Groan","BoomerZombie.Voice"}
@@ -110,6 +110,8 @@ ENT.FootStepType = "CommonLight"
 
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
+
+util.AddNetworkString("nBoomer_InitializeResidue")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
     self:SetHullType(self.HullType)
@@ -145,41 +147,41 @@ function ENT:Controller_Initialize(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
-	if self.VJ_IsBeingControlled == true then
-		if self.IsGhosted == true then
-			net.Start("L4D2BoomerHUDGhost")
-		        net.WriteBool(false)
-		        net.WriteEntity(self)
-		        net.WriteEntity(ply)
+    if self.VJ_IsBeingControlled == true then
+        if self.IsGhosted == true then
+            net.Start("L4D2BoomerHUDGhost")
+                net.WriteBool(false)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
             net.Send(ply)
             net.Start("L4D2BoomerHUD")
-		        net.WriteBool(true)
-		        net.WriteEntity(self)
-		        net.WriteEntity(ply)
+                net.WriteBool(true)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
             net.Send(ply)
         elseif self.IsGhosted == false then
-			net.Start("L4D2BoomerHUD")
-		        net.WriteBool(false)
-		        net.WriteEntity(self)
-		        net.WriteEntity(ply)
+            net.Start("L4D2BoomerHUD")
+                net.WriteBool(false)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
             net.Send(ply)
             net.Start("L4D2BoomerHUDGhost")
-		        net.WriteBool(true)
-		        net.WriteEntity(self)
-		        net.WriteEntity(ply)
+                net.WriteBool(true)
+                net.WriteEntity(self)
+                net.WriteEntity(ply)
             net.Send(ply)
         end
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:VomitEffect(hPlayer,bool)
-	if bool then 
-		if IsValid(hPlayer) then
-		    util.AddNetworkString("nDoBoomerBlast")
-		    net.Start("nDoBoomerBlast")
-		    net.Send(hPlayer)
-		end
-	end
+    if bool then 
+        if IsValid(hPlayer) then
+            util.AddNetworkString("nBoomer_InitializeOverlay")
+            net.Start("nBoomer_InitializeOverlay")
+            net.Send(hPlayer)
+        end
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:VomitBile()    
@@ -196,8 +198,8 @@ function ENT:VomitBile()
     end  
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:VomitEnemy(v)
-	if !IsValid(v) then return false end
+function ENT:VomitEnemy(v, bDeath)
+    if !IsValid(v) then return false end
     if self.VJ_TheController == v then return end 
     if (v:IsPlayer() or v:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
         --[[local numBones = v:GetBoneCount()
@@ -231,6 +233,11 @@ function ENT:VomitEnemy(v)
             VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.mp3",90,self:VJ_DecideSoundPitch(100,100))  
         end                       
     end
+    net.Start("nBoomer_InitializeResidue")
+        net.WriteBool(bDeath or false)
+        net.WriteVector(self:GetPos())
+        net.WriteString(tostring(self:EntIndex()))
+    net.Broadcast()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode()
@@ -281,9 +288,9 @@ function ENT:MultipleMeleeAttacks()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self:GetGroundType(self:GetPos()) -- in the features.lua
-	local ent = self:GetEnemy()
-	if self.VJ_IsBeingControlled == false then
+    self:GetGroundType(self:GetPos()) -- in the features.lua
+    local ent = self:GetEnemy()
+    if self.VJ_IsBeingControlled == false then
         if IsValid(ent) then
             if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
                 self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
@@ -304,68 +311,68 @@ function ENT:CustomOnThink()
         self.HasRangeAttack = true
     end
 
-	self:ManageHUD(self.VJ_TheController)
+    self:ManageHUD(self.VJ_TheController)
     hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
         if self.VJ_IsBeingControlled then
             if button == KEY_E then
-        	    if self.IsGhosted then
-        	        self:SetGhost(false)
-        	    else
-        	        self:SetGhost(true)  
-        	    end
+                if self.IsGhosted then
+                    self:SetGhost(false)
+                else
+                    self:SetGhost(true)  
+                end
             end
         end
     end)
 
     if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "Boomer_Crouch", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle_Upper_Knife"))}
-					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-					self.AnimTbl_Run = {ACT_RUN_CROUCH}
-				end
-			end
-		end)
-		hook.Add("KeyRelease", "Boomer_CrouchRelease", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {ACT_IDLE}
-					self.AnimTbl_Walk = {ACT_WALK}
-					self.AnimTbl_Run = {ACT_RUN}
-				end
-			end
-		end)
-	end
+        hook.Add("KeyPress", "Boomer_Crouch", function(ply, key)
+            if self.VJ_TheController == ply then
+                if key == IN_DUCK then
+                    self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle_Upper_Knife"))}
+                    self.AnimTbl_Walk = {ACT_RUN_CROUCH}
+                    self.AnimTbl_Run = {ACT_RUN_CROUCH}
+                end
+            end
+        end)
+        hook.Add("KeyRelease", "Boomer_CrouchRelease", function(ply, key)
+            if self.VJ_TheController == ply then
+                if key == IN_DUCK then
+                    self.AnimTbl_IdleStand = {ACT_IDLE}
+                    self.AnimTbl_Walk = {ACT_WALK}
+                    self.AnimTbl_Run = {ACT_RUN}
+                end
+            end
+        end)
+    end
 
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
-	else
-		self.ConstantlyFaceEnemy = true
-	end
+    if self.VJ_IsBeingControlled then
+        self.ConstantlyFaceEnemy = false
+    else
+        self.ConstantlyFaceEnemy = true
+    end
         
     if self.VJ_IsBeingControlled == false then
-	    self.TimeUntilRangeAttackProjectileRelease = 1.5
-	    self.HasBeforeRangeAttackSound = true 
-	    self.RangeAttackAnimationDelay = 1.5
-	elseif self.VJ_IsBeingControlled == true then
-	    self.TimeUntilRangeAttackProjectileRelease = 0
-	    self.HasBeforeRangeAttackSound = false
-	    self.RangeAttackAnimationDelay = 0
-	end 
+        self.TimeUntilRangeAttackProjectileRelease = 1.5
+        self.HasBeforeRangeAttackSound = true 
+        self.RangeAttackAnimationDelay = 1.5
+    elseif self.VJ_IsBeingControlled == true then
+        self.TimeUntilRangeAttackProjectileRelease = 0
+        self.HasBeforeRangeAttackSound = false
+        self.RangeAttackAnimationDelay = 0
+    end 
 
-	if CurTime() >= self.nextBacteria then
-	    self:PlayBacteria()
-	end
+    if CurTime() >= self.nextBacteria then
+        self:PlayBacteria()
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-	if self:IsShoved() then return end
+    if self:IsShoved() then return end
     if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-    	self.NextRangeAttackTime = 1
-    	self:StopAttacks(true)
-    	self.vAct_StopAttacks = true
-    	self:StopParticles()
+        self.NextRangeAttackTime = 1
+        self:StopAttacks(true)
+        self.vAct_StopAttacks = true
+        self:StopParticles()
         local function GetDirection()
             local directions = {
                 {"Shoved_Backward_01", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
@@ -378,15 +385,15 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
         end
         self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
         timer.Simple(VJ_GetSequenceDuration(self,GetDirection()),function()
-        	if IsValid(self) then
-        		self.NextRangeAttackTime = 20
-        	end
+            if IsValid(self) then
+                self.NextRangeAttackTime = 20
+            end
         end)
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnKilled(dmginfo,hitgroup)
-	for i = 1, 20 do 
+    for i = 1, 20 do 
         local ent = ents.Create("obj_vj_l4d2_bile")
         ent:SetPos(self:GetPos())
         ent:SetOwner(self)
@@ -411,9 +418,9 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
     for _, x in ipairs(ents.FindInSphere(self:GetPos(),135)) do
         if IsValid(x) && IsValid(self) then
             if self:IsLineOfSightClear(x) then
-            	if !IsValid(x) then return false end
+                if !IsValid(x) then return false end
                 table.insert(self.Vomited_Enemies,x)
-                self:VomitEnemy(x)
+                self:VomitEnemy(x, true)
                 self.Enemy_IsPuked = true
             end
         end
@@ -421,7 +428,7 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
-	ParticleEffectAttach("boomer_leg_smoke",PATTACH_ABSORIGIN_FOLLOW,corpseEnt,corpseEnt:LookupAttachment("forward"))
+    ParticleEffectAttach("boomer_leg_smoke",PATTACH_ABSORIGIN_FOLLOW,corpseEnt,corpseEnt:LookupAttachment("forward"))
     local attacker = dmginfo:GetAttacker()
     if IsValid(attacker) then
         if attacker:IsNPC() then
@@ -432,7 +439,7 @@ function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
     end
 end
 /*-----------------------------------------------
-	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
-	No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
-	without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
+    *** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
+    No parts of this code or any of its contents may be reproduced, copied, modified or adapted,
+    without the prior written consent of the author, unless otherwise indicated for stand-alone materials.
 -----------------------------------------------*/
