@@ -7,6 +7,7 @@ Boomer:
 -Player still has vomit overlay/puke particles after death on respawn ✅
 -Make it still vomit if shoved (otherwise it has to wait 20 seconds in order to be able range attack again when it didn't even vomit) ✅
 -Smoke particles spawn at the center of the map on death
+-Make vomit music play relative to effected player
 
 Boomette:
 -Fix broken model ✅
