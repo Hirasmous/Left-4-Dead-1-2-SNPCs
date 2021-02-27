@@ -256,6 +256,9 @@ function ENT:SmokerIncapacitate(ent)
 		end
 	end
 end
+
+function ENT:CheckPath()
+end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
 	if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:Health() > 0 then
@@ -562,17 +565,6 @@ function ENT:CustomOnThink()
 				end
 			end
 
-			--Set enemy pose param to 1 if it's stuck
-			if self.IsChokingEnemy || self.IsEnemyStuck then
-				if self.pEnemyRagdoll:GetPoseParameter("tongue_angle") > 0.8 then
-					self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
-				end
-			else
-				--If dragging, set enemy pose params accordingly 
-				SetPitch(self.pEnemyTongueAttach, "tongue_angle", self:GetAttachment(3).Pos)
-				SetPitch(self.pEnemyRagdoll, "tongue_angle", self:GetAttachment(3).Pos)
-			end
-
 			if IsValid(self.pTongueController) then
 				local tCtrl = self.pTongueController
 				tCtrl:SetPos(self:GetAttachment(3).Pos)
@@ -617,59 +609,6 @@ function ENT:CustomOnThink()
 
 			local ene = self.pIncapacitatedEnemy
 
-			local dist = self:GetPos():Distance(enemy:GetPos())  
-
-			--add anim support for player control	
-			if self.VJ_IsBeingControlled then
-				if dist <= self.IncapacitationRange then
-					self.CombatFaceEnemy = true
-					FreezeEnemy()
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
-				else
-					self.CombatFaceEnemy = false
-					self:SetAngles(self.incapAngles)
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle"))}
-				end
-			end 
-
-			if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
-				if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
-					self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
-					self.IsChokingEnemy = true
-					if not self.IsEnemyFloating then
-						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
-						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
-					else
-						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
-						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
-					end
-					for k, v in ipairs(ents.FindByClass("player")) do
-						if enemy:IsNPC() then
-							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-						end
-					end
-					if enemy:IsPlayer() then
-						self:Incap_Lighting(enemy, false)
-						enemy:SpectateEntity(self.Camera)
-						enemy:SetFOV(80)
-					end
-				end
-				if self.IsEnemyStuck then
-					if self.IncapSong2 then
-						self.IncapSong2:Stop()
-					end
-					self:PlayIncapSong()
-				end
-			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
-				if self.IncapSong2 then
-					self.IncapSong2:Stop()
-				end
-				self:PlayIncapSong()
-				if dist > self.IncapacitationRange then
-					self:VJ_ACT_PLAYACTIVITY("Tongue_Attack_Drag_Survivor_Idle", true)   
-				end
-			end
-
 			--check enemy type		   
 			if enemy:IsPlayer() then
 				enemy = self.pEnemyObj
@@ -680,21 +619,14 @@ function ENT:CustomOnThink()
 				end
 			end
 
+			local dist = self:GetPos():Distance(ene:GetPos())  
+
 			local posZ = Vector(self:GetPos().x, self:GetPos().y, enemy:GetPos().z)
 			--make enemy face same direction
 			if enemy:GetPos():Distance(posZ) > 50 then
 				FaceTarget(enemy, self, true)
 			end
 
-			--check if path to us is blocked
-			local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			--check if enemy is on ground
-			local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			--check if enemy is 
-			local tr3 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 10 - enemy:GetForward() * 10, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			--check if enemy is hitting ceiling
-			local tr4 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() + enemy:GetUp() * 65, filter = {self, enemy, ene, self.pEnemyRagdoll}})
-			
 			--call if enemy is stuck
 			local function FreezeEnemy()
 				if ene:IsPlayer() then
@@ -719,6 +651,15 @@ function ENT:CustomOnThink()
 					self.lastEFlagsReset = CurTime() + 2
 				end
 			end
+
+			--check if path to us is blocked
+			local tr1 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetForward() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+			--check if enemy is on ground
+			local tr2 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 20, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+			--check if enemy is 
+			local tr3 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() - enemy:GetUp() * 10 - enemy:GetForward() * 10, filter = {self, enemy, ene, self.pEnemyRagdoll}})
+			--check if enemy is hitting ceiling
+			local tr4 = util.TraceLine({start = enemy:GetPos(), endpos = enemy:GetPos() + enemy:GetUp() * 65, filter = {self, enemy, ene, self.pEnemyRagdoll}})
 
 			if tr1.Hit == true then
 				self.lastTr1Hit = CurTime()
@@ -825,6 +766,68 @@ function ENT:CustomOnThink()
 				end
 			else
 				enemy:SetLocalVelocity(Vector(0, 0, 0))
+			end
+
+			--Set enemy pose param to 1 if it's stuck
+			if self.IsChokingEnemy || self.IsEnemyStuck then
+				if self.pEnemyRagdoll:GetPoseParameter("tongue_angle") > 0.8 then
+					self.pEnemyRagdoll:SetPoseParameter("tongue_angle", 1)
+				end
+			else
+				--If dragging, set enemy pose params accordingly 
+				SetPitch(self.pEnemyTongueAttach, "tongue_angle", self:GetAttachment(3).Pos)
+				SetPitch(self.pEnemyRagdoll, "tongue_angle", self:GetAttachment(3).Pos)
+			end
+
+			--add anim support for player control	
+			if self.VJ_IsBeingControlled then
+				if dist <= self.IncapacitationRange then
+					self.CombatFaceEnemy = true
+					FreezeEnemy()
+					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
+				else
+					self.CombatFaceEnemy = false
+					self:SetAngles(self.incapAngles)
+					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle"))}
+				end
+			end 
+
+			if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
+				if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
+					self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
+					self.IsChokingEnemy = true
+					if not self.IsEnemyFloating then
+						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
+						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Ground_Smokerchoke"))
+					else
+						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
+						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
+					end
+					for k, v in ipairs(ents.FindByClass("player")) do
+						if enemy:IsNPC() then
+							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+						end
+					end
+					if enemy:IsPlayer() then
+						self:Incap_Lighting(enemy, false)
+						enemy:SpectateEntity(self.Camera)
+						enemy:SetFOV(80)
+					end
+				end
+				if self.IsEnemyStuck then
+					if self.IncapSong2 then
+						self.IncapSong2:Stop()
+					end
+					self:PlayIncapSong()
+				end
+			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
+				if self.IncapSong2 then
+					self.IncapSong2:Stop()
+				end
+				self:PlayIncapSong()
+				if dist > self.IncapacitationRange then
+					self:VJ_ACT_PLAYACTIVITY("Tongue_Attack_Drag_Survivor_Idle", true)   
+				end
 			end
 		else
 			self:DismountSmoker()
