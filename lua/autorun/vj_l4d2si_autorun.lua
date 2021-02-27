@@ -90,8 +90,7 @@ if( file.Exists( VJExists, "GAME" ) ) then
     -- Other 
     VJ.AddConVar("vj_l4d2_musictype",1)
     VJ.AddConVar("vj_l4d2_tanktype",1)
-    VJ.AddConVar("vj_l4d2_npcs_dropweapons",1) -- Turned on by default
-    VJ.AddConVar("vj_l4d2_incapdamage",1) -- Turned on by default
+    VJ.AddConVar("vj_l4d2_npcs_dropweapons", 0) -- Turned off by default
     VJ.AddConVar("vj_l4d2_ghosted",0) -- Turned off by default
 end
 
@@ -122,7 +121,6 @@ if CLIENT then
 
 
 			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs drop their weapons?", Command = "vj_l4d2_npcs_dropweapons"})
-			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs/Players take damage?", Command = "vj_l4d2_incapdamage"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
 			Panel:AddControl("Slider", { Label 	= "Tank health", Command = "vj_l4d2_t_h", Type = "Float", Min = "3500", Max = "6000"})
 			Panel:AddControl("ComboBox", tank_musictype)
