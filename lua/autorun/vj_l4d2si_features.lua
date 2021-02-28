@@ -679,20 +679,26 @@ function NPC:IncapacitateEnemy(ent, parent)
 end
 
 NPC.Light1 = nil
-function NPC:Incap_Lighting(ply, fadeout)
+function NPC:Incap_Lighting(ply, fadeout, parent)
 	local spotlightpoint1
 	fadeout = fadeout or false
+	if IsValid(self.Light1) then
+		self.Light1:Remove()
+	end
 	if fadeout == false then
 		spotlightpoint1 = ents.Create("env_projectedtexture")
 		self.Light1 = spotlightpoint1
 		self.Light1:Fire("LightColor", "145 25 12")
 		self.Light1:Fire("FOV", "80")
+		if parent then
+			spotlightpoint1:SetParent(parent)
+		end
 		self:DeleteOnRemove(spotlightpoint1)
 		timer.Simple(0.05, function()
 			if !IsValid(self) then return end
 			net.Start("Infected_IncapLight")
 				net.WriteBool(fadeout)
-				net.WriteEntity(self)
+				net.WriteEntity(parent or self)
 				net.WriteEntity(self.Light1)
 			net.Send(ply)
 		end)
