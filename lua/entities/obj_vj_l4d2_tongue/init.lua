@@ -63,7 +63,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 		if IsValid(data.HitEntity) then
 			VJ_CreateSound(data.HitEntity,VJ_PICKRANDOMTABLE({"player/smoker/voice/attack/smoker_tonguehit_01.mp3","player/smoker/voice/attack/smoker_tonguehit_02.mp3"}),95,owner:VJ_DecideSoundPitch(100,100))
 		elseif !IsValid(data.HitEntity) then
-		if owner.HasEnemyIncapacitated == false then
+			if owner.HasEnemyIncapacitated == false then
 				owner.IsTakingCover = true
 				timer.Simple(2,function()
 					if IsValid(owner) then
@@ -175,7 +175,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					owner.Camera = camera
 
 					if enemy:IsPlayer() then
-						owner:Incap_Lighting(enemy, false, dragObj)
+						owner:Incap_Lighting(enemy, false, owner.pEnemyObj)
 						owner:StripEnemyWeapons(enemy)
 						if owner.VJ_IsBeingControlled == false && owner.VJ_TheController ~= enemy then
 							enemy:SetObserverMode(OBS_MODE_CHASE)
