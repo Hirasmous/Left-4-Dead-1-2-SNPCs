@@ -808,10 +808,10 @@ function ENT:CustomOnThink()
 							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
 						end
 					end
-					if enemy:IsPlayer() then
-						self:Incap_Lighting(enemy, false)
-						enemy:SpectateEntity(self.Camera)
-						enemy:SetFOV(80)
+					if ene:IsPlayer() then
+						self:Incap_Lighting(ene, false)
+						ene:SpectateEntity(self.Camera)
+						ene:SetFOV(80)
 					end
 				end
 				if self.IsEnemyStuck then
