@@ -802,6 +802,15 @@ function ENT:CustomOnThink()
 					else
 						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
 						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
+						if self.Incap_Effects == false then
+                            self:Incap_Lighting(ene, false)
+                            self.Incap_Effects = true
+                            for k, v in ipairs(ents.FindByClass("player")) do
+                                if enemy:IsNPC() then
+                                    VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+                                end
+                            end
+                        end
 					end
 					for k, v in ipairs(ents.FindByClass("player")) do
 						if enemy:IsNPC() then
@@ -819,6 +828,15 @@ function ENT:CustomOnThink()
 						self.IncapSong2:Stop()
 					end
 					self:PlayIncapSong()
+					if self.Incap_Effects == false then
+                            self:Incap_Lighting(ene, false)
+                            self.Incap_Effects = true
+                            for k, v in ipairs(ents.FindByClass("player")) do
+                                if enemy:IsNPC() then
+                                    VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+                                end
+                            end
+                        end
 				end
 			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
 				if self.IncapSong2 then
@@ -861,17 +879,17 @@ function ENT:CustomOnThink()
 	end
 
 	self:ManageHUD(self.VJ_TheController)
-	hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
-		if self.VJ_IsBeingControlled then
-			if button == KEY_E then
-				if self.IsGhosted then
-					self:SetGhost(false)
-				else
-					self:SetGhost(true)  
-				end
-			end
-		end
-	end)
+	hook.Add("KeyPress", "Ghosting", function(ply, key)
+        if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
+            if key == IN_USE then
+        	    if self.IsGhosted == true then
+        	        self:SetGhost(false)
+        	    elseif self.IsGhosted == false then
+        	        self:SetGhost(true)  
+        	    end
+            end
+        end
+    end)
 	if self.VJ_IsBeingControlled == true then
 		hook.Add("KeyPress", "Smoker_Crouch", function(ply, key)
 			if self.VJ_TheController == ply then
