@@ -206,6 +206,7 @@ if CLIENT then
 		else
 			_ents = ents.FindInCone(pos, ents.GetByIndex(tonumber(id)):GetForward(), 450, 0.906)
 		end
+		for k, v in ipairs(_ents) do if v:GetClass() == "obj_vj_bullseye" then table.remove(_ents, table.KeyFromValue(_ents, v)) end end
 		function VomitCover()
 			local mat = Material("models/vj_l4d2/survivors/survivor_it", "alphatest")
 			cam.Start3D(EyePos(), EyeAngles())
