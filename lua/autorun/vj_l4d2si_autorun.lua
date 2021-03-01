@@ -46,14 +46,16 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	VJ.AddNPC("Witch","npc_vj_l4d_witch",vCatL4D)  
 	VJ.AddNPC("Random Special Infected","sent_vj_l4d_random",vCatL4D)
 	VJ.AddNPC("Random Special Infected (Spawner)","sent_vj_l4d_random_spawner",vCatL4D)
-
+	
+	VJ.AddParticle("particles/smoker_fx.pcf",{
+	"smoker_tongue",
+})
 
 	//Particles
 	game.AddParticles("particles/boomer_fx.pcf")
 	game.AddParticles("particles/l4d2_blood_fx.pcf")
 	game.AddParticles("particles/smoker_fx.pcf")
 	game.AddParticles("particles/smoker_fx2.pcf")
-	game.AddParticles("particles/smoker_fx_old.pcf")
 	game.AddParticles("particles/hunter_fx.pcf")
 	game.AddParticles("particles/charger_fx.pcf")
 	game.AddParticles("particles/spitter_fx.pcf")
@@ -92,12 +94,14 @@ if( file.Exists( VJExists, "GAME" ) ) then
     VJ.AddConVar("vj_l4d2_tanktype",1)
     VJ.AddConVar("vj_l4d2_npcs_dropweapons", 0) -- Turned off by default
     VJ.AddConVar("vj_l4d2_ghosted",0) -- Turned off by default
+	VJ.AddConVar("vj_l4d2_incap_overlay",1) -- Turned on by default
 end
 
 if SERVER then
     util.AddNetworkString("infected_PounceEnemy")
 	util.AddNetworkString("infected_RemoveCSEnt")
 	util.AddNetworkString("Infected_IncapLight")
+	util.AddNetworkString("Infected_DrawIncapOverlay")
 end
 
 if CLIENT then
@@ -133,12 +137,23 @@ if CLIENT then
 		local ent = net.ReadEntity()
 		local light = net.ReadEntity()
 		if fadeout == false then
-			light:SetPos(ent:GetPos() + ent:GetUp() * 110)
-			light:SetAngles(Angle(90, 0, 0))
-			light:Spawn()
-			light:SetParent(ent)
-			light:Activate()
+			if IsValid(ent) then
+				light:SetPos(ent:GetPos() + ent:GetUp() * 110)
+				light:SetAngles(Angle(90, 0, 0))
+				light:Spawn()
+				light:SetParent(ent)
+				light:Activate()
+			end
 		end
+	end)
+	net.Receive("Infected_DrawIncapOverlay", function()
+		local isdeleted = net.ReadBool()
+		local ent = net.ReadEntity()
+		hook.Add("RenderScreenspaceEffects","IncapOverlay",function()
+			DrawMaterialOverlay( "effects/dodge_overlay", 0 )
+			DrawMaterialOverlay( "effects/invuln_overlay_red", 0 )
+		end)
+	    if isdeleted == true then hook.Remove("RenderScreenspaceEffects","IncapOverlay") end
 	end)
 end
 
