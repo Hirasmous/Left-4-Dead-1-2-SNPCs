@@ -63,7 +63,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 		if IsValid(data.HitEntity) then
 			VJ_CreateSound(data.HitEntity,VJ_PICKRANDOMTABLE({"player/smoker/voice/attack/smoker_tonguehit_01.mp3","player/smoker/voice/attack/smoker_tonguehit_02.mp3"}),95,owner:VJ_DecideSoundPitch(100,100))
 		elseif !IsValid(data.HitEntity) then
-			if owner.HasEnemyIncapacitated == false then
+		if owner.HasEnemyIncapacitated == false then
 				owner.IsTakingCover = true
 				timer.Simple(2,function()
 					if IsValid(owner) then
@@ -175,8 +175,13 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					owner.Camera = camera
 
 					if enemy:IsPlayer() then
-						owner:Incap_Lighting(enemy, false, owner.pEnemyObj)
 						owner:StripEnemyWeapons(enemy)
+						owner:Incap_Lighting(enemy, false, owner.pEnemyObj)
+						owner.Light1:SetKeyValue('lightcolor', "255 255 255 255")
+						owner.Light2:SetKeyValue('lightcolor', "255 255 255 255")
+						owner.Light3:SetKeyValue('lightcolor', "255 255 255 255")
+						owner.Light1:SetKeyValue('lightfov', '45')
+						owner.Light2:SetKeyValue('lightfov', '45')
 						if owner.VJ_IsBeingControlled == false && owner.VJ_TheController ~= enemy then
 							enemy:SetObserverMode(OBS_MODE_CHASE)
 							enemy:SpectateEntity(dragObj)
@@ -201,7 +206,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
 					mdl:SetPos(dragObj:GetPos())
 					mdl:SetAngles(enemy:GetAngles())
-					mdl:SetRenderMode(1)
+					mdl:SetRenderMode(RENDERMODE_NONE)
 					mdl:SetColor(Color(0, 0, 0, 0))
 					mdl:DrawShadow(false)
 					mdl:Spawn()
