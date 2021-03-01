@@ -250,12 +250,12 @@ function ENT:CustomOnThink()
         end
     end
     self:ManageHUD(self.VJ_TheController)
-    hook.Add("PlayerButtonDown", "Ghosting", function(ply, button)
-        if self.VJ_IsBeingControlled then
-            if button == KEY_E then
-        	    if self.IsGhosted then
+    hook.Add("KeyPress", "Ghosting", function(ply, key)
+        if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
+            if key == IN_USE then
+        	    if self.IsGhosted == true then
         	        self:SetGhost(false)
-        	    else
+        	    elseif self.IsGhosted == false then
         	        self:SetGhost(true)  
         	    end
             end
