@@ -16,6 +16,8 @@ local tblIncapSongs = {
 	["jockey"] = 25
 }
 
+NPC.tblCrouchACTs = {8, 12, 45, 46}
+
 function NPC:GetGroundType(pos)
 	local tr = util.TraceLine({
 		start = pos,
@@ -761,4 +763,41 @@ function NPC:L4D2_InitializeHooks()
 			end
 		end
 	end)
+	hook.Add("KeyPress", "Infected_Crouch", function(ply, key)
+		if self.VJ_IsBeingControlled == true && self.VJ_TheController == ply then
+			if key == IN_DUCK then
+				if self:LookupSequence("Crouch_Idle_Upper_Knife") ~= -1 then
+					seq = "Crouch_Idle_Upper_Knife"
+				elseif self:LookupSequence("Crouch_Idle") ~= -1 then
+					seq = "Crouch_Idle"
+				end
+				self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(seq))}
+				self.AnimTbl_Walk = {ACT_RUN_CROUCH}
+				self.AnimTbl_Run = {ACT_RUN_CROUCH}
+				self:VJ_ACT_PLAYACTIVITY(self:GetSequenceActivity(self:LookupSequence(seq)))
+				self:ResetSequenceInfo()
+			end
+		end
+	end)
+	hook.Add("KeyRelease", "Infected_CrouchRelease", function(ply, key)
+		if self.VJ_IsBeingControlled == true && self.VJ_TheController == ply then
+			if key == IN_DUCK then
+				self.AnimTbl_IdleStand = {ACT_IDLE}
+				self.AnimTbl_Walk = {ACT_WALK}
+				self.AnimTbl_Run = {ACT_RUN}
+				self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+				self:ResetSequenceInfo()
+			end
+		end
+	end)
+end
+
+function NPC:Infected_IsCrouching()
+	local ACT_ = self:GetSequenceActivity(self:GetSequence())
+	for i = 1, #self.tblCrouchACTs do
+		if ACT_ == self.tblCrouchACTs[i] then
+			return true
+		end
+	end
+	return false
 end
