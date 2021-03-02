@@ -747,3 +747,18 @@ function NPC:Incap_Lighting(ply, fadeout , parent)
         end
     end
 end
+
+-- Add hooks here
+function NPC:L4D2_InitializeHooks()
+	hook.Add("KeyPress", "Infected_Ghost", function(ply, key)
+		if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
+			if key == IN_USE then
+				if self.IsGhosted == true then
+					self:SetGhost(false)
+				elseif self.IsGhosted == false then
+					self:SetGhost(true)
+				end
+			end
+		end
+	end)
+end
