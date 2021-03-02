@@ -765,7 +765,10 @@ function ENT:CustomOnThink()
 					self.AnimTbl_IdleStand = {ACT_CROUCH}
 					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
 					self.AnimTbl_Run = {ACT_RUN_CROUCH}
+					self:VJ_ACT_PLAYACTIVITY(ACT_CROUCH)
+					self:ResetSequenceInfo()
 					VJ_CreateSound(self,"HunterZombie.Warn",85,self:VJ_DecideSoundPitch(100,100))
+					self:EmitSound("HunterZombie.Warn")
 					self.TimeUntilLeapAttackVelocity = 0
 				end
 			end
@@ -777,6 +780,8 @@ function ENT:CustomOnThink()
 					self.AnimTbl_IdleStand = {ACT_IDLE}
 					self.AnimTbl_Walk = {ACT_WALK}
 					self.AnimTbl_Run = {ACT_RUN}
+					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+					self:ResetSequenceInfo()
 					self.TimeUntilLeapAttackVelocity = 2
 				end
 			end
