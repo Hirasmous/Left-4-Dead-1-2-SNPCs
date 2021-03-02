@@ -111,7 +111,7 @@ function ENT:CustomOnInitialize()
 	self:L4D2_InitializeHooks()
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
-	if !self.IsGhosted then
+	if GetConVarNumber("vj_l4d2_ghosted") == 0 then
 		ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
 		ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
 		local glowlight = ents.Create("light_dynamic")
@@ -128,6 +128,12 @@ function ENT:CustomOnInitialize()
 		self:DeleteOnRemove(glowlight)
 	end
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnUnGhost()
+    VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
+    ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
+    ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
