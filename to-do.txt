@@ -111,6 +111,7 @@ General:
 -Give player grenades (if he had them before) when stopping incapping
 -Make all special infected be able to incap players with non-ValveBiped skeletons
 -Fix other players ghosting controlled specials
+-Make halos around allies green (when controlling)
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
