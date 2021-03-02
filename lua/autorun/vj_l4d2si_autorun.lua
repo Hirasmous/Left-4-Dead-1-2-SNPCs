@@ -93,9 +93,9 @@ if( file.Exists( VJExists, "GAME" ) ) then
     VJ.AddConVar("vj_l4d2_musictype",1)
     VJ.AddConVar("vj_l4d2_tanktype",1)
     VJ.AddConVar("vj_l4d2_npcs_dropweapons", 0) -- Turned off by default
-    VJ.AddConVar("vj_l4d2_incapdamage",1) -- Turned on by default
     VJ.AddConVar("vj_l4d2_ghosted",0) -- Turned off by default
     VJ.AddConVar("vj_l4d2_incap_overlay",1) -- Turned on by default
+	VJ.AddConVar("vj_l4d2_dismount", 0) -- Turned off by default
 end
 
 if SERVER then
@@ -126,8 +126,8 @@ if CLIENT then
 
 
 			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs drop their weapons?", Command = "vj_l4d2_npcs_dropweapons"})
-			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs/Players take damage?", Command = "vj_l4d2_incapdamage"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
+			Panel:AddControl("Checkbox", {Label = "Can controlled Specials stop incapacitating (via spacebar)?", Command = "vj_l4d2_dismount"})
 			Panel:AddControl("Slider", { Label 	= "Tank health", Command = "vj_l4d2_t_h", Type = "Float", Min = "3500", Max = "6000"})
 			Panel:AddControl("ComboBox", tank_musictype)
 			Panel:AddControl("ComboBox", tank_type)
@@ -170,26 +170,27 @@ end
 
 timer.Simple(1,function()
 	if (!file.Exists("autorun/vj_base_autorun.lua","LUA")) then
-	if not VJF then
-	if CLIENT then
-	VJF = vgui.Create('DFrame')
-	VJF:SetTitle("VJ Base is not installed")
-	VJF:SetSize(900, 800)
-	VJF:SetPos((ScrW() - VJF:GetWide()) / 2, (ScrH() - VJF:GetTall()) / 2)
-	VJF:MakePopup()
-	VJF.Paint = function()
-	draw.RoundedBox( 8, 0, 0, VJF:GetWide(), VJF:GetTall(), Color( 200, 0, 0, 150 ) )
+		if not VJF then
+			if CLIENT then
+				VJF = vgui.Create('DFrame')
+				VJF:SetTitle("VJ Base is not installed")
+				VJF:SetSize(900, 800)
+				VJF:SetPos((ScrW() - VJF:GetWide()) / 2, (ScrH() - VJF:GetTall()) / 2)
+				VJF:MakePopup()
+				VJF.Paint = function()
+				draw.RoundedBox( 8, 0, 0, VJF:GetWide(), VJF:GetTall(), Color( 200, 0, 0, 150 ) )
+				end
+				local VJURL = vgui.Create('DHTML')
+				VJURL:SetParent(VJF)
+				VJURL:SetPos(VJF:GetWide()*0.005, VJF:GetTall()*0.03)
+				local x,y = VJF:GetSize()
+				VJURL:SetSize(x*0.99,y*0.96)
+				VJURL:SetAllowLua(true)
+				VJURL:OpenURL('https://sites.google.com/site/vrejgaming/vjbasemissing')
+				elseif SERVER then
+				timer.Create("VJBASEMissing", 5, 0, function() print("VJ Base is Missing! Download it from the workshop!") end)
+			end
+		end
 	end
-	local VJURL = vgui.Create('DHTML')
-	VJURL:SetParent(VJF)
-	VJURL:SetPos(VJF:GetWide()*0.005, VJF:GetTall()*0.03)
-	local x,y = VJF:GetSize()
-	VJURL:SetSize(x*0.99,y*0.96)
-	VJURL:SetAllowLua(true)
-	VJURL:OpenURL('https://sites.google.com/site/vrejgaming/vjbasemissing')
-	elseif SERVER then
-	timer.Create("VJBASEMissing", 5, 0, function() print("VJ Base is Missing! Download it from the workshop!") end)
-   end
-  end
- end
 end)
+
