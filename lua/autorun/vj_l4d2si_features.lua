@@ -321,6 +321,7 @@ function NPC:Ghost()
 				if CanSpawnWhileGhosted && self.HasSpawned == false then
 					self.HasSpawned = true
 					self:SetGhost(false) 
+					self:OnUnGhost()
 				end
 			end
 		end
