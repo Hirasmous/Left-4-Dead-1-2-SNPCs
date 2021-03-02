@@ -91,14 +91,6 @@ ENT.GeneralSoundPitch1 = 95
 ENT.GeneralSoundPitch2 = 105
 ENT.UseTheSameGeneralSoundPitch = false
 
-
-1
-
-AddCSLuaFile("shared.lua")
-
-2
-
-include('shared.lua')
 -- Custom --
 ENT.IsGhosted = false
 ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/jockeybacteria.mp3","vj_l4d2/music/bacteria/jockeybacterias.mp3"}
@@ -132,6 +124,25 @@ util.AddNetworkString("L4D2JockeyHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:L4D2_InitializeHooks()
+
+	hook.Add("KeyPress", "jockey_Dismount", function(ply, key)
+		if GetConVar("vj_l4d2_dismount"):GetInt() == 1 then
+			if self.HasEnemyIncapacitated then
+				if self.VJ_TheController == ply then
+					if key == IN_JUMP then
+						self.HasEnemyIncapacitated = false
+						self:VJ_ACT_PLAYACTIVITY("Pounce", true, 0, false)
+						self:SetVelocity(self:GetUp() * 100 - self:GetForward() * 200)
+						timer.Simple(2, function()
+							if !IsValid(self) then return end
+							self:ResetJockey()
+						end)
+					end
+				end
+			end
+		end
+	end)
+
 	self:SetHullType(self.HullType)
 	self:SetCollisionBounds(Vector(-13, -13, 0), Vector(13, 13, 40))
 	self.nextBacteria = 0
@@ -680,46 +691,7 @@ function ENT:CustomOnThink()
 	end
 
 	self:ManageHUD(self.VJ_TheController)
-	
-	if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "jockey_Crouch", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle"))}
-					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-					self.AnimTbl_Run = {ACT_RUN_CROUCH}
-					self:VJ_ACT_PLAYACTIVITY(self:GetSequenceActivity(self:LookupSequence("Crouch_Idle")))
-					self:ResetSequenceInfo()
-				end
-			end
-		end)
-		hook.Add("KeyRelease", "jockey_CrouchRelease", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {ACT_IDLE}
-					self.AnimTbl_Walk = {ACT_WALK}
-					self.AnimTbl_Run = {ACT_RUN}
-					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
-					self:ResetSequenceInfo()
-				end
-			end
-		end)
-		hook.Add("KeyPress", "jockey_Dismount", function(ply, key)
-			if self.HasEnemyIncapacitated then
-				if self.VJ_TheController == ply then
-					if key == IN_JUMP then
-						self.HasEnemyIncapacitated = false
-						self:VJ_ACT_PLAYACTIVITY("Pounce", true, 0, false)
-						self:SetVelocity(self:GetUp() * 100 - self:GetForward() * 200)
-						timer.Simple(2, function()
-							if !IsValid(self) then return end
-							self:ResetJockey()
-						end)
-					end
-				end
-			end
-		end)
-	end
+
 	if CurTime() >= self.nextBacteria then
 		self:PlayBacteria()
 	end
