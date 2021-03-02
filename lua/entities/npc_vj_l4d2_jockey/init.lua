@@ -116,11 +116,14 @@ ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.CanPounce = true
 ENT.FootStepType = "CommonLight"
+ENT.pNavigator = nil
+ENT.EnemyCollisionBounds = nil
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
+	self:L4D2_InitializeHooks()
 	self:SetHullType(self.HullType)
 	self:SetCollisionBounds(Vector(-13, -13, 0), Vector(13, 13, 40))
 	self.nextBacteria = 0
@@ -133,112 +136,54 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 		self:FootStepSoundCode()
 	end
 	if key == "event_land" then
-        if !self.IsGhosted then
-            VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
-        end
-    end
+		if !self.IsGhosted then
+			VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
 	if self.HasEnemyIncapacitated == false then
 		self:SetGhost(true)
 	end
-    function self.VJ_TheControllerEntity:CustomOnStopControlling()
-        net.Start("L4D2JockeyHUD")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-        net.Start("L4D2JockeyHUDGhost")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-    end
+	function self.VJ_TheControllerEntity:CustomOnStopControlling()
+		net.Start("L4D2JockeyHUD")
+			net.WriteBool(true)
+			net.WriteEntity(self)
+			net.WriteEntity(ply)
+		net.Send(ply)
+		net.Start("L4D2JockeyHUDGhost")
+			net.WriteBool(true)
+			net.WriteEntity(self)
+			net.WriteEntity(ply)
+		net.Send(ply)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
-    if self.VJ_IsBeingControlled == true then
-        if self.IsGhosted == true then
-            net.Start("L4D2JockeyHUDGhost")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2JockeyHUD")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        elseif self.IsGhosted == false then
-            net.Start("L4D2JockeyHUD")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2JockeyHUDGhost")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        end
-    end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:Pounce_Effects(fadeout)
-	if fadeout == false then
-		self.spotlightpoint = ents.Create("env_projectedtexture")
-		self.spotlightpoint:SetPos( self:GetPos() +self:GetUp()*110)
-		self.spotlightpoint:SetKeyValue('lightcolor', "140 255 0")
-		self.spotlightpoint:SetKeyValue('lightfov', '70')
-		self.spotlightpoint:SetKeyValue('brightnessscale', '8')
-		self.spotlightpoint:SetKeyValue('farz', '612')
-		self.spotlightpoint:SetKeyValue('nearz', '0.1')
-		self.spotlightpoint:SetKeyValue('shadowquality', '1')
-		self.spotlightpoint:SetKeyValue('enableshadows', '1')
-		self.spotlightpoint:SetKeyValue('target', '!player')
-		self.spotlightpoint:SetKeyValue('texturename', 'effects/flashlight/hard')
-		self.spotlightpoint:SetKeyValue('lightonlytarget', 'on')
-		self.spotlightpoint:SetParent(self)
-		self.spotlightpoint:Spawn()
-		self.spotlightpoint:Activate()
-		self:DeleteOnRemove(self.spotlightpoint)
-		self.Light1 = self.spotlightpoint
-		self.spotlightpoint1 = ents.Create("env_projectedtexture")
-		self.spotlightpoint1:SetPos( self:GetPos() +self:GetUp()*110)
-		self.spotlightpoint1:SetKeyValue('lightcolor', "140 255 0")
-		self.spotlightpoint1:SetKeyValue('lightfov', '70')
-		self.spotlightpoint1:SetKeyValue('brightnessscale', '8')
-		self.spotlightpoint1:SetKeyValue('farz', '612')
-		self.spotlightpoint1:SetKeyValue('nearz', '0.1')
-		self.spotlightpoint1:SetKeyValue('shadowquality', '1')
-		self.spotlightpoint1:SetKeyValue('enableshadows', '1')
-		self.spotlightpoint1:SetKeyValue('target', '!player')
-		self.spotlightpoint1:SetKeyValue('texturename', 'effects/flashlight/hard')
-		self.spotlightpoint1:SetKeyValue('lightonlytarget', 'on')
-		self.spotlightpoint1:SetParent(self)
-		self.spotlightpoint1:Spawn()
-		self.spotlightpoint1:Activate()
-		self:DeleteOnRemove(self.spotlightpoint1)
-		self.Light2 = self.spotlightpoint1
-		local glowlight = ents.Create("light_dynamic")
-		glowlight:SetKeyValue("_light","140 255 0")
-		glowlight:SetKeyValue("brightness","5")
-		glowlight:SetKeyValue("distance","107")
-		glowlight:SetKeyValue("style","0")
-		glowlight:SetPos(self:GetPos() +self:GetUp()*95)
-		glowlight:SetParent(self)
-		glowlight:Spawn()
-		glowlight:Activate()
-		glowlight:Fire("TurnOn","",0)
-		self:DeleteOnRemove(glowlight)
-		self.Light3 = glowlight
-	end
-	if fadeout == true then
-		if IsValid(self.Light1) && IsValid(self.Light2) && IsValid(self.Light3) then
-			self.Light1:Remove()
-			self.Light2:Remove()
-			self.Light3:Remove()
+	if self.VJ_IsBeingControlled == true then
+		if self.IsGhosted == true then
+			net.Start("L4D2JockeyHUDGhost")
+				net.WriteBool(false)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+			net.Start("L4D2JockeyHUD")
+				net.WriteBool(true)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+		elseif self.IsGhosted == false then
+			net.Start("L4D2JockeyHUD")
+				net.WriteBool(false)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+			net.Start("L4D2JockeyHUDGhost")
+				net.WriteBool(true)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
 		end
 	end
 end
@@ -261,15 +206,25 @@ function ENT:PlayVassalationSound(lvl)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ResetJockey()
-	local enemy = self.pIncapacitatedEnemy
-	self:Pounce_Effects(true)
+	self:ClearPoseParameters()
+	if IsValid(self.pNavigator) then
+		if self.pNavigator.VJ_IsBeingControlled == true then
+			local ctrl = self.pNavigator.VJ_TheController
+			ctrl.VJ_TheControllerEntity:StopControlling(true)
+			if self:Health() > 0 then
+				local SpawnControllerObject = ents.Create("obj_vj_npccontroller")
+				SpawnControllerObject.VJCE_Player = ctrl
+				SpawnControllerObject:SetControlledNPC(self)
+				SpawnControllerObject:Spawn()
+				SpawnControllerObject:StartControlling()
+			end
+		end
+		self.pNavigator:Remove()
+	end
 	self.HasEnemyIncapacitated = false
 	if self.IncapSong then
 		self.IncapSong:Stop()
 		self.IncapSong = nil
-	end
-	if enemy:IsPlayer() then
-		enemy:SetFOV(GetConVarNumber("fov_desired"), 0.1)
 	end
 	self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
 	self:SetParent(nil)
@@ -278,6 +233,14 @@ function ENT:ResetJockey()
 	self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, self:OBBMaxs().z / 2))
 	self:SetPos(self:GetPos() + self:GetUp() * self:OBBMaxs().z)
 	if !IsValid(self.pIncapacitatedEnemy) then return end
+	local enemy = self.pIncapacitatedEnemy
+	self:Incap_Lighting(enemy, true)
+	enemy:SetCollisionBounds(self.EnemyCollisionBounds[1], self.EnemyCollisionBounds[2])
+	enemy:SetParent(nil)
+	enemy:SetPos(self:GetPos())
+	if IsValid(enemy:GetActiveWeapon()) then
+		enemy:GetActiveWeapon():SetNoDraw(false)
+	end
 	hook.Add("ShouldCollide", "Jockey_EnableCollisions", function(ent1, ent2)
 		if (ent1 == self and ent2 == enemy) then return true end
 	end)
@@ -290,19 +253,29 @@ function ENT:ResetJockey()
 	enemy:SetMoveType(self.EnemyMoveType)
 	self.EnemyMoveType = nil
 	if enemy:IsPlayer() then
-		enemy:SetObserverMode(0)
-        enemy:DrawViewModel(true)
-        enemy:DrawWorldModel(true)
 		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
 			enemy:SetPos(self.vecLastPos)
 			enemy:SetObserverMode(0)
 			enemy:DrawViewModel(true)
 			enemy:DrawWorldModel(true)
 		end
+		if table.Count(self.tblEnemyWeapons) > 0 then
+			for i = 1, table.Count(self.tblEnemyWeapons) do
+				local tbl = self.tblEnemyWeapons
+				enemy:Give(tbl[i][1], true)
+				local wpn = enemy:GetWeapon(tbl[i][1])
+				if tbl[i][2][1] ~= -1 then
+					wpn:SetClip1(tbl[i][2][2])
+				end
+				if tbl[i][3][1] ~= -1 then
+					wpn:SetClip2(tbl[i][3][2])
+				end
+			end
+		end
+		for a, c in ipairs(self.tblEnemyAmmo) do
+			enemy:GiveAmmo(c, game.GetAmmoName(a), true)
+		end
 	end
-	net.Start("infected_RemoveCSEnt")
-		net.WriteString(tostring(self:EntIndex()))
-	net.Broadcast()
 	if IsValid(self.pEnemyRagdoll) then
 		self.pEnemyRagdoll:Remove()
 		self.pEnemyRagdoll = nil
@@ -314,8 +287,8 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 	self:SetNW2Int("PounceT",CurTime() +self.NextLeapAttackTime)
 	if self.VJ_IsBeingControlled then
 		timer.Simple(2, function()
-		    if IsValid(self) then
-			    self:VJ_ACT_PLAYACTIVITY("Pounce", false, 0, false)
+			if IsValid(self) then
+				self:VJ_ACT_PLAYACTIVITY("Pounce", false, 0, false)
 			end
 		end)
 	end
@@ -346,31 +319,31 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self:GetGroundType(self:GetPos()) -- in the features.lua
+	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
 	if self.IsGhosted then
 		self:Ghost()
 	end
 	if self.IsGhosted then
-        self.HasLeapAttack = false
-        self.CanPounce = false
-    else
-        self.HasLeapAttack = true
-        self.CanPounce = true
-    end
+		self.HasLeapAttack = false
+		self.CanPounce = false
+	else
+		self.HasLeapAttack = true
+		self.CanPounce = true
+	end
 
 	self.vecLastPos = self:GetPos()
 
 	if IsValid(self.pEnemyRagdoll) then
 		if IsValid(self.pIncapacitatedEnemy) then
 			self.HasPoseParameterLooking = false
-			local enemy = self.pIncapacitatedEnemy
+			local enemy = self.pNavigator
 			if enemy:IsPlayer() then
 				enemy = self
 			end
 			local rag = self.pEnemyRagdoll
 			rag.bIsBeingPounced = true
-			local velo = enemy:GetVelocity()
+			local velo = enemy:GetGroundSpeedVelocity()
 			local ePos = enemy:GetPos()
 			local fPos = ePos + velo
 			local fDist = ePos:Distance(fPos)
@@ -401,23 +374,23 @@ function ENT:CustomOnThink()
 				direction = directions[4]
 			end
 			fDist = math.Round(fDist)
-			if direction:Distance(fPos) < 20 then
-				if dDir == math.Round(directions[1]:Distance(fPos)) then
+			if math.Round(direction:Distance(fPos)) == 0 then
+				if math.Round(direction:Distance(fPos)) == math.Round(directions[1]:Distance(fPos)) then
 					rag.moveX = math.Remap(fDist, dMin, dMax, mins, maxs)
 					rag.moveY = 0
 					self:SetPoseParameter("move_x", math.Remap(fDist, dMin, dMax, mins, maxs))
 					self:SetPoseParameter("move_y", 0)
-				elseif dDir == math.Round(directions[2]:Distance(fPos)) then
+				elseif math.Round(direction:Distance(fPos)) == math.Round(directions[2]:Distance(fPos)) then
 					rag.moveX = 0
 					rag.moveY = math.Remap(-fDist, dMin, dMax, mins, maxs)
 					self:SetPoseParameter("move_x", 0)
 					self:SetPoseParameter("move_y", math.Remap(-fDist, dMin, dMax, mins, maxs))
-				elseif dDir == math.Round(directions[3]:Distance(fPos)) then
+				elseif math.Round(direction:Distance(fPos)) == math.Round(directions[3]:Distance(fPos)) then
 					rag.moveX = math.Remap(-fDist, dMin, dMax, mins, maxs)
 					rag.moveY = 0
 					self:SetPoseParameter("move_x", math.Remap(-fDist, dMin, dMax, mins, maxs))
 					self:SetPoseParameter("move_y", 0)
-				elseif dDir == math.Round(directions[4]:Distance(fPos)) then
+				elseif math.Round(direction:Distance(fPos)) == math.Round(directions[4]:Distance(fPos)) then
 					rag.moveX = 0
 					rag.moveY = math.Remap(fDist, dMin, dMax, mins, maxs)
 					self:SetPoseParameter("move_x", 0)
@@ -461,11 +434,19 @@ function ENT:CustomOnThink()
 	end
 
 	if self.IsPouncing == true && self.HasEnemyIncapacitated == false && self.CanPounce == true then
+		local id = self.nEntityIndex
+		local tbControllers = {}
+		for _, x in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+			if x.VJ_IsBeingControlled then
+				tbControllers[table.Count(tbControllers) + 1] = x.VJ_TheController
+			end
+		end
 		for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
 			if IsValid(v) then
-				if (v:IsPlayer() && v:Alive() && GetConVar("ai_ignoreplayers"):GetInt() == 0) or (v:IsNPC() && v ~= self) then
+				if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0 && not table.HasValue(tbControllers, v)) or (v:IsNPC() && v ~= self) then
 					if v:LookupBone("ValveBiped.Bip01_Pelvis") then
 						if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
+							if self.HasEnemyIncapacitated then return end
 							if not self:CanIncapacitate(v) then return end
 							self.HasEnemyIncapacitated = true
 							self.nextVassalSound = CurTime()
@@ -478,35 +459,40 @@ function ENT:CustomOnThink()
 							end)
 							self.pIncapacitatedEnemy = v
 							self.MovementType = VJ_MOVETYPE_STATIONARY
+
 							local camera = ents.Create("prop_dynamic")
 							camera:SetModel("models/error.mdl")
 							camera:SetPos(self:GetPos())
 							camera:Spawn()
-						    camera:Activate()
+							camera:Activate()
 							camera:SetRenderMode(RENDERMODE_NONE)
 							camera:DrawShadow(false)
 							camera:SetParent(self)
 							camera:Fire("SetParentAttachment","pelvis")
+
 							self:DeleteOnRemove(camera)
 							v:SetNoDraw(true)
-					        if v:IsNPC() then
-					        	for k, x in ipairs(ents.FindByClass("player")) do
-					        	    VJ_CreateSound(x,"vj_l4d2/music/tags/vassalationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-					            end
+
+							if v:IsNPC() then
+								for k, x in ipairs(ents.FindByClass("player")) do
+									VJ_CreateSound(x,"vj_l4d2/music/tags/vassalationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
+								end
 								if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
-					            	v:GetActiveWeapon():SetNoDraw(true)
-					            else
+									if IsValid(v:GetActiveWeapon()) then
+										v:GetActiveWeapon():SetNoDraw(true)
+									end
+								else
 									v:DropWeapon()
 								end
 							elseif v:IsPlayer() then
-					            if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= v then
-					                v:SetObserverMode(OBS_MODE_CHASE)
-					                v:SpectateEntity(camera)
-					                v:DrawViewModel(false)
-					                v:DrawWorldModel(false)
-					                v:SetFOV(85)
-					                self:Pounce_Effects(false)
-					            end
+								self:StripEnemyWeapons(v)
+								self:Incap_Lighting(v)
+								if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= v then
+									v:SetObserverMode(OBS_MODE_CHASE)
+									v:SpectateEntity(camera)
+									v:DrawViewModel(false)
+									v:DrawWorldModel(false)
+								end
 							end
 							local ang = v:GetAngles()
 							local mdl = ents.Create("prop_anim_survivor")
@@ -516,41 +502,58 @@ function ENT:CustomOnThink()
 							mdl:Spawn()
 							mdl:SetRenderMode(1)
 							mdl:SetColor(Color(0, 0, 0, 0))
-							if v:IsPlayer() then
-								mdl:SetParent(self)
-							else
-								mdl:SetParent(v)
-							end
+							mdl:SetParent(self)
 							mdl:ResetSequence(1)
 							mdl:ResetSequenceInfo()
 							mdl:SetCycle(0)
 							mdl:SetLocalPos(Vector(0, 0, 0))
-							timer.Simple(0.15, function()
-								if !IsValid(self) then return end
-								net.Start("infected_PounceEnemy")
-									net.WriteString(tostring(self:EntIndex()))
-									net.WriteEntity(mdl)
-									net.WriteString(v:GetModel())
-								net.Broadcast()
+							self:IncapacitateEnemy(v, mdl)
+
+							local tr = util.TraceLine({start = self:GetPos(), endpos = self:GetPos() - self:GetUp() * 1000, filter = {enemy, self}})
+							local navigator = ents.Create("npc_vj_jockey_controller")
+							navigator:SetPos(tr.HitPos)
+							navigator:Spawn()
+							navigator:SetOwner(self)
+							self.pNavigator = navigator
+							self:SetParent(navigator)
+
+							self:CallOnRemove("Jockey_RemoveNavigator", function(ent)
+								if IsValid(self.pNavigator) then
+									self.pNavigator:Remove()
+								end
 							end)
+
+							navigator:SetCustomCollisionCheck(true)
+							hook.Add("ShouldCollide", "Jockey_EnableCollisions1", function(ent1, ent2)
+								if (ent1 == navigator and ent2 == v) || (ent1 == navigator and ent2 == self) then return false end
+							end)
+
 							self.pEnemyRagdoll = mdl
 							self.EnemyMoveType = v:GetMoveType()
-							if v:IsPlayer() then
-								self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, self:OBBMaxs().z * 2))
-								v:SetParent(self)
-								v:SetLocalPos(Vector(0, 0, 0))
-								v:SetMoveType(MOVETYPE_CUSTOM)
-							else
-								self:SetCollisionBounds(Vector(-13, -13, self:OBBMaxs().z),Vector(13, 13, self:OBBMaxs().z * 2))
-								self:SetParent(v)
+
+							self:SetCollisionBounds(Vector(-13, -13, self:OBBMaxs().z), Vector(13, 13, self:OBBMaxs().z * 2))
+							v:SetParent(self.pNavigator)
+							local mins, maxs = self:GetCollisionBounds()
+							local m1, m2 = v:GetCollisionBounds()
+							self.EnemyCollisionBounds = {m1, m2}
+							v:SetCollisionBounds(mins, maxs)
+
+							if self.VJ_IsBeingControlled then
+								local ctrl = self.VJ_TheController
+								ctrl.VJ_TheControllerEntity:StopControlling()
+								if !IsValid(self.pNavigator) then return end
+								local SpawnControllerObject = ents.Create("obj_vj_npccontroller")
+								SpawnControllerObject.VJCE_Player = ctrl
+								SpawnControllerObject:SetControlledNPC(self.pNavigator)
+								SpawnControllerObject:Spawn()
+								SpawnControllerObject:StartControlling()
 							end
+
 							self:SetAngles(v:GetAngles())
+
 							v:CallOnRemove("jockey_ClearParent", function(ent)
 								if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
 									self:ResetJockey()
-									--[[net.Start("infected_RemoveCSEnt")
-										net.WriteString(tostring(self:EntIndex()))
-									net.Broadcast()]]
 								end
 								if ent:IsPlayer() then
 									ent:SetParent(nil)
@@ -584,69 +587,30 @@ function ENT:CustomOnThink()
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
 			if self.VJ_IsBeingControlled == false then
-				for k, v in ipairs(ents.FindInSphere(self:GetPos(), 1500)) do
-					if IsValid(v) && (v:GetClass() == "obj_vj_l4d2_acidpuddle" || v:GetClass() == "npc_vj_l4d2_tank" || v:GetClass() == "npc_vj_l4d2_witch_s" || v:GetClass() == "npc_vj_l4d2_witch_w") then
-						if self:IsLineOfSightClear(v:GetPos()) then
-							local d = self:GetPos():Distance(v:GetPos()) 
-							if d > 100 then
-								local speed = 600
-								local pos = enemy:GetPos()
-								local tpos = v:GetPos()
-								local di = pos:Distance(tpos)
-								local fr = speed/di
-								local x = pos.x + speed * (tpos.x - pos.x) / di
-								local y = pos.y + speed * (tpos.y - pos.y) / di
-								local x1 = x - pos.x
-								local y1 = y - pos.y
-								if enemy:IsOnGround() || enemy:GetMoveType() == MOVETYPE_FLY then
-									local sp = 20
-									local dx = pos.x + sp * (tpos.x - pos.x) / di
-									local dy = pos.y + sp * (tpos.y - pos.y) / di
-									local x2 = dx - pos.x
-									local y2 = dy - pos.y
-									local tr = util.TraceLine({start = pos, endpos = Vector(dx, dy, v:GetPos().z), filter = {self, enemy, v, mdl}})
-									if tr.Hit == true then
-										if not enemy:IsPlayer() then
-											enemy:SetMoveType(MOVETYPE_FLY)
-											enemy:SetLocalVelocity(enemy:GetUp() * 12)
-										else
-											enemy:SetMoveType(MOVETYPE_FLY)
-											self:SetLocalVelocity(self:GetUp() * 100)
-										end
-									else
-										enemy:SetMoveType(self.EnemyMoveType)
-										if not enemy:IsPlayer() then
-											enemy:SetVelocity(Vector(x1, y1, 0))
-										else
-											self:SetVelocity(Vector(x1, y1, 0))
-										end
-									end
-								end
-							end
-						end
-					end
-				end
 				if enemy:IsPlayer() then
 					hook.Add("SetupMove", "player_RiddenSetupMovement", function(ply, mv, cmd)
 						if self.pIncapacitatedEnemy == ply then
-							if mv:KeyDown(IN_FORWARD) then
-								if enemy:IsOnGround() then
-									self:SetLocalVelocity(self:GetForward() * 400)
+							if IsValid(self.pNavigator) then
+								local nav = self.pNavigator
+								if mv:KeyDown(IN_FORWARD) then
+									if nav:IsOnGround() then
+										nav:SetVelocity(nav:GetForward() * 50 + nav:GetUp() * 10)
+									end
 								end
-							end
-							if mv:KeyDown(IN_BACK) then
-								if enemy:IsOnGround() then
-									self:SetLocalVelocity(-self:GetForward() * 400)
+								if mv:KeyDown(IN_BACK) then
+									if nav:IsOnGround() then
+										nav:SetVelocity(-nav:GetForward() * 50 + nav:GetUp() * 10)
+									end
 								end
-							end
-							if mv:KeyDown(IN_MOVELEFT) then
-								if enemy:IsOnGround() then
-									self:SetLocalVelocity(-self:GetRight() * 400)
+								if mv:KeyDown(IN_MOVELEFT) then
+									if nav:IsOnGround() then
+										nav:SetVelocity(-nav:GetRight() * 50 + nav:GetUp() * 10)
+									end
 								end
-							end
-							if mv:KeyDown(IN_MOVERIGHT) then
-								if enemy:IsOnGround() then
-									self:SetLocalVelocity(self:GetRight() * 400)
+								if mv:KeyDown(IN_MOVERIGHT) then
+									if nav:IsOnGround() then
+										nav:SetVelocity(nav:GetRight() * 50 + nav:GetUp() * 10)
+									end
 								end
 							end
 						end
@@ -679,20 +643,15 @@ function ENT:CustomOnThink()
 					end
 				end)
 			end
-			if enemy:IsPlayer() then
-				self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, enemy:OBBMaxs().z))
-				enemy:SetLocalPos(Vector(0, 0, 0))
-			else
-				self:SetLocalPos(self:GetLocalPos() * 0)
-				self:SetLocalAngles(Angle(0, 0, 0))
-			end
+			enemy:SetLocalPos(Vector(0, 0, 0))
+			self:SetLocalPos(Vector(0, 0, 0))
 			if IsValid(self.pEnemyRagdoll) then
 				self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
 				self.pEnemyRagdoll:SetLocalAngles(Angle(0, 0, 0))
 			end
 			local dist = self:GetPos():Distance(enemy:GetPos())
 			if dist > self.IncapacitationRange then
-				self:ResetJockey()
+			--	self:ResetJockey()
 			end
 		else
 			self:ResetJockey()
@@ -713,18 +672,7 @@ function ENT:CustomOnThink()
 	end
 
 	self:ManageHUD(self.VJ_TheController)
-	hook.Add("KeyPress", "Ghosting", function(ply, key)
-        if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
-            if key == IN_USE then
-        	    if self.IsGhosted == true then
-        	        self:SetGhost(false)
-        	    elseif self.IsGhosted == false then
-        	        self:SetGhost(true)  
-        	    end
-            end
-        end
-    end)
-    
+	
 	if self.VJ_IsBeingControlled == true then
 		hook.Add("KeyPress", "jockey_Crouch", function(ply, key)
 			if self.VJ_TheController == ply then
@@ -768,40 +716,40 @@ end
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	if self.pIncapacitatedEnemy && dmginfo:GetAttacker() == self.pIncapacitatedEnemy then return end
 	if self:IsShoved() then return end
-    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        local function GetDirection()
-            local directions = {
-                {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
-                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
-                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
-                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
-            }
-            table.sort(directions, function(a, b) return a[2] < b[2] end)
-            return directions[1][1]
-        end
-        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
-        if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
-            self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
-            self:ResetJockey()
-        end
-    end
+	if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+		local function GetDirection()
+			local directions = {
+				{"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+				{"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},	 --East; move left
+				{"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+				{"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}	  --West; move right
+			}
+			table.sort(directions, function(a, b) return a[2] < b[2] end)
+			return directions[1][1]
+		end
+		self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+		if self.HasEnemyIncapacitated == true && IsValid(self.pIncapacitatedEnemy) then
+			self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+			self:ResetJockey()
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-    local attacker = dmginfo:GetAttacker()
-    if IsValid(attacker) then
-        if attacker:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
-        elseif attacker:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
-        end
-    end
-    self:ResetJockey()
+	local attacker = dmginfo:GetAttacker()
+	if IsValid(attacker) then
+		if attacker:IsNPC() then
+			PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+		elseif attacker:IsPlayer() then
+			PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
+		end
+	end
+	self:ResetJockey()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
-    self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
-end      
+	self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
+end	  
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRemove()
 	self:ResetJockey()
