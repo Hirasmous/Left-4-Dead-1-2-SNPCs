@@ -136,6 +136,26 @@ util.AddNetworkString("Smoker_CreateTongue")
 util.AddNetworkString("Smoker_DestroyTongue")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
+	self:L4D2_InitializeHooks()
+
+	hook.Add("KeyPress", "smoker_Dismount", function(ply, key)
+		if GetConVar("vj_l4d2_dismount"):GetInt() == 1 then
+			if self.HasEnemyIncapacitated then
+				if self.VJ_TheController == ply then
+					if key == IN_JUMP then
+						self.HasEnemyIncapacitated = false
+						self:VJ_ACT_PLAYACTIVITY("Jump", true, 0, false)
+						self:SetVelocity(self:GetUp() * 200 - self:GetForward() * 400)
+						timer.Simple(2, function()
+							if !IsValid(self) then return end
+							self:DismountSmoker()
+						end)
+					end
+				end
+			end
+		end
+	end)
+
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
 	if !self.IsGhosted then
@@ -155,16 +175,14 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_incap_hit" then
 		if self.IsEnemyStuck == true || self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
 			local incapent = self.pIncapacitatedEnemy
-			if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
-				if IsValid(incapent) then
-					local applyDmg = DamageInfo()
-					applyDmg:SetDamage(15)
-					applyDmg:SetDamageType(DMG_SLASH)
-					applyDmg:SetInflictor(incapent)
-					applyDmg:SetAttacker(self)
-					incapent:TakeDamage(2,self,incapent)
-					VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"},65,self:VJ_DecideSoundPitch(100,100))
-				end
+			if IsValid(incapent) then
+				local applyDmg = DamageInfo()
+				applyDmg:SetDamage(15)
+				applyDmg:SetDamageType(DMG_SLASH)
+				applyDmg:SetInflictor(incapent)
+				applyDmg:SetAttacker(self)
+				incapent:TakeDamage(2,self,incapent)
+				VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"},65,self:VJ_DecideSoundPitch(100,100))
 			end
 		end
 	end
@@ -493,8 +511,8 @@ function ENT:CustomOnThink()
 			ent:SetPoseParameter(poseName, math.Remap(degY, 0, 90, 0, 1))
 		end
 	end
-   
-   --Run away from enemy if can't range attack
+	
+	--Run away from enemy if can't range attack
 	if self.VJ_IsBeingControlled == false then
 		if IsValid(self:GetEnemy()) then
 			if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
@@ -802,15 +820,6 @@ function ENT:CustomOnThink()
 					else
 						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
 						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
-						if self.Incap_Effects == false then
-                            self:Incap_Lighting(ene, false)
-                            self.Incap_Effects = true
-                            for k, v in ipairs(ents.FindByClass("player")) do
-                                if enemy:IsNPC() then
-                                    VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-                                end
-                            end
-                        end
 					end
 					for k, v in ipairs(ents.FindByClass("player")) do
 						if enemy:IsNPC() then
@@ -828,15 +837,6 @@ function ENT:CustomOnThink()
 						self.IncapSong2:Stop()
 					end
 					self:PlayIncapSong()
-					if self.Incap_Effects == false then
-                            self:Incap_Lighting(ene, false)
-                            self.Incap_Effects = true
-                            for k, v in ipairs(ents.FindByClass("player")) do
-                                if enemy:IsNPC() then
-                                    VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-                                end
-                            end
-                        end
 				end
 			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
 				if self.IncapSong2 then
@@ -879,37 +879,6 @@ function ENT:CustomOnThink()
 	end
 
 	self:ManageHUD(self.VJ_TheController)
-	hook.Add("KeyPress", "Ghosting", function(ply, key)
-        if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
-            if key == IN_USE then
-        	    if self.IsGhosted == true then
-        	        self:SetGhost(false)
-        	    elseif self.IsGhosted == false then
-        	        self:SetGhost(true)  
-        	    end
-            end
-        end
-    end)
-	if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "Smoker_Crouch", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle_Upper_Knife"))}
-					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-					self.AnimTbl_Run = {ACT_RUN_CROUCH}
-				end
-			end
-		end)
-		hook.Add("KeyRelease", "Smoker_CrouchRelease", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {ACT_IDLE}
-					self.AnimTbl_Walk = {ACT_WALK}
-					self.AnimTbl_Run = {ACT_RUN}
-				end
-			end
-		end)
-	end
 
 	if self.VJ_IsBeingControlled == false then
 		self.TimeUntilRangeAttackProjectileRelease = 2
@@ -919,24 +888,6 @@ function ENT:CustomOnThink()
 		self.TimeUntilRangeAttackProjectileRelease = 0
 		self.RangeAttackAnimationDelay = 0
 		self.HasBeforeRangeAttackSound = false
-	end
-
-	if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "smoker_Dismount", function(ply, key)
-			if self.HasEnemyIncapacitated then
-				if self.VJ_TheController == ply then
-					if key == IN_JUMP then
-						self.HasEnemyIncapacitated = false
-						self:VJ_ACT_PLAYACTIVITY("Jump", true, 0, false)
-						self:SetVelocity(self:GetUp() * 200 - self:GetForward() * 400)
-						timer.Simple(2, function()
-							if !IsValid(self) then return end
-							self:DismountSmoker()
-						end)
-					end
-				end
-			end
-		end)
 	end
 end 
 ---------------------------------------------------------------------------------------------------------------------------------------------
