@@ -173,15 +173,13 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 				phys:SetVelocity(self:GetPos() + self:GetForward() * math.Rand(-10000, 10000) + self:GetRight() * math.Rand(-10000, 10000) + self:GetUp() * -3000)
 			end
 		end 
-		if GetConVar("vj_l4d2_incapdamage"):GetInt() == 1 then
-			if IsValid(incapent) then
-				local applyDmg = DamageInfo()
-				applyDmg:SetDamage(10)
-				applyDmg:SetDamageType(DMG_SLASH)
-				applyDmg:SetInflictor(incapent)
-				applyDmg:SetAttacker(self)
-				incapent:TakeDamage(2,self,incapent)	
-			end
+		if IsValid(incapent) then
+			local applyDmg = DamageInfo()
+			applyDmg:SetDamage(10)
+			applyDmg:SetDamageType(DMG_SLASH)
+			applyDmg:SetInflictor(incapent)
+			applyDmg:SetAttacker(self)
+			incapent:TakeDamage(2,self,incapent)	
 		end
 	end
 end
@@ -513,6 +511,22 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 												VJ_CreateSound(v,"vj_l4d2/music/tags/exenterationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
 											end
 										end
+										enemy:CallOnRemove("hunter_ClearParent", function(ent)
+											if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
+												self:DismountHunter()
+											end
+											if ent:IsPlayer() then
+												ent:SetParent(nil)
+											end
+										end)		  
+										hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
+											if victim == self.pIncapacitatedEnemy then
+												victim:SetParent(nil)
+												victim:SetObserverMode(0)
+												victim:DrawViewModel(true)
+												victim:DrawWorldModel(true)
+											end
+										end)
 									end
 								end
 							end
@@ -731,16 +745,16 @@ function ENT:CustomOnThink()
 
 	self:ManageHUD(self.VJ_TheController)
 	hook.Add("KeyPress", "Ghosting", function(ply, key)
-        if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
-            if key == IN_USE then
-        	    if self.IsGhosted == true then
-        	        self:SetGhost(false)
-        	    elseif self.IsGhosted == false then
-        	        self:SetGhost(true)  
-        	    end
-            end
-        end
-    end)
+		if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
+			if key == IN_USE then
+				if self.IsGhosted == true then
+					self:SetGhost(false)
+				elseif self.IsGhosted == false then
+					self:SetGhost(true)  
+				end
+			end
+		end
+	end)
 	
 	if self.VJ_IsBeingControlled == true then
 		self:CapabilitiesRemove(CAP_MOVE_JUMP)
