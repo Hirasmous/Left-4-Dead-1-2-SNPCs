@@ -112,6 +112,7 @@ General:
 -Make all special infected be able to incap players with non-ValveBiped skeletons
 -Fix other players ghosting controlled specials
 -Make halos around allies green (when controlling)
+-Don't make enemies attack ghosted specials
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location
