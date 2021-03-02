@@ -133,6 +133,43 @@ util.AddNetworkString("L4D2HunterHUD")
 util.AddNetworkString("L4D2HunterHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
+	self:L4D2_InitializeHooks()
+
+	hook.Add("KeyPress", "hunter_Crouch", function(ply, key)
+		if self.VJ_TheController == ply && !self.IsGhosted && !self.IsIncapacitating then
+			if key == IN_DUCK then
+				self.HasLeapAttack = true
+				self:EmitSound("HunterZombie.Warn")
+				self.TimeUntilLeapAttackVelocity = 0
+			end
+		end
+	end)
+	hook.Add("KeyRelease", "hunter_CrouchRelease", function(ply, key)
+		if self.VJ_TheController == ply && !self.IsGhosted && !self.IsIncapacitating then
+			if key == IN_DUCK then
+				self.HasLeapAttack = false
+				self.TimeUntilLeapAttackVelocity = 2
+			end
+		end
+	end)
+	hook.Add("KeyPress", "hunter_Dismount", function(ply, key)
+		if GetConVar("vj_l4d2_dismount"):GetInt() == 1 then
+			if self.HasEnemyIncapacitated then
+				if self.VJ_TheController == ply then
+					if key == IN_JUMP then
+						self.HasEnemyIncapacitated = false
+						self:VJ_ACT_PLAYACTIVITY("Jump", true, 0, false)
+						self:SetVelocity(self:GetUp() * 200 - self:GetForward() * 400)
+						timer.Simple(2, function()
+							if !IsValid(self) then return end
+							self:DismountHunter()
+						end)
+					end
+				end
+			end
+		end
+	end)
+
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
@@ -744,63 +781,9 @@ function ENT:CustomOnThink()
 	end
 
 	self:ManageHUD(self.VJ_TheController)
-	hook.Add("KeyPress", "Ghosting", function(ply, key)
-		if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
-			if key == IN_USE then
-				if self.IsGhosted == true then
-					self:SetGhost(false)
-				elseif self.IsGhosted == false then
-					self:SetGhost(true)  
-				end
-			end
-		end
-	end)
 	
 	if self.VJ_IsBeingControlled == true then
 		self:CapabilitiesRemove(CAP_MOVE_JUMP)
-		hook.Add("KeyPress", "hunter_Crouch", function(ply, key)
-			if self.VJ_TheController == ply && !self.IsGhosted && !self.IsIncapacitating then
-				if key == IN_DUCK then
-					self.HasLeapAttack = true
-					self.AnimTbl_IdleStand = {ACT_CROUCH}
-					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-					self.AnimTbl_Run = {ACT_RUN_CROUCH}
-					self:VJ_ACT_PLAYACTIVITY(ACT_CROUCH)
-					self:ResetSequenceInfo()
-					VJ_CreateSound(self,"HunterZombie.Warn",85,self:VJ_DecideSoundPitch(100,100))
-					self:EmitSound("HunterZombie.Warn")
-					self.TimeUntilLeapAttackVelocity = 0
-				end
-			end
-		end)
-		hook.Add("KeyRelease", "hunter_CrouchRelease", function(ply, key)
-			if self.VJ_TheController == ply && !self.IsGhosted && !self.IsIncapacitating then
-				if key == IN_DUCK then
-					self.HasLeapAttack = false
-					self.AnimTbl_IdleStand = {ACT_IDLE}
-					self.AnimTbl_Walk = {ACT_WALK}
-					self.AnimTbl_Run = {ACT_RUN}
-					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
-					self:ResetSequenceInfo()
-					self.TimeUntilLeapAttackVelocity = 2
-				end
-			end
-		end)
-		hook.Add("KeyPress", "hunter_Dismount", function(ply, key)
-			if self.HasEnemyIncapacitated then
-				if self.VJ_TheController == ply then
-					if key == IN_JUMP then
-						self.HasEnemyIncapacitated = false
-						self:VJ_ACT_PLAYACTIVITY("Jump", true, 0, false)
-						self:SetVelocity(self:GetUp() * 200 - self:GetForward() * 400)
-						timer.Simple(2, function()
-							if !IsValid(self) then return end
-							self:DismountHunter()
-						end)
-					end
-				end
-			end
-		end)
 	end
 end 
 ---------------------------------------------------------------------------------------------------------------------------------------------
