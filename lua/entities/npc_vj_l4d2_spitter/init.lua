@@ -108,25 +108,26 @@ util.AddNetworkString("L4D2SpitterHUD")
 util.AddNetworkString("L4D2SpitterHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
-    self:SetHullType(self.HullType)
-    self.nextBacteria = 0
-    if !self.IsGhosted then
-        ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
-        ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
-        local glowlight = ents.Create("light_dynamic")
-    	glowlight:SetKeyValue("_light","110 230 0 255")
-    	glowlight:SetKeyValue("brightness","0.1")
-    	glowlight:SetKeyValue("distance","150")
-    	glowlight:SetKeyValue("style","0")
-    	glowlight:SetPos(self:GetPos())
-    	glowlight:SetParent(self)
-    	glowlight:Spawn()
-    	glowlight:Activate()
-    	glowlight:Fire("SetParentAttachment","mouth")
-    	glowlight:Fire("TurnOn","",0)
-    	self:DeleteOnRemove(glowlight)
-    end
-    self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+	self:L4D2_InitializeHooks()
+	self:SetHullType(self.HullType)
+	self.nextBacteria = 0
+	if !self.IsGhosted then
+		ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
+		ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
+		local glowlight = ents.Create("light_dynamic")
+		glowlight:SetKeyValue("_light","110 230 0 255")
+		glowlight:SetKeyValue("brightness","0.1")
+		glowlight:SetKeyValue("distance","150")
+		glowlight:SetKeyValue("style","0")
+		glowlight:SetPos(self:GetPos())
+		glowlight:SetParent(self)
+		glowlight:Spawn()
+		glowlight:Activate()
+		glowlight:Fire("SetParentAttachment","mouth")
+		glowlight:Fire("TurnOn","",0)
+		self:DeleteOnRemove(glowlight)
+	end
+	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -134,161 +135,129 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 		self:FootStepSoundCode()
 	end
 	if key == "event_land" then
-        if !self.IsGhosted then
-            VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
-        end
-    end
+		if !self.IsGhosted then
+			VJ_CreateSound(self,"vj_l4d2/pz/fall/bodyfall_largecreature.mp3",85,self:VJ_DecideSoundPitch(100,100))
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    self:SetGhost(true)
-    function self.VJ_TheControllerEntity:CustomOnStopControlling()
-        net.Start("L4D2SpitterHUD")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-        net.Start("L4D2SpitterHUDGhost")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-    end
+	self:SetGhost(true)
+	function self.VJ_TheControllerEntity:CustomOnStopControlling()
+		net.Start("L4D2SpitterHUD")
+			net.WriteBool(true)
+			net.WriteEntity(self)
+			net.WriteEntity(ply)
+		net.Send(ply)
+		net.Start("L4D2SpitterHUDGhost")
+			net.WriteBool(true)
+			net.WriteEntity(self)
+			net.WriteEntity(ply)
+		net.Send(ply)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ManageHUD(ply)
-    if self.VJ_IsBeingControlled == true then
-        if self.IsGhosted == true then
-            net.Start("L4D2SpitterHUDGhost")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2SpitterHUD")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        elseif self.IsGhosted == false then
-            net.Start("L4D2SpitterHUD")
-                net.WriteBool(false)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-            net.Start("L4D2SpitterHUDGhost")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-                net.WriteEntity(ply)
-            net.Send(ply)
-        end
-    end
+	if self.VJ_IsBeingControlled == true then
+		if self.IsGhosted == true then
+			net.Start("L4D2SpitterHUDGhost")
+				net.WriteBool(false)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+			net.Start("L4D2SpitterHUD")
+				net.WriteBool(true)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+		elseif self.IsGhosted == false then
+			net.Start("L4D2SpitterHUD")
+				net.WriteBool(false)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+			net.Start("L4D2SpitterHUDGhost")
+				net.WriteBool(true)
+				net.WriteEntity(self)
+				net.WriteEntity(ply)
+			net.Send(ply)
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SpitterAcid(fadeout)
-    if fadeout == false then
-        local table_acidloop = table.Random(self.SoundTbl_SpitterAcid)
-        local table_acidtheme = table.Random(self.SoundTbl_SpitterAcidTheme)
-        self.cspIdleThemeLoop = CreateSound(self, table_acidtheme)
-        self.cspIdleThemeLoop:SetSoundLevel(70)
-        self.cspIdleThemeLoop:Play(70)
-    end
-    if fadeout == true then
-        if self.Dead == true then
-            if self.AcidLoop && self.AcidLoop:IsPlaying() then
-                self.AcidLoop:FadeOut(1)
-            end
-        end
-    end
+	if fadeout == false then
+		local table_acidloop = table.Random(self.SoundTbl_SpitterAcid)
+		local table_acidtheme = table.Random(self.SoundTbl_SpitterAcidTheme)
+		self.cspIdleThemeLoop = CreateSound(self, table_acidtheme)
+		self.cspIdleThemeLoop:SetSoundLevel(70)
+		self.cspIdleThemeLoop:Play(70)
+	end
+	if fadeout == true then
+		if self.Dead == true then
+			if self.AcidLoop && self.AcidLoop:IsPlaying() then
+				self.AcidLoop:FadeOut(1)
+			end
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
-    self:SetNW2Int("SpitT",CurTime() +self.NextRangeAttackTime)
-    self.IsTakingCover = true
-    timer.Simple(self.NextRangeAttackTime,function()
-        if IsValid(self) then
-            self.IsTakingCover = false
-        end
-    end)
+	self:SetNW2Int("SpitT",CurTime() +self.NextRangeAttackTime)
+	self.IsTakingCover = true
+	timer.Simple(self.NextRangeAttackTime,function()
+		if IsValid(self) then
+			self.IsTakingCover = false
+		end
+	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
-    local randattack = math.random(1,2)
-    if randattack == 1 then
-        self.AnimTbl_MeleeAttack = {"vjges_spitter_melee_01","vjges_spitter_melee_02"}
-        self.TimeUntilMeleeAttackDamage = 0.5
-        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_sp_d")
-    elseif randattack == 2 then
-        self.AnimTbl_MeleeAttack = {"vjges_spitter_melee_01","vjges_spitter_melee_02"}
-        self.TimeUntilMeleeAttackDamage = 0.5
-        self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_sp_d")
-    end
+	local randattack = math.random(1,2)
+	if randattack == 1 then
+		self.AnimTbl_MeleeAttack = {"vjges_spitter_melee_01","vjges_spitter_melee_02"}
+		self.TimeUntilMeleeAttackDamage = 0.5
+		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_sp_d")
+	elseif randattack == 2 then
+		self.AnimTbl_MeleeAttack = {"vjges_spitter_melee_01","vjges_spitter_melee_02"}
+		self.TimeUntilMeleeAttackDamage = 0.5
+		self.MeleeAttackDamage = GetConVarNumber("vj_l4d2_sp_d")
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-    self:GetGroundType(self:GetPos()) -- in the features.lua
-    if self.IsGhosted then
-        self:Ghost()
-    end
-    if self.IsGhosted then
-        self.HasRangeAttack = false
-        self:StopParticles()
-    else
-        self.HasRangeAttack = true
-    end
-
-    if self.VJ_IsBeingControlled == false then
-        if IsValid(self:GetEnemy()) then
-            if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
-                self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
-                self.RunAwayT = CurTime() +1
-                self.DisableChasingEnemy = true
-            end
-        else
-            self.DisableChasingEnemy = false
-            self.IsTakingCover = false
-            self.RunAwayT = CurTime() 
-        end
-    end
-    self:ManageHUD(self.VJ_TheController)
-    hook.Add("KeyPress", "Ghosting", function(ply, key)
-        if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
-            if key == IN_USE then
-        	    if self.IsGhosted == true then
-        	        self:SetGhost(false)
-        	    elseif self.IsGhosted == false then
-        	        self:SetGhost(true)  
-        	    end
-            end
-        end
-    end)
-
-    if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "Spitter_Crouch", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle"))}
-					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-					self.AnimTbl_Run = {ACT_RUN_CROUCH}
-				end
-			end
-		end)
-		hook.Add("KeyRelease", "Spitter_CrouchRelease", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {ACT_IDLE}
-					self.AnimTbl_Walk = {ACT_WALK}
-					self.AnimTbl_Run = {ACT_RUN}
-				end
-			end
-		end)
+	self:GetGroundType(self:GetPos())
+	if self.IsGhosted then
+		self:Ghost()
 	end
-    
-    self:SetBodygroup(1,1)
-    if CurTime() >= self.nextBacteria then
-        self:PlayBacteria()
-    end
+	if self.IsGhosted then
+		self.HasRangeAttack = false
+		self:StopParticles()
+	else
+		self.HasRangeAttack = true
+	end
 
-    if self.VJ_IsBeingControlled then
+	if self.VJ_IsBeingControlled == false then
+		if IsValid(self:GetEnemy()) then
+			if self.IsTakingCover == true && CurTime() > self.RunAwayT then 
+				self:VJ_TASK_COVER_FROM_ENEMY("TASK_RUN_PATH")
+				self.RunAwayT = CurTime() +1
+				self.DisableChasingEnemy = true
+			end
+		else
+			self.DisableChasingEnemy = false
+			self.IsTakingCover = false
+			self.RunAwayT = CurTime() 
+		end
+	end
+	self:ManageHUD(self.VJ_TheController)
+
+	self:SetBodygroup(1,1)
+	if CurTime() >= self.nextBacteria then
+		self:PlayBacteria()
+	end
+
+	if self.VJ_IsBeingControlled then
 		self.ConstantlyFaceEnemy = false
 	else
 		self.ConstantlyFaceEnemy = true
@@ -297,41 +266,41 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	if self:IsShoved() then return end
-    if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
-        local function GetDirection()
-            local directions = {
-                {"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
-                {"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
-                {"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
-                {"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
-            }
-            table.sort(directions, function(a, b) return a[2] < b[2] end)
-            return directions[1][1]
-        end
-        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
-    end
+	if dmginfo:GetDamageType() == DMG_CLUB || dmginfo:GetDamageType() == DMG_GENERIC then
+		local function GetDirection()
+			local directions = {
+				{"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+				{"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},	 --East; move left
+				{"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+				{"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}	  --West; move right
+			}
+			table.sort(directions, function(a, b) return a[2] < b[2] end)
+			return directions[1][1]
+		end
+		self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt) 
-    local attacker = dmginfo:GetAttacker()
-    if IsValid(attacker) then
-        if attacker:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
-        elseif attacker:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
-        end
-    end
+	local attacker = dmginfo:GetAttacker()
+	if IsValid(attacker) then
+		if attacker:IsNPC() then
+			PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+		elseif attacker:IsPlayer() then
+			PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
-    local acid = ents.Create("obj_vj_l4d2_spit")
-    acid:SetPos(self:GetPos() +Vector(0,0,13))
-    acid:SetAngles(self:GetAngles())
-    acid.AcidCount = 5
-    acid:Activate()
-    acid:Spawn()  
-    acid:SetNoDraw(true)  
-    acid.Dead = true
+	local acid = ents.Create("obj_vj_l4d2_spit")
+	acid:SetPos(self:GetPos() +Vector(0,0,13))
+	acid:SetAngles(self:GetAngles())
+	acid.AcidCount = 5
+	acid:Activate()
+	acid:Spawn()  
+	acid:SetNoDraw(true)  
+	acid.Dead = true
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
