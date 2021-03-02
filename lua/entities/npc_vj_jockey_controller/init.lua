@@ -42,6 +42,7 @@ function ENT:CustomOnInitialize()
 	self:DrawShadow(false)
 	self:CapabilitiesRemove(CAP_MOVE_JUMP)
 	self:SetOwner(self:GetOwner())
+	self:SetPos(self:GetPos() + self:GetUp() * 25)
 end
 
 function ENT:Controller_Initialize(ply)
