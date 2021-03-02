@@ -127,6 +127,7 @@ function ENT:CustomOnPreInitialize()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
+	self:L4D2_InitializeHooks()
 	self:SetHullType(self.HullType)
 	if GetConVarNumber("vj_l4d2_tanktype") == 3 then
 		self:SetBodygroup(0,1)
@@ -397,31 +398,11 @@ function ENT:CustomOnThink()
 	else
 		self.ConstantlyFaceEnemy = true
 	end]]
-	if self.VJ_IsBeingControlled == true then
-		hook.Add("KeyPress", "Tank_Crouch", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle"))}
-					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-					self.AnimTbl_Run = {ACT_RUN_CROUCH}
-					self:VJ_ACT_PLAYACTIVITY(self:GetSequenceActivity(self:LookupSequence("Crouch_Idle")))
-					self:ResetSequenceInfo()
-					self.FootStepTimeRun = 0.5
-				end
-			end
-		end)
-		hook.Add("KeyRelease", "Tank_CrouchRelease", function(ply, key)
-			if self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {ACT_IDLE}
-					self.AnimTbl_Walk = {ACT_WALK}
-					self.AnimTbl_Run = {ACT_RUN}
-					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
-					self:ResetSequenceInfo()
-					self.FootStepTimeRun = 0.2
-				end
-			end
-		end)
+
+	if self:Infected_IsCrouching() == true then
+		self.FootStepTimeRun = 0.5
+	else
+		self.FootStepTimeRun = 0.2
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
