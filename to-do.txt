@@ -73,6 +73,7 @@ Tank:
 -Implement rock bodygroup for range attack ✅ (didn't have to)
 -Different debris type ✅
 -Make it shove according to damage position not attacker position ✅
+-Play regular idle animation when no enemies are near
 
 Witch:
 -Change sequence "Standing_Idle"'s activity to something other than ACT_IDLE; it conflicts with "Idle_Standing_Crying" ✅
@@ -115,6 +116,7 @@ General:
 -Fix other players ghosting controlled specials ✅
 -Make halos around allies green (when controlling)
 -Don't make enemies attack ghosted specials
+-Fixed inverted pose parameters
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location ✅ (gone for now)
