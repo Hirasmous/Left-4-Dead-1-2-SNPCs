@@ -770,6 +770,8 @@ function NPC:L4D2_InitializeHooks()
 					seq = "Crouch_Idle_Upper_Knife"
 				elseif self:LookupSequence("Crouch_Idle") ~= -1 then
 					seq = "Crouch_Idle"
+				elseif self:LookupSequence("Idle_Crouching_01") then
+					seq = "Idle_Crouching_01"
 				end
 				self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(seq))}
 				self.AnimTbl_Walk = {ACT_RUN_CROUCH}
