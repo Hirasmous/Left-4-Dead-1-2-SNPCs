@@ -150,6 +150,10 @@ function ENT:CustomOnInitialize()
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnUnGhost()
+    VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_emit FootStep" then
 		self:FootStepSoundCode()
