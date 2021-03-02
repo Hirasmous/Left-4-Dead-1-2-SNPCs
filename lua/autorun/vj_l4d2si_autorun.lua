@@ -128,6 +128,7 @@ if CLIENT then
 			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs drop their weapons?", Command = "vj_l4d2_npcs_dropweapons"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
 			Panel:AddControl("Checkbox", {Label = "Can controlled Specials stop incapacitating (via spacebar)?", Command = "vj_l4d2_dismount"})
+			Panel:AddControl("Checkbox", {Label = "Draw incap overlay?", Command = "vj_l4d2_incap_overlay"})
 			Panel:AddControl("Slider", { Label 	= "Tank health", Command = "vj_l4d2_t_h", Type = "Float", Min = "3500", Max = "6000"})
 			Panel:AddControl("ComboBox", tank_musictype)
 			Panel:AddControl("ComboBox", tank_type)
