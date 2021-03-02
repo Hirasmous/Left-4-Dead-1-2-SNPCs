@@ -127,59 +127,59 @@ function ENT:CustomOnPreInitialize()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
-    self:SetHullType(self.HullType)
-    if GetConVarNumber("vj_l4d2_tanktype") == 3 then
-    	self:SetBodygroup(0,1)
-    end
+	self:SetHullType(self.HullType)
+	if GetConVarNumber("vj_l4d2_tanktype") == 3 then
+		self:SetBodygroup(0,1)
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Tank_Initialize()
 	if GetConVarNumber("vj_l4d2_musictype") == 1 then 
-    	self.SoundTrack = {"vj_l4d2/music/tank/taank.mp3","vj_l4d2/music/tank/tank.mp3"}
-    elseif GetConVarNumber("vj_l4d2_musictype") == 2 then 
-    	self.SoundTrack = {"vj_l4d2/music/tank/onebadtank.mp3"}
-    elseif GetConVarNumber("vj_l4d2_musictype") == 3 then 
-    	self.SoundTrack = {"vj_l4d2/music/tank/midnighttank.mp3"}
-    end
+		self.SoundTrack = {"vj_l4d2/music/tank/taank.mp3","vj_l4d2/music/tank/tank.mp3"}
+	elseif GetConVarNumber("vj_l4d2_musictype") == 2 then 
+		self.SoundTrack = {"vj_l4d2/music/tank/onebadtank.mp3"}
+	elseif GetConVarNumber("vj_l4d2_musictype") == 3 then 
+		self.SoundTrack = {"vj_l4d2/music/tank/midnighttank.mp3"}
+	end
 
-    if self:GetClass() == "npc_vj_l4d2_tank" then
-	    if GetConVarNumber("vj_l4d2_tanktype") == 1 then 
-	    	self.Model = {"models/vj_l4d2/hulk.mdl"}
-	    elseif GetConVarNumber("vj_l4d2_tanktype") == 2 then 
-	    	self.Model = {"models/vj_l4d2/hulk_sacrifice.mdl"}
-	    end
-    end
+	if self:GetClass() == "npc_vj_l4d2_tank" then
+		if GetConVarNumber("vj_l4d2_tanktype") == 1 then 
+			self.Model = {"models/vj_l4d2/hulk.mdl"}
+		elseif GetConVarNumber("vj_l4d2_tanktype") == 2 then 
+			self.Model = {"models/vj_l4d2/hulk_sacrifice.mdl"}
+		end
+	end
 
-    if self:GetClass() == "npc_vj_l4d_tank" then
-    	if GetConVarNumber("vj_l4d2_tanktype") == 1 then 
-	    	self.Model = {"models/vj_l4d/hulk.mdl"}
-	    elseif GetConVarNumber("vj_l4d2_tanktype") == 2 then 
-	    	self.Model = {"models/vj_l4d2/hulk_sacrifice.mdl"}
-	    end
+	if self:GetClass() == "npc_vj_l4d_tank" then
+		if GetConVarNumber("vj_l4d2_tanktype") == 1 then 
+			self.Model = {"models/vj_l4d/hulk.mdl"}
+		elseif GetConVarNumber("vj_l4d2_tanktype") == 2 then 
+			self.Model = {"models/vj_l4d2/hulk_sacrifice.mdl"}
+		end
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CheckRangeAttack(pos)
 	 local tr = util.TraceLine({
-        start = pos,
-        endpos = pos -Vector(0,0,40),
-        filter = self,
-        mask = MASK_NPCWORLDSTATIC
-    })
-    local mat = tr.MatType
-    if tr.HitWorld then
-    	if self.HasRangeAttack then
-    		if mat == MAT_GRASS or mat == MAT_DIRT or mat == MAT_SNOW or mat == MAT_SAND then
-    			self.DebrisType = "Log"
-    			self.HasRangeAttack = true
-    		elseif mat == MAT_CONCRETE then
-    			self.DebrisType = "Rock"
-    			self.HasRangeAttack = true
-    		else 
-    			self.HasRangeAttack = false
-    		end
-    	end
-    end
+		start = pos,
+		endpos = pos -Vector(0,0,40),
+		filter = self,
+		mask = MASK_NPCWORLDSTATIC
+	})
+	local mat = tr.MatType
+	if tr.HitWorld then
+		if self.HasRangeAttack then
+			if mat == MAT_GRASS or mat == MAT_DIRT or mat == MAT_SNOW or mat == MAT_SAND then
+				self.DebrisType = "Log"
+				self.HasRangeAttack = true
+			elseif mat == MAT_CONCRETE then
+				self.DebrisType = "Rock"
+				self.HasRangeAttack = true
+			else 
+				self.HasRangeAttack = false
+			end
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -189,69 +189,69 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
-    ply:EmitSound("ui/menu_horror01.mp3")
-    ply:EmitSound("ui/pickup_guitarriff10.mp3")
-    net.Start("L4D2TankHUD")
-        net.WriteBool(false)
-        net.WriteEntity(self)
-        net.WriteEntity(ply)
-    net.Send(ply)
-    function self.VJ_TheControllerEntity:CustomOnStopControlling()
-        net.Start("L4D2TankHUD")
-            net.WriteBool(true)
-            net.WriteEntity(self)
-            net.WriteEntity(ply)
-        net.Send(ply)
-    end
+	ply:EmitSound("ui/menu_horror01.mp3")
+	ply:EmitSound("ui/pickup_guitarriff10.mp3")
+	net.Start("L4D2TankHUD")
+		net.WriteBool(false)
+		net.WriteEntity(self)
+		net.WriteEntity(ply)
+	net.Send(ply)
+	function self.VJ_TheControllerEntity:CustomOnStopControlling()
+		net.Start("L4D2TankHUD")
+			net.WriteBool(true)
+			net.WriteEntity(self)
+			net.WriteEntity(ply)
+		net.Send(ply)
+	end
 end  
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RangeAttackCode_OverrideProjectilePos(TheProjectile)
-    TheProjectile:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos) 
+	TheProjectile:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos) 
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RemoveDebris() 
 	if IsValid(self.Concrete) then
-        self.Concrete:Remove()
-    end
-    if IsValid(self.Log) then
-        self.Log:Remove()
-    end
+		self.Concrete:Remove()
+	end
+	if IsValid(self.Log) then
+		self.Log:Remove()
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode()
-    local ent = ents.Create(self.RangeAttackEntityToSpawn)
-    ent:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos)
-    -- ent:SetAngles(self:GetAttachment(self:LookupAttachment("debris")).Ang)
-    ent:SetOwner(self)
+	local ent = ents.Create(self.RangeAttackEntityToSpawn)
+	ent:SetPos(self:GetAttachment(self:LookupAttachment("debris")).Pos)
+	-- ent:SetAngles(self:GetAttachment(self:LookupAttachment("debris")).Ang)
+	ent:SetOwner(self)
 	ent:Spawn()
 	ent:Activate()
 	local phys = ent:GetPhysicsObject()
 	if IsValid(phys) then
-	    phys:SetVelocity(self:RangeAttackCode_GetShootPos() *0.7 +self:GetUp()*175) 
-    end
-    local randattackr = math.random(1,3)
-    if randattackr == 1 then                              
-        self.AnimTbl_RangeAttack = {"throw_02"}
-        self.TimeUntilRangeAttackProjectileRelease = 2.5     
-        self:RemoveDebris()      
-    elseif randattackr == 3 then                              
-        self.AnimTbl_RangeAttack = {"throw_03"}
-        self.TimeUntilRangeAttackProjectileRelease = 1.97  
-        self:RemoveDebris() 
-    elseif randattackr == 2 then                              
-        self.AnimTbl_RangeAttack = {"throw_04"} 
-        self.TimeUntilRangeAttackProjectileRelease = 2.8
-        self:RemoveDebris() 
-    elseif randattackr == 1 then                              
-        self.AnimTbl_RangeAttack = {"throw_01"} 
-        self.TimeUntilRangeAttackProjectileRelease = 1    
-        self:RemoveDebris()    
-        timer.Simple(1,function()
-	    	if IsValid(self) then
+		phys:SetVelocity(self:RangeAttackCode_GetShootPos() *0.7 +self:GetUp()*175) 
+	end
+	local randattackr = math.random(1,3)
+	if randattackr == 1 then							  
+		self.AnimTbl_RangeAttack = {"throw_02"}
+		self.TimeUntilRangeAttackProjectileRelease = 2.5	 
+		self:RemoveDebris()	  
+	elseif randattackr == 3 then							  
+		self.AnimTbl_RangeAttack = {"throw_03"}
+		self.TimeUntilRangeAttackProjectileRelease = 1.97  
+		self:RemoveDebris() 
+	elseif randattackr == 2 then							  
+		self.AnimTbl_RangeAttack = {"throw_04"} 
+		self.TimeUntilRangeAttackProjectileRelease = 2.8
+		self:RemoveDebris() 
+	elseif randattackr == 1 then							  
+		self.AnimTbl_RangeAttack = {"throw_01"} 
+		self.TimeUntilRangeAttackProjectileRelease = 1	
+		self:RemoveDebris()	
+		timer.Simple(1,function()
+			if IsValid(self) then
 				self:RemoveDebris()
 			end
-	    end) 
-    end
+		end) 
+	end
 end   
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_AfterStartTimer() 
@@ -260,43 +260,43 @@ function ENT:CustomOnRangeAttack_AfterStartTimer()
 		if IsValid(self) then
 			ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward")) 
 			if self.DebrisType == "Rock" then
-			    self.Concrete = ents.Create("prop_vj_animatable")
+				self.Concrete = ents.Create("prop_vj_animatable")
 				self.Concrete:SetPos(self:GetPos())
-			    self.Concrete:SetModel("models/vj_l4d2/concrete_chunk01a.mdl")
+				self.Concrete:SetModel("models/vj_l4d2/concrete_chunk01a.mdl")
 				self.Concrete:SetOwner(self)
-			    self.Concrete:SetParent(self)
-			    self.Concrete:Spawn()
-			    self.Concrete:Activate()
-			    self.Concrete:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
-			    self.Concrete:SetSolid(SOLID_NONE)
+				self.Concrete:SetParent(self)
+				self.Concrete:Spawn()
+				self.Concrete:Activate()
+				self.Concrete:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
+				self.Concrete:SetSolid(SOLID_NONE)
 				self.Concrete:AddEffects(EF_BONEMERGE) 
 				self.RangeAttackEntityToSpawn = "obj_vj_l4d2_debris"
 			elseif self.DebrisType == "Log" then
-			    self.Log = ents.Create("prop_vj_animatable")
+				self.Log = ents.Create("prop_vj_animatable")
 				self.Log:SetPos(self:GetPos())
-			    self.Log:SetModel("models/vj_l4d2/tree_trunk.mdl")
+				self.Log:SetModel("models/vj_l4d2/tree_trunk.mdl")
 				self.Log:SetOwner(self)
-			    self.Log:SetParent(self)
-			    self.Log:Spawn()
-			    self.Log:Activate()
-			    self.Log:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
-			    self.Log:SetSolid(SOLID_NONE)
+				self.Log:SetParent(self)
+				self.Log:Spawn()
+				self.Log:Activate()
+				self.Log:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
+				self.Log:SetSolid(SOLID_NONE)
 				self.Log:AddEffects(EF_BONEMERGE)
 				self.Log:SetModelScale(1.2)
 				self.RangeAttackEntityToSpawn = "obj_vj_l4d2_log"
 			end
 		end
-    end)        
+	end)		
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
-    self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,VJ_GetSequenceDuration(self,ACT_ARM),true)
+	self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,VJ_GetSequenceDuration(self,ACT_ARM),true)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
-    if key == "event_land" then
-        VJ_CreateSound(self,"player/tank/fall/tank_death_bodyfall_01.mp3",85,self:VJ_DecideSoundPitch(100,100))
-    end
+	if key == "event_land" then
+		VJ_CreateSound(self,"player/tank/fall/tank_death_bodyfall_01.mp3",85,self:VJ_DecideSoundPitch(100,100))
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
@@ -314,21 +314,21 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
 	if self.VJ_IsBeingControlled == false then
-	    if math.random(1,2) == 1 then
-	        self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.74,true)
-	        VJ_CreateSound(self,self.SoundTbl_Alert,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
-	    end
+		if math.random(1,2) == 1 then
+			self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.74,true)
+			VJ_CreateSound(self,self.SoundTbl_Alert,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+		end
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()  
 	self:CheckRangeAttack(self:GetPos())
-    self:Tank_Soundtrack(false)  
-    if self:IsOnFire() && self.Immune_Fire == false && math.random (1,15) == 15 then  
-        self.SoundTbl_Pain = {"HulkZombie.PainFire"} 
-    else
-    	self.SoundTbl_Pain = {"HulkZombie.Pain"} 
-    end
+	--self:Tank_Soundtrack(false)  
+	if self:IsOnFire() && self.Immune_Fire == false && math.random (1,15) == 15 then  
+		self.SoundTbl_Pain = {"HulkZombie.PainFire"} 
+	else
+		self.SoundTbl_Pain = {"HulkZombie.Pain"} 
+	end
 
 	--[[//print(self:GetBlockingEntity())
 	// IsValid(self:GetBlockingEntity()) && !self:GetBlockingEntity():IsNPC() && !self:GetBlockingEntity():IsPlayer()
@@ -352,24 +352,24 @@ function ENT:CustomOnThink()
 				if !IsValid(tr5b.Entity) then
 					anim = VJ_PICKRANDOMTABLE({"Jump_Climb150"})
 					finalpos = tr5.HitPos
-                                        VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+										VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
 				end
 			elseif IsValid(tr4.Entity) then
 				anim = VJ_PICKRANDOMTABLE({"Jump_Climb115"})
 				finalpos = tr4.HitPos
-                                VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+								VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
 			elseif IsValid(tr3.Entity) then
 				anim = VJ_PICKRANDOMTABLE({"Jump_Climb70"})
 				finalpos = tr3.HitPos
-                                VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+								VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
 			elseif IsValid(tr2.Entity) then
 				anim = VJ_PICKRANDOMTABLE({"Jump_Climb50"})
 				finalpos = tr2.HitPos
-                                VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+								VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
 			elseif IsValid(tr1.Entity) then
 				anim = VJ_PICKRANDOMTABLE({"Jump_Climb38"})
 				finalpos = tr1.HitPos 
-                                VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+								VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
 			end
 		
 			if anim != false then
@@ -404,6 +404,8 @@ function ENT:CustomOnThink()
 					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle"))}
 					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
 					self.AnimTbl_Run = {ACT_RUN_CROUCH}
+					self:VJ_ACT_PLAYACTIVITY(self:GetSequenceActivity(self:LookupSequence("Crouch_Idle")))
+					self:ResetSequenceInfo()
 					self.FootStepTimeRun = 0.5
 				end
 			end
@@ -414,6 +416,8 @@ function ENT:CustomOnThink()
 					self.AnimTbl_IdleStand = {ACT_IDLE}
 					self.AnimTbl_Walk = {ACT_WALK}
 					self.AnimTbl_Run = {ACT_RUN}
+					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+					self:ResetSequenceInfo()
 					self.FootStepTimeRun = 0.2
 				end
 			end
@@ -423,52 +427,52 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	if self:IsShoved() then return end
-    if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
-        local function GetDirection()
-            local directions = {
-                {"Shoved_Backward", dmginfo:GetDamagePosition():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
-                {"Shoved_Leftward", dmginfo:GetDamagePosition():Distance(self:GetPos() + self:GetRight() * 25)},     --East; move left
-                {"Shoved_Forward", dmginfo:GetDamagePosition():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
-                {"Shoved_Rightward", dmginfo:GetDamagePosition():Distance(self:GetPos() - self:GetRight() * 25)}      --West; move right
-            }
-            table.sort(directions, function(a, b) return a[2] < b[2] end)
-            return directions[1][1]
-        end
-        self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
-        timer.Simple(0.1,function()
-	    	if IsValid(self) then
+	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
+		local function GetDirection()
+			local directions = {
+				{"Shoved_Backward", dmginfo:GetDamagePosition():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+				{"Shoved_Leftward", dmginfo:GetDamagePosition():Distance(self:GetPos() + self:GetRight() * 25)},	 --East; move left
+				{"Shoved_Forward", dmginfo:GetDamagePosition():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+				{"Shoved_Rightward", dmginfo:GetDamagePosition():Distance(self:GetPos() - self:GetRight() * 25)}	  --West; move right
+			}
+			table.sort(directions, function(a, b) return a[2] < b[2] end)
+			return directions[1][1]
+		end
+		self:VJ_ACT_PLAYACTIVITY(GetDirection(),true,VJ_GetSequenceDuration(self,GetDirection()),false)
+		timer.Simple(0.1,function()
+			if IsValid(self) then
 				self:RemoveDebris()
 			end
-	    end)
-    end
-end              
+		end)
+	end
+end			  
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)      
+function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)	  
 	local attacker = dmginfo:GetAttacker()
-    if IsValid(attacker) then
-        if attacker:IsNPC() then
-            PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
-        elseif attacker:IsPlayer() then
-            PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
-        end
-    end
-    if self:IsMoving() && self:GetActivity() == ACT_RUN then
-        self.AnimTbl_Death = {"Death_2"}
+	if IsValid(attacker) then
+		if attacker:IsNPC() then
+			PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+		elseif attacker:IsPlayer() then
+			PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
+		end
+	end
+	if self:IsMoving() && self:GetActivity() == ACT_RUN then
+		self.AnimTbl_Death = {"Death_2"}
 	end
 	timer.Simple(0.1,function()
-    	if IsValid(self) then
+		if IsValid(self) then
 			self:RemoveDebris()
 		end
-    end)
+	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnKilled(dmginfo,hitgroup)    
-    self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
-    self:Tank_Soundtrack(true)
+function ENT:CustomOnKilled(dmginfo,hitgroup)	
+	self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
+	--self:Tank_Soundtrack(true)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnRemove()     
-	self:Tank_Soundtrack(true)
+function ENT:CustomOnRemove()	 
+	--self:Tank_Soundtrack(true)
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***
