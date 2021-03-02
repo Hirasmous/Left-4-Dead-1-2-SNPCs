@@ -10,6 +10,7 @@ Boomer:
 -Make vomit music play relative to effected player
 -Don't show vomit residue on incap'd enemies; instead, make the residue show on pEnemyRagdoll
 -Don't show vomit residue on allies
+-Add idle crouching when controlling
 
 Boomette:
 -Fix broken model ✅
@@ -24,9 +25,9 @@ Charger:
 -No flinching or shoving while charging ✅
 -Incapped enemy spawns under ground when rescued from death ✅
 -Directional pummeling (Ceiling,wall) ✅
--Fix third-person player control camera view when incapping
 -Make it carry enemies up hills/steep surfaces
--Make the charger throw enemies in its path aside when carrying an enemy
+-Make the charger throw enemies in its path aside when carrying an enemy ✅
+-Add idle crouching when controlling
 
 Hunter:
 -Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
@@ -34,7 +35,6 @@ Hunter:
 -Proper crouch charging ✅
 -Gets stuck in incapped enemy when shoved off ✅
 -Not make boomer bile damage enemy ✅
--Fix third-person player control camera view when incapping
 
 Jockey:
 -Directional movement for incapped mdl ✅
@@ -59,12 +59,14 @@ Smoker:
 -Incapped player can still move freely around the world 
 -Adjust tongue collision entities so that they are in line with the tongue particle
 -Give player a certain amount of time to shoot Smoker before being incap'd
+-Add idle crouching when controlling
 
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
 -Don't play spitter goo music for players that are controlling specials
 -Don't play spitter goo music for goo that spawns on spitter's death
 -Make spitter goo spawn on ground (instead of floating) if the projectile lands on an entity
+-Add idle crouching when controlling
 
 Tank:
 -Fix textures not being applied to model ✅
@@ -90,7 +92,7 @@ General:
 -Match shared functions
 	> Update IsEntityAlly function  ✅
 	> Create a module that holds shared funcs ✅ (metatable in vj_l4d2si_features.lua)
--Conserve incap enemy's bodygroups/skins to CSEnt
+-Conserve incap enemy's bodygroups/skins to CSEnt ✅ (used another method)
 -Be able to shove off on incapped enemies ✅
 -Proper recharge HUD icon when controlled ✅
 -New StripAmmo() function ✅
@@ -100,8 +102,8 @@ General:
 -Bacteria cuts short for some specials (jockey & hunter for sure) ✅
 -Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops) ✅
 -Make infected unghost ✅
--Make specials unable to ghost when incapping 
--Make incap lights clientside & visible only to incapped enemy
+-Make specials unable to ghost when incapping ✅
+-Make incap lights clientside & visible only to incapped enemy ✅
 -Add crouching to all specials 
 -Don't incap player who is controlling ✅
 -Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2)
@@ -110,12 +112,12 @@ General:
 -Add spawners and/or random special infected spawn icons? ✅
 -Give player grenades (if he had them before) when stopping incapping
 -Make all special infected be able to incap players with non-ValveBiped skeletons
--Fix other players ghosting controlled specials
+-Fix other players ghosting controlled specials ✅
 -Make halos around allies green (when controlling)
 -Don't make enemies attack ghosted specials
 
 Bugs:
-- Sometimes when an incapper dies the enemy gets sent to a random location
+- Sometimes when an incapper dies the enemy gets sent to a random location ✅ (gone for now)
 - You have to click IN_USE many times before ghosting turns on ✅
 - Smoker doesn't stop incapping after the enemy dies ✅
 - Too many smoker_tongue_fall particles spawn when smoker misses or is killed while incapping ✅
@@ -127,12 +129,12 @@ ConVars:
 
 Before release:
 -Make HUD fit any screen size ✅
--Better jockey control
+-Better jockey control ✅
 -Improve witch (i.e. add special pose params) ✅
 
 Tensor:
 -Add new functions to features.lua ✅
 -Update Charger
--Update Smoker
--Update bonemerging feature for all specials
--Update incap lighting for all specials
+-Update Smoker ✅
+-Update bonemerging feature for all specials ✅
+-Update incap lighting for all specials ✅
