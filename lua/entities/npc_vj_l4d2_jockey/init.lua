@@ -91,6 +91,14 @@ ENT.GeneralSoundPitch1 = 95
 ENT.GeneralSoundPitch2 = 105
 ENT.UseTheSameGeneralSoundPitch = false
 
+
+1
+
+AddCSLuaFile("shared.lua")
+
+2
+
+include('shared.lua')
 -- Custom --
 ENT.IsGhosted = false
 ENT.SoundTbl_Bacteria = {"vj_l4d2/music/bacteria/jockeybacteria.mp3","vj_l4d2/music/bacteria/jockeybacterias.mp3"}
@@ -680,6 +688,8 @@ function ENT:CustomOnThink()
 					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence("Crouch_Idle"))}
 					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
 					self.AnimTbl_Run = {ACT_RUN_CROUCH}
+					self:VJ_ACT_PLAYACTIVITY(self:GetSequenceActivity(self:LookupSequence("Crouch_Idle")))
+					self:ResetSequenceInfo()
 				end
 			end
 		end)
@@ -689,6 +699,8 @@ function ENT:CustomOnThink()
 					self.AnimTbl_IdleStand = {ACT_IDLE}
 					self.AnimTbl_Walk = {ACT_WALK}
 					self.AnimTbl_Run = {ACT_RUN}
+					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+					self:ResetSequenceInfo()
 				end
 			end
 		end)
