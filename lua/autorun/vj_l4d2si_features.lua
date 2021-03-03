@@ -658,8 +658,11 @@ function NPC:GetEnemiesInRange()
 						tbl[table.Count(tbl) + 1] = {v:EntIndex(), v:GetPos():Distance(self:GetPos())}
 						table.sort(tbl, function(a, b) return a[2] < b[2] end)
 						self.pTargetEntity = tbl[1][1]
-						if self:GetSequence() == self:SelectWeightedSequence(ACT_IDLE) then
-							self:ResetSequenceInfo()
+						if (self:GetClass() == "npc_vj_l4d2_witch_s" || self.Base == "npc_vj_l4d2_witch_s") then
+							if self:GetSequenceActivity(self:GetSequence()) == ACT_IDLE_RELAXED then 
+								self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_AGITATED)
+								self:ResetSequenceInfo()
+							end
 						end
 						return true
 					end
