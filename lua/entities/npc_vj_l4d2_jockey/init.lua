@@ -285,6 +285,8 @@ function ENT:ResetJockey()
 		if table.Count(self.tblEnemyWeapons) > 0 then
 			for i = 1, table.Count(self.tblEnemyWeapons) do
 				local tbl = self.tblEnemyWeapons
+				enemy.VJ_CanBePickedUpWithOutUse = true
+				enemy.VJ_CanBePickedUpWithOutUse_Class = tbl[i][1]
 				enemy:Give(tbl[i][1], true)
 				local wpn = enemy:GetWeapon(tbl[i][1])
 				if tbl[i][2][1] ~= -1 then
@@ -293,6 +295,9 @@ function ENT:ResetJockey()
 				if tbl[i][3][1] ~= -1 then
 					wpn:SetClip2(tbl[i][3][2])
 				end
+			end
+			if enemy:HasWeapon(self.EnemyActiveWeapon) then
+				enemy:SetActiveWeapon(enemy:GetWeapon(self.EnemyActiveWeapon))
 			end
 		end
 		for a, c in ipairs(self.tblEnemyAmmo) do
