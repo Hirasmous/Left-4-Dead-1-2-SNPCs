@@ -461,20 +461,20 @@ function NPC:IsEntityAlly(ent)
 	return false
 end
 
+NPC.EnemyActiveWeapon = nil
 function NPC:StripEnemyWeapons(ent)
 	local weapons = ent:GetWeapons()
 	self.tblEnemyWeapons = {}
 	self.tblEnemyAmmo = {}
 	self.tblEnemyAmmo = ent:GetAmmo()
 	for l, w in ipairs(weapons) do
-		if w.Base ~= "weapon_vj_base" then
-			local index = table.Count(self.tblEnemyWeapons) + 1
-			self.tblEnemyWeapons[index] = {}
-			self.tblEnemyWeapons[index][1] = w:GetClass()
-			self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
-			self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
-		end
+		local index = table.Count(self.tblEnemyWeapons) + 1
+		self.tblEnemyWeapons[index] = {}
+		self.tblEnemyWeapons[index][1] = w:GetClass()
+		self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
+		self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
 	end
+	self.EnemyActiveWeapon = ent:GetActiveWeapon():GetClass()
 	ent:StripWeapons()
 	ent:StripAmmo()
 end
