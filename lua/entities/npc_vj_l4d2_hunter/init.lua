@@ -746,6 +746,8 @@ function ENT:CustomOnThink()
 			self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
 			if self.pEnemyRagdoll:GetClass() == "prop_ragdoll" then
 				self.pEnemyRagdoll:Fire("StartRagdollBoogie")
+				self.pEnemyRagdoll:GetPhysicsObjectNum(0):SetPos(self:GetPos())
+				self.pEnemyRagdoll:SetAngles(self:GetAngles())
 			end
 		end
 		if IsValid(self.pIncapacitatedEnemy) then
