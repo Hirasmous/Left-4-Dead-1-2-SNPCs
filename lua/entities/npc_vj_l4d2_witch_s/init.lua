@@ -111,8 +111,6 @@ ENT.nextPoseReset = -1
 ENT.nextPoseChange = -1
 ENT.PoseParams_Rage = 0
 ENT.pTargetEntity = nil
-ENT.WitchEyeGlow = "witch_eye_glow_calm" -- Witch glow particle
-ENT.WitchEyeGlow_Color = "255 229 0 255" -- Witch glow color
 ENT.WitchState = "Sit"
 ENT.WitchEffectsSpawned = false
 ENT.FootStepType = "CommonLight"
@@ -211,67 +209,8 @@ function ENT:DisableAggression()
 	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:WitchGlowingEyes(GColor,Particle)
-	self.glowlight_l = ents.Create("light_dynamic")
-	self.glowlight_l:SetKeyValue("_light",GColor)
-	self.glowlight_l:SetKeyValue("brightness","0.1")
-	self.glowlight_l:SetKeyValue("distance","100")
-	self.glowlight_l:SetKeyValue("style","0")
-	self.glowlight_l:SetPos(self:GetPos())
-	self.glowlight_l:SetParent(self)
-	self.glowlight_l:Spawn()
-	self.glowlight_l:Activate()
-	self.glowlight_l:Fire("SetParentAttachment","leye")
-	self.glowlight_l:Fire("TurnOn","",0)
-	self:DeleteOnRemove(self.glowlight_l)
-
-	self.glowlight_r = ents.Create("light_dynamic")
-	self.glowlight_r:SetKeyValue("_light",GColor)
-	self.glowlight_r:SetKeyValue("brightness","0.1")
-	self.glowlight_r:SetKeyValue("distance","100")
-	self.glowlight_r:SetKeyValue("style","0")
-	self.glowlight_r:SetPos(self:GetPos())
-	self.glowlight_r:SetParent(self)
-	self.glowlight_r:Spawn()
-	self.glowlight_r:Activate()
-	self.glowlight_r:Fire("SetParentAttachment","reye")
-	self.glowlight_r:Fire("TurnOn","",0)
-	self:DeleteOnRemove(self.glowlight_r)
-
-	self.glow_leye = ents.Create("info_particle_system")
-	self.glow_leye:SetParent(self)
-	self.glow_leye:SetPos(self:GetPos())
-	self.glow_leye:SetKeyValue("effect_name",Particle)
-	self.glow_leye:SetKeyValue("start_active","1")
-	self.glow_leye:Fire("SetParentAttachment","leye")
-	self.glow_leye:Spawn()
-	self.glow_leye:Activate()
-	self:DeleteOnRemove(self.glow_leye)
-
-	self.glow_reye = ents.Create("info_particle_system")
-	self.glow_reye:SetParent(self)
-	self.glow_reye:SetPos(self:GetPos())
-	self.glow_reye:SetKeyValue("effect_name",Particle)
-	self.glow_reye:SetKeyValue("start_active","1")
-	self.glow_reye:Fire("SetParentAttachment","reye")
-	self.glow_reye:Spawn()
-	self.glow_reye:Activate()
-	self:DeleteOnRemove(self.glow_reye)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos()) -- in the features.lua
-	if IsValid(self:GetEnemy()) then
-		if self.WitchEffectsSpawned then
-			self:WitchGlowingEyes("153 5 0","witch_eye_glow")
-			self.WitchEffectsSpawned = false
-		end
-	else
-		if !self.WitchEffectsSpawned then
-			self:WitchGlowingEyes("246 214 0 255","witch_eye_glow_calm")
-			self.WitchEffectsSpawned = true
-		end
-	end
 	if self:IsOnFire() then
 		self:PlayWitchMusic(3, true)
 		self.AnimTbl_Run = {self:GetSequenceActivity(self:LookupSequence("Run_OnFire"))}
