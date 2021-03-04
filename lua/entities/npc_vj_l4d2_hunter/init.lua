@@ -471,16 +471,9 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 									if dist <= self.IncapacitationRange then
 										self.HasEnemyIncapacitated = true
 										timer.Stop("Hunter"..tostring(id).."_HasEnemyInRange") --kill the timer
-										local camera = ents.Create("prop_dynamic")
-										camera:SetModel("models/error.mdl")
-										camera:SetPos(self:GetPos())
-										camera:Spawn()
-										camera:Activate()
-										camera:SetRenderMode(RENDERMODE_NONE)
-										camera:DrawShadow(false)
-										camera:SetParent(self)
-										camera:Fire("SetParentAttachment","camera_att")
-										self:DeleteOnRemove(camera)
+												
+										self:SpawnCamera(enemy,15)
+												
 										VJ_CreateSound(v,"player/hunter/hit/tackled_1.mp3",75,self:VJ_DecideSoundPitch(100,100))
 										self:SetLocalVelocity(self:GetForward() * 0) --stop the hunter from lunging forward
 										self.pIncapacitatedEnemy = enemy
@@ -503,7 +496,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 											self:StripEnemyWeapons(enemy)
 											if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
 												enemy:SetObserverMode(OBS_MODE_CHASE)
-												enemy:SpectateEntity(camera)
+												enemy:SpectateEntity(self.Camera)
 												enemy:DrawViewModel(false)
 												enemy:DrawWorldModel(false)
 												enemy:SetFOV(75)
