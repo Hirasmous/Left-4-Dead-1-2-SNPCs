@@ -838,6 +838,15 @@ function ENT:CustomOnThink()
 					else
 						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
 						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
+						if self.Incap_Effects == false then
+                            self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+                            self.Incap_Effects = true
+                            for k, v in ipairs(ents.FindByClass("player")) do
+                                if enemy:IsNPC() then
+                                    VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+                                end
+                            end
+                        end
 					end
 					for k, v in ipairs(ents.FindByClass("player")) do
 						if enemy:IsNPC() then
@@ -855,6 +864,15 @@ function ENT:CustomOnThink()
 						self.IncapSong2:Stop()
 					end
 					self:PlayIncapSong()
+					if self.Incap_Effects == false then
+                        self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+                        self.Incap_Effects = true
+                        for k, v in ipairs(ents.FindByClass("player")) do
+                            if enemy:IsNPC() then
+                                VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+                            end
+                        end
+                    end
 				end
 			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
 				if self.IncapSong2 then
