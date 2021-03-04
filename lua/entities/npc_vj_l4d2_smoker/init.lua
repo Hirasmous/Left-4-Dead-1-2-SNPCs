@@ -954,14 +954,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, corpseEnt)
 	corpseEnt:GetPhysicsObject():SetVelocity(corpseEnt:GetPhysicsObject():GetVelocity() +self:GetUp() *15000 +VectorRand() *15000)
-	local attacker = dmginfo:GetAttacker()
-	if IsValid(attacker) then
-		if attacker:IsNPC() then
-			PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
-		elseif attacker:IsPlayer() then
-			PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
-		end
-	end
+	self:L4D2_DeathMessage(dmginfo:GetAttacker())
 	self:DismountSmoker()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
