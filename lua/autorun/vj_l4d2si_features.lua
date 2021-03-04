@@ -277,10 +277,12 @@ function NPC:SetGhost(bool)
 		self:SetRenderMode(RENDERMODE_NONE)
 		self:EmitSound("ui/menu_horror01.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+		self.DisableMakingSelfEnemyToNPCs = true
 	else
 		self:SetRenderMode(RENDERMODE_NORMAL)
 		self:EmitSound("ui/pickup_guitarriff10.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_NPC)
+		self.DisableMakingSelfEnemyToNPCs = false
 		if self:GetClass() == "npc_vj_l4d2_hunter" or self:GetClass() == "npc_vj_l4d_hunter" then
 			self.HasLeapAttack = true
 		end
