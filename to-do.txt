@@ -4,10 +4,10 @@
 Boomer:
 -Don't make vomit cover particles visible in firstperson
 -Make it still vomit if shoved (otherwise it has to wait 20 seconds in order to be able range attack again when it didn't even vomit) ✅
--Smoke particles spawn at the center of the map on death ✅
+-Smoke particles spawn at the center of the map on death ✅ (removed)
 -Make vomit music play relative to effected player ✅
--Don't show vomit residue on incap'd enemies; instead, make the residue show on pEnemyRagdoll ❗
--Don't show vomit residue on allies ❗
+-Don't show vomit residue on incap'd enemies; instead, make the residue show on pEnemyRagdoll ✅
+-Don't show vomit residue on allies ✅
 
 Boomette:
 
@@ -47,7 +47,7 @@ General:
 -Resize materials (what happened to them?!)
 -Give player grenades (if he had them before) when stopping incapping ❗
 -Make halos around allies green (when controlling) ❗
--Don't make enemies attack ghosted specials ❗
+-Don't make enemies attack ghosted specials ✅
 -Fixed inverted pose parameters ❗
 -Fix wrong footstep sounds ❗
 
