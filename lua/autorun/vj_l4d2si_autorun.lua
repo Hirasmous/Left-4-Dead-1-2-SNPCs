@@ -155,8 +155,8 @@ if CLIENT then
 		local isdeleted = net.ReadBool()
 		local ent = net.ReadEntity()
 		hook.Add("RenderScreenspaceEffects","IncapOverlay",function()
-			DrawMaterialOverlay( "effects/dodge_overlay", 0 )
-			DrawMaterialOverlay( "effects/invuln_overlay_red", 0 )
+			DrawMaterialOverlay( "effects/incap_overlays/dodge_overlay", 0 )
+			DrawMaterialOverlay( "effects/incap_overlays/invuln_overlay_red", 0 )
 		end)
 	    if isdeleted == true then hook.Remove("RenderScreenspaceEffects","IncapOverlay") end
 	end)
