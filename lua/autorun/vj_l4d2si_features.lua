@@ -787,3 +787,15 @@ function NPC:Infected_IsCrouching()
 	end
 	return false
 end
+
+function NPC:L4D2_DeathMessage(attacker)
+	if GetConVar("vj_l4d2_print"):GetInt() == 1 then
+		if IsValid(attacker) then
+			if attacker:IsNPC() then
+				PrintMessage(HUD_PRINTTALK, attacker:GetClass().." killed ".. self:GetName())
+			elseif attacker:IsPlayer() then
+				PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+			end
+		end
+	end
+end
