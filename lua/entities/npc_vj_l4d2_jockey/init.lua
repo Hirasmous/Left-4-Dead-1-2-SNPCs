@@ -485,15 +485,7 @@ function ENT:CustomOnThink()
 							self.pIncapacitatedEnemy = v
 							self.MovementType = VJ_MOVETYPE_STATIONARY
 
-							local camera = ents.Create("prop_dynamic")
-							camera:SetModel("models/error.mdl")
-							camera:SetPos(self:GetPos())
-							camera:Spawn()
-							camera:Activate()
-							camera:SetRenderMode(RENDERMODE_NONE)
-							camera:DrawShadow(false)
-							camera:SetParent(self)
-							camera:Fire("SetParentAttachment","pelvis")
+							self:SpawnCamera(self,25)
 
 							self:ClearPoseParameters()
 
@@ -514,11 +506,13 @@ function ENT:CustomOnThink()
 							elseif v:IsPlayer() then
 								self:StripEnemyWeapons(v)
 								self:Incap_Lighting(v)
+								self.Light1:SetKeyValue('lightcolor', "89 255 0 255")
 								if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= v then
 									v:SetObserverMode(OBS_MODE_CHASE)
-									v:SpectateEntity(camera)
+									v:SpectateEntity(self.Camera)
 									v:DrawViewModel(false)
 									v:DrawWorldModel(false)
+									v:SetFOV(80)
 								end
 							end
 							local ang = v:GetAngles()
