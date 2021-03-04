@@ -1,10 +1,5 @@
 Boomer:
--Add vomit cover material overlay to enemies hit by vomit ✅
--On death, make the surrounding enemies covered in puke ✅
--Fix missing materials on gib models ✅
--Decrease puke range ✅
 -Don't make vomit cover particles visible in firstperson
--Player still has vomit overlay/puke particles after death on respawn ✅
 -Make it still vomit if shoved (otherwise it has to wait 20 seconds in order to be able range attack again when it didn't even vomit) ✅
 -Smoke particles spawn at the center of the map on death
 -Make vomit music play relative to effected player
@@ -12,104 +7,42 @@ Boomer:
 -Don't show vomit residue on allies
 
 Boomette:
--Fix broken model ✅
 
 Charger:
--Add shove code to repo ✅
--Keep charging until he hits a wall or travels certain dist ✅
--Can pound the bullseye entity when being controlled (is this fixed?) ✅
--Make the recharge for pounding less time? ✅
--Make it carry players until it hits a wall or travels a certain distance ✅
--Charger doesn't incap player if player is moving backwards (sometimes)
--No flinching or shoving while charging ✅
--Incapped enemy spawns under ground when rescued from death ✅
--Directional pummeling (Ceiling,wall) ✅
 -Make it carry enemies up hills/steep surfaces
--Make the charger throw enemies in its path aside when carrying an enemy ✅
 -Add idle crouching when controlling
 
 Hunter:
--Stop leap attack after hunter's target is killed before he stops crouching and leaps ✅
--Properly implement shove anims ✅
--Proper crouch charging ✅
--Gets stuck in incapped enemy when shoved off ✅
--Not make boomer bile damage enemy ✅
 
 Jockey:
--Directional movement for incapped mdl ✅
--Add updated IsEntityAlly() func ✅
--Add updated StripEnemyWeapons() func ✅
--Player's view is zoomed in after jockey stops incapping ✅
 -Disable sounds when incapping
 -Add damage events
 
 Smoker:
--Incapped enemy pose params ✅
--Collision for tongue (lerp mouth att pos & enemy pos) ✅
--Fix Cloud smoke damaging Smoker/other specials & allies ✅
--Fix cant incap when being controlled ✅
--Smoker's incapped enemy can move ✅
--Center tongue particle on incapped model (make tracer particle end at incapped enemy's waist) ✅
--Drag enemies off of ledges ✅
 -Prevent smoke cloud from damaging altogether; add smoke overlay  effect 
--Add dangling animations for incapped enemy when it's off ground ✅
 -(L4D1) Restore tongue bodygroup after stopping incapping
--Incapped player can still move freely around the world ✅
 -Adjust tongue collision entities so that they are in line with the tongue particle
 -Give player a certain amount of time to shoot Smoker before being incap'd
 
 Spitter:
--Fix Spitter goo damaging Spitter ✅
 -Don't play spitter goo music for players that are controlling specials
 -Don't play spitter goo music for goo that spawns on spitter's death
--Make spitter goo spawn on ground (instead of floating) if the projectile lands on an entity ✅
+-Increase spitter goo puddle count / spread
 
 Tank:
--Fix textures not being applied to model ✅
--Implement rock bodygroup for range attack ✅ (didn't have to)
--Different debris type ✅
--Make it shove according to damage position not attacker position ✅
 -Play regular idle animation when no enemies are near
 
 Witch:
--Change sequence "Standing_Idle"'s activity to something other than ACT_IDLE; it conflicts with "Idle_Standing_Crying" ✅
--Add rage pose parameters ✅
--Add sitting pose parameters ✅
--Add unique activity name for "Idle_Standing" ✅
--Add unique activity name for "Agitated_02" ✅
--Touch up the sitting variant (add ResetSequenceInfo() when enemy is in range) ✅
--Reset rage pose params after triggered ✅
 -Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity)
--Make it shove according to damage position not attacker position (DMG_BLAST only) ✅
--Remove eye color changing ✅
 -Make it only attack the enemy that triggered it
+-Remove yellow eye color for SITTING witch
 
 General:
--Ignore incapped players/enemies if there are more enemies nearby ✅
--Match shared functions
-	> Update IsEntityAlly function  ✅
-	> Create a module that holds shared funcs ✅ (metatable in vj_l4d2si_features.lua)
--Conserve incap enemy's bodygroups/skins to CSEnt ✅ (used another method)
--Be able to shove off on incapped enemies ✅
--Proper recharge HUD icon when controlled ✅
--New StripAmmo() function ✅
--Change material directories ("infected" to "vj_l4d2") ✅
--Witch HUD ✅
--Make HUD fit any screen size ✅
--Bacteria cuts short for some specials (jockey & hunter for sure) ✅
--Incap songs don't work properly (hunter's stops looping altogether, jockey's cuts off short and loops) ✅
--Make infected unghost ✅
--Make specials unable to ghost when incapping ✅
--Make incap lights clientside & visible only to incapped enemy ✅
 -Add crouching to all specials 
--Don't incap player who is controlling ✅
 -Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2)
 -Add original viewmodels when controlling in first-person 
 -Resize materials (what happened to them?!)
--Add spawners and/or random special infected spawn icons? ✅
 -Give player grenades (if he had them before) when stopping incapping
--Make all special infected be able to incap players with non-ValveBiped skeletons ✅
--Fix other players ghosting controlled specials ✅
 -Make halos around allies green (when controlling)
 -Don't make enemies attack ghosted specials
 -Fixed inverted pose parameters
@@ -122,14 +55,18 @@ Bugs:
 - Too many smoker_tongue_fall particles spawn when smoker misses or is killed while incapping ✅
 
 ConVars:
--Should incapped NPC enemies drop their weapons? ✅
 -Spitter goo damage slider
 -Other special infected damage sliders
 
 Before release:
--Make HUD fit any screen size ✅
--Better jockey control ✅
--Improve witch (i.e. add special pose params) ✅
+-Improve Witch
+-Improve Boomer
+	>Make zombies attracted to puked enemies
+	>Improve puking feature
+-Add smoke screen effect
+-Improve smoker tongue collision
+-Make better incap overlay
+-Improve music system
 
 Tensor:
 -Add new functions to features.lua ✅
