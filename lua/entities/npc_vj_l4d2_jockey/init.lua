@@ -729,14 +729,7 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-	local attacker = dmginfo:GetAttacker()
-	if IsValid(attacker) then
-		if attacker:IsNPC() then
-			PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
-		elseif attacker:IsPlayer() then
-			PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
-		end
-	end
+	self:L4D2_DeathMessage(dmginfo:GetAttacker())
 	self:ResetJockey()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
