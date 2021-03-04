@@ -685,73 +685,53 @@ function NPC:IncapacitateEnemy(ent, parent)
 end
 
 NPC.Light1 = nil
-function NPC:Incap_Lighting(ply, fadeout , parent)
-    local spotlightpoint1
-    fadeout = fadeout or false
-    if fadeout == false then
-        self.spotlightpoint = ents.Create("env_projectedtexture")
-        self.spotlightpoint:SetKeyValue('lightcolor', "255 25 12")
-        self.spotlightpoint:SetKeyValue('lightfov', '65')
-        self.spotlightpoint:SetKeyValue('brightnessscale','10')
-        self.spotlightpoint:SetKeyValue('farz', '612')
-        self.spotlightpoint:SetKeyValue('nearz', '0.1')
-        self.spotlightpoint:SetKeyValue('shadowquality', '1')
-        self.spotlightpoint:SetKeyValue('enableshadows', '1')
-        self.spotlightpoint:SetKeyValue('texturename', 'effects/flashlight/hard')
-        self:DeleteOnRemove(self.spotlightpoint)
-        self.Light1 = self.spotlightpoint
-        self.spotlightpoint1 = ents.Create("env_projectedtexture")
-        self.spotlightpoint1:SetKeyValue('lightcolor', "255 25 12")
-        self.spotlightpoint1:SetKeyValue('lightfov', '65')
-        self.spotlightpoint1:SetKeyValue('brightnessscale', '10')
-        self.spotlightpoint1:SetKeyValue('farz', '612')
-        self.spotlightpoint1:SetKeyValue('nearz', '0.1')
-        self.spotlightpoint1:SetKeyValue('shadowquality', '1')
-        self.spotlightpoint1:SetKeyValue('enableshadows', '1')
-        self.spotlightpoint1:SetKeyValue('texturename', 'effects/flashlight/hard')
-        self:DeleteOnRemove(self.spotlightpoint1)
-        self.Light2 = self.spotlightpoint1
-        local glowlight = ents.Create("light_dynamic")
-        glowlight:SetKeyValue("_light","255 25 12")
-        glowlight:SetKeyValue("brightness","10")
-        glowlight:SetKeyValue("distance","300")
-        glowlight:SetKeyValue("style","0")
-        self:DeleteOnRemove(glowlight)
-        self.Light3 = glowlight
-        if parent then
-            self.Light1:SetParent(parent)
-            self.Light2:SetParent(parent)
-            self.Light3:SetParent(parent)
-        end
-        timer.Simple(0.05, function()
-            if !IsValid(self) then return end
-            if self.pIncapacitatedEnemy:IsPlayer() then
-                net.Start("Infected_IncapLight")
-                    net.WriteBool(fadeout)
-                    net.WriteEntity(parent or self)
-                    net.WriteEntity(self.Light1)
-                    net.WriteEntity(self.Light2)
-                    net.WriteEntity(self.Light3)
-                net.Send(ply)
-                if GetConVarNumber("vj_l4d2_incap_overlay") == 1 then
-                    net.Start("Infected_DrawIncapOverlay")
-                        net.WriteBool(fadeout)
-                        net.WriteEntity(self)
-                    net.Send(ply)
-                end
-            end
-        end)
-    else
-        if IsValid(self.Light1) && IsValid(self.Light2) && IsValid(self.Light3) then
-            self.Light1:Remove()
-            self.Light2:Remove()
-            self.Light3:Remove()
-            net.Start("Infected_DrawIncapOverlay")
-                net.WriteBool(true)
-                net.WriteEntity(self)
-            net.Send(ply)
-        end
-    end
+function NPC:Incap_Lighting(ply, fadeout, parent)
+	local spotlightpoint1
+	fadeout = fadeout or false
+	if fadeout == false then
+		self.spotlightpoint = ents.Create("env_projectedtexture")
+		self.spotlightpoint:SetKeyValue('lightcolor', "255 25 12")
+		if self:GetClass() == "npc_vj_l4d2_charger" then
+			self.spotlightpoint:SetKeyValue('lightfov', '100')
+		else
+			self.spotlightpoint:SetKeyValue('lightfov', '75')
+		end
+		self.spotlightpoint:SetKeyValue('brightnessscale','10')
+		self.spotlightpoint:SetKeyValue('farz', '612')
+		self.spotlightpoint:SetKeyValue('nearz', '0.1')
+		self.spotlightpoint:SetKeyValue('shadowquality', '1')
+		self.spotlightpoint:SetKeyValue('enableshadows', '0')
+		self.spotlightpoint:SetKeyValue('texturename', 'effects/flashlight/soft')
+		self:DeleteOnRemove(self.spotlightpoint)
+		self.Light1 = self.spotlightpoint
+		if parent then
+			self.Light1:SetParent(parent)
+		end
+		timer.Simple(0.05, function()
+			if !IsValid(self) then return end
+			if self.pIncapacitatedEnemy:IsPlayer() then
+				net.Start("Infected_IncapLight")
+					net.WriteBool(fadeout)
+					net.WriteEntity(parent or self)
+					net.WriteEntity(self.Light1)
+				net.Send(ply)
+				if GetConVarNumber("vj_l4d2_incap_overlay") == 1 then
+					net.Start("Infected_DrawIncapOverlay")
+						net.WriteBool(fadeout)
+						net.WriteEntity(self)
+					net.Send(ply)
+				end
+			end
+		end)
+	else
+		if IsValid(self.Light1) then
+			self.Light1:Remove()
+			net.Start("Infected_DrawIncapOverlay")
+				net.WriteBool(true)
+				net.WriteEntity(self)
+			net.Send(ply)
+		end
+	end
 end
 
 -- Add hooks here
