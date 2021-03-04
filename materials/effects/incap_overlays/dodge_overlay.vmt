@@ -13,16 +13,6 @@
 	"$bumpframe" "0"
 	"$bluramount" "1"
 //	"$refracttinttexture" "effects/incap_overlays/invulnoverlay/invuln_overlay"
-	"Proxies"
-	{
-		"sine"
-		{
-			"sinemax" ".2"
-			"sinemin" "-.2"
-			"sineperiod" "1"
-			"resultvar" "$refractamount"
-		}
-	}
 
 }
 
