@@ -543,7 +543,7 @@ function ENT:CustomOnThink()
 
 							navigator:SetCustomCollisionCheck(true)
 							hook.Add("ShouldCollide", "Jockey_EnableCollisions1", function(ent1, ent2)
-								if (ent1 == navigator and ent2 == v) || (ent1 == navigator and ent2 == self) then return false end
+								if (ent1 == self and ent2 == v) || (ent1 == navigator and ent2 == v) || (ent1 == navigator and ent2 == self) then return false end
 							end)
 
 							self.pEnemyRagdoll = mdl
