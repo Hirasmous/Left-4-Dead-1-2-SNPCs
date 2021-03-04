@@ -10,7 +10,7 @@
 	"$refractamount" ".02"
 	"$model" "1"
 	"$refracttint" "{255 115 15}"
-	"$normalmap" "effects/invuln_overlay_normal"
+                "$normalmap" "effects/invulnoverlay/invuln_overlay_normal"
 	"$bumpframe" "0"
 	"$bluramount" "1"
 	"$refracttinttexture" "effects/invulnoverlay/invuln_overlay"

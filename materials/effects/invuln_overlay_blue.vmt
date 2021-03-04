@@ -10,9 +10,9 @@
 	"$forcerefract" "1"
 	"$model" "1"
 	"$refracttint" "{55 155 255}"
-	"$normalmap" "effects/invuln_overlay_normal"
 	"$bumpframe" "0"
 	"$bluramount" "1"
+                "$normalmap" "effects/invulnoverlay/invuln_overlay_normal"
 	"$refracttinttexture" "effects/invulnoverlay/invuln_overlay"
 	"Proxies"
 	{
