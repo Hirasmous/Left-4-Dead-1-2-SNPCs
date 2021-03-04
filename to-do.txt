@@ -68,7 +68,7 @@ Before release:
 	>Improve puking feature
 -Add smoke screen effect
 -Improve smoker tongue collision
--Make better incap overlay
+-Make better incap overlay ✅
 -Improve music system
 
 Tensor:
