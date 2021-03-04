@@ -96,7 +96,7 @@ if( file.Exists( VJExists, "GAME" ) ) then
     VJ.AddConVar("vj_l4d2_ghosted",0) -- Turned off by default
     VJ.AddConVar("vj_l4d2_incap_overlay",1) -- Turned on by default
 	VJ.AddConVar("vj_l4d2_dismount", 0) -- Turned off by default
-	VJ.AddConVar("vj_l4d2_print", 0)
+	VJ.AddConVar("vj_l4d2_print", 1) -- Turned on by default
 end
 
 if SERVER then
