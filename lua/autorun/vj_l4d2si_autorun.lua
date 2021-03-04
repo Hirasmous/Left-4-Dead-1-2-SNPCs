@@ -96,6 +96,7 @@ if( file.Exists( VJExists, "GAME" ) ) then
     VJ.AddConVar("vj_l4d2_ghosted",0) -- Turned off by default
     VJ.AddConVar("vj_l4d2_incap_overlay",1) -- Turned on by default
 	VJ.AddConVar("vj_l4d2_dismount", 0) -- Turned off by default
+	VJ.AddConVar("vj_l4d2_print", 0)
 end
 
 if SERVER then
@@ -129,6 +130,7 @@ if CLIENT then
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
 			Panel:AddControl("Checkbox", {Label = "Can controlled Specials stop incapacitating (via spacebar)?", Command = "vj_l4d2_dismount"})
 			Panel:AddControl("Checkbox", {Label = "Draw incap overlay?", Command = "vj_l4d2_incap_overlay"})
+			Panel:AddControl("Checkbox", {Label = "Should information be printed on the screen?", Command = "vj_l4d2_print"})
 			Panel:AddControl("Slider", { Label 	= "Tank health", Command = "vj_l4d2_t_h", Type = "Float", Min = "3500", Max = "6000"})
 			Panel:AddControl("ComboBox", tank_musictype)
 			Panel:AddControl("ComboBox", tank_type)
