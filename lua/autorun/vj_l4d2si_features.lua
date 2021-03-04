@@ -255,6 +255,19 @@ function NPC:GetGroundType(pos)
 	end
 end
 
+function NPC:SpawnCamera(parent,height)
+	local camera = ents.Create("prop_dynamic")
+	camera:SetModel("models/error.mdl")
+	camera:SetPos(parent:GetPos() +parent:GetUp() *height)
+	camera:Spawn()
+	camera:Activate()
+	camera:SetRenderMode(RENDERMODE_NONE)
+	camera:DrawShadow(false)
+	camera:SetParent(parent)
+	self:DeleteOnRemove(camera)
+	self.Camera = camera
+end
+
 function NPC:IsShoved()
 	local seq = self:GetSequenceName(self:GetSequence())
 	local s, e = string.find(seq, "Shoved_")
