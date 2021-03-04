@@ -297,7 +297,11 @@ function ENT:DismountSmoker()
 		net.WriteString(tostring(self:EntIndex()))
 	net.Broadcast()
 	self.HasRangeAttack = true
-	self:SetBodygroup(2, 0)
+	if string.find(self:GetClass(), "l4d_") then
+		self:SetBodygroup(1, 0)
+	else
+		self:SetBodygroup(2, 0)
+	end
 	self.HasEnemyIncapacitated = false
 	self.IsChokingEnemy = false
 	if self.IncapSong then
