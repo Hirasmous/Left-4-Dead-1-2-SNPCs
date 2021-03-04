@@ -7,7 +7,7 @@ include('shared.lua')
 -----------------------------------------------*/
 ENT.Model = {"models/vj_l4d2/charger.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_c_h")
-ENT.HullType = HULL_HUMAN
+ENT.HullType = HULL_WIDE_HUMAN
 ENT.HasBloodPool = false -- Does it have a blood pool?
 ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
 -- ENT.Bacterias = {"bacteria/chargerbacteria.mp3","bacteria/chargerbacterias.mp3"}
@@ -129,18 +129,25 @@ ENT.ChargeStopT = CurTime()
 ENT.PummelType = "Down"
 ENT.EnemyMoveType = 3
 
+-- Charging
+ENT.ChargeAngles = Angle(0, 0, 0)
+ENT.pChargeTarget = nil
+ENT.pChargeEnt = nil
+ENT.IsCarryingEnemy = false
+ENT.pCarryTarget = nil
+ENT.NextChargeAttackTime = 5
+ENT.bCanCharge = true
+ENT.bCanContinueCharge = true
+
 util.AddNetworkString("L4D2ChargerHUD")
 util.AddNetworkString("L4D2ChargerHUDGhost")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
+	self:L4D2_InitializeHooks()
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:OnUnGhost()
-    VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
-endA
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_emit FootStep" then
@@ -174,15 +181,13 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 			end
 		end
 		VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95)) 
-		if GetConVarNumber("vj_l4d2_incapdamage") == 1 then
-			if IsValid(incapent) then
-				local applyDmg = DamageInfo()
-				applyDmg:SetDamage(10)
-				applyDmg:SetDamageType(DMG_CRUSH)
-				applyDmg:SetInflictor(incapent)
-				applyDmg:SetAttacker(self)
-				incapent:TakeDamage(25,self,incapent)
-			end
+		if IsValid(incapent) then
+			local applyDmg = DamageInfo()
+			applyDmg:SetDamage(10)
+			applyDmg:SetDamageType(DMG_CRUSH)
+			applyDmg:SetInflictor(incapent)
+			applyDmg:SetAttacker(self)
+			incapent:TakeDamage(25,self,incapent)
 		end
 	end
 end
@@ -245,150 +250,127 @@ function ENT:ChargerIncapacitate(ent)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PummelEnemy(v)
-	--if timer.Exists("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange") then timer.Stop("Charger"..tostring(id).."_HasEnemyInRange") end --if the same timer is playing, stop it
-	--timer.Create("Charger"..tostring(self.nEntityIndex).."_HasEnemyInRange", 0.1, 11, function() --like a think function, checks every 0.1 second to see if an enemy is in range for incapacitation
-		if !IsValid(self) then return end
-		local id = self.nEntityIndex
-		local tbControllers = {}
-		for _, x in ipairs(ents.FindByClass("npc_vj_l4d*")) do
-			if x.VJ_IsBeingControlled then
-				tbControllers[table.Count(tbControllers) + 1] = x.VJ_TheController
-			end
+	if !IsValid(self) then return end
+	local id = self.nEntityIndex
+	local tbControllers = {}
+	for _, x in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+		if x.VJ_IsBeingControlled then
+			tbControllers[table.Count(tbControllers) + 1] = x.VJ_TheController
 		end
-		--for k, v in ipairs(ents.FindInSphere(self:GetPos(), self.IncapacitationRange)) do
-			if IsValid(self) && IsValid(v) then
-				if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0 && not table.HasValue(tbControllers, v)) or (v:IsNPC() && v ~= self) then
-					if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
-						if self.HasEnemyIncapacitated then return end
-						local enemy = v
-						if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
-							return
+	end
+	if IsValid(self) && IsValid(v) then
+		if (v:IsPlayer() && v:Alive() && GetConVar('ai_ignoreplayers'):GetInt() == 0 && not table.HasValue(tbControllers, v)) or (v:IsNPC() && v ~= self) then
+			if (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
+				if self.HasEnemyIncapacitated then return end
+				local enemy = v
+				if enemy:IsPlayer() && enemy:GetMoveType() == MOVETYPE_NOCLIP then
+					return
+				end
+				if not self:CanIncapacitate(enemy) then
+					return
+				end
+				
+				if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
+					local dist = self:GetPos():Distance(enemy:GetPos())
+					if dist <= self.IncapacitationRange then
+						self.HasEnemyIncapacitated = true
+						if self.VJ_IsBeingControlled == false then
+							local tr = util.TraceLine({start = self:GetPos() + self:OBBMaxs(), endpos = self:GetPos() + self:OBBMaxs() + self:GetForward() * 75, filter = {self, self.pIncapacitatedEnemy}})
+							if tr.Hit == false then
+								self:CarryEnemy()
+							end
+						else
+							self.MovementType = VJ_MOVETYPE_STATIONARY
 						end
-						if not self:CanIncapacitate(enemy) then
-							--timer.Stop("Charger"..tostring(id).."_HasEnemyInRange")
-							return
-						end
-						
-						if enemy:LookupBone("ValveBiped.Bip01_Pelvis") || enemy:IsPlayer() then
-							local dist = self:GetPos():Distance(enemy:GetPos())
-							if dist <= self.IncapacitationRange then
-								self.HasEnemyIncapacitated = true
-								print("PUMMELLED")
-								--timer.Simple(0.1, function()
-									if !IsValid(self) then return end
-									local tr = util.TraceLine({start = self:GetPos() + self:OBBMaxs(), endpos = self:GetPos() + self:OBBMaxs() + self:GetForward() * 75, filter = {self, self.pIncapacitatedEnemy}})
-									if tr.Hit == false then
-										--self:CarryEnemy()
-										--[[local tgt = ents.Create("obj_vj_bullseye")
-										tgt.EnemyToIndividual = true
-										tgt.EnemyToIndividualEnt = self
-										tgt:SetModel("models/dav0r/hoverball.mdl")
-										tgt:SetPos(enemy:GetPos() + self:GetForward() * 650)
-										self.pCarryTarget = tgt
-										self:BuildPath(tgt)]]
-										self:CarryEnemy()
-									end
-								--end)
-								--timer.Stop("Charger"..tostring(id).."_HasEnemyInRange") 
-								self:SetLocalVelocity(self:GetForward() * 1000) 
-								self.pIncapacitatedEnemy = enemy
-								--enemy:SetLocalVelocity(self:GetForward() * 0)
-								--self.MovementType = VJ_MOVETYPE_STATIONARY 				
-								local camera = ents.Create("prop_dynamic")
-								camera:SetModel("models/error.mdl")
-								camera:SetPos(self:GetPos())
-								camera:Spawn()
-								camera:Activate()
-								camera:SetRenderMode(RENDERMODE_NONE)
-								camera:DrawShadow(false)
-								camera:SetParent(self)
-								camera:Fire("SetParentAttachment","attach_blur")
-								self:DeleteOnRemove(camera)
-								self.EnemyMoveType = enemy:GetMoveType()
-								if enemy:IsNPC() then
-									enemy:SetMoveType(MOVETYPE_FLY)
-									for k, v in ipairs(ents.FindByClass("player")) do
-										VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-									end
-									if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
-										if IsValid(enemy:GetActiveWeapon()) then
-											enemy:GetActiveWeapon():SetNoDraw(true)
-										end
-									else
-										enemy:DropWeapon()
-									end
-								elseif enemy:IsPlayer() then
-									enemy:SetMoveType(MOVETYPE_CUSTOM)
-									self:Incap_Lighting(enemy)
-									self:StripEnemyWeapons(enemy)
-									if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-										enemy:SetObserverMode(OBS_MODE_CHASE)
-										enemy:SpectateEntity(camera)
-										enemy:DrawViewModel(false)
-										enemy:DrawWorldModel(false)
-										enemy:SetFOV(80)
-									end
+
+						self.pIncapacitatedEnemy = enemy				
+						local camera = ents.Create("prop_dynamic")
+						camera:SetModel("models/error.mdl")
+						camera:SetPos(self:GetPos())
+						camera:Spawn()
+						camera:Activate()
+						camera:SetRenderMode(RENDERMODE_NONE)
+						camera:DrawShadow(false)
+						camera:SetParent(self)
+						camera:Fire("SetParentAttachment","attach_blur")
+						self:DeleteOnRemove(camera)
+						self.EnemyMoveType = enemy:GetMoveType()
+						if enemy:IsNPC() then
+							enemy:SetMoveType(MOVETYPE_FLY)
+							for k, v in ipairs(ents.FindByClass("player")) do
+								VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
+							end
+							if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
+								if IsValid(enemy:GetActiveWeapon()) then
+									enemy:GetActiveWeapon():SetNoDraw(true)
 								end
-								self.pIncapacitatedEnemy = v
-								self.nextIncapSong = CurTime()
-								self:SetCustomCollisionCheck(true)
-								enemy:SetCustomCollisionCheck(true)
-								hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
-									if (ent1 == self and ent2 == enemy) then return false end
-								end)						 
-								local ang = self:GetAngles()
-								enemy:SetNoDraw(true)								
-								local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
-								if IsValid(self.pEnemyRagdoll) then
-									self.pEnemyRagdoll:Remove()
-								end
-								local mdl
-								if enemy:IsPlayer() && enemy:LookupBone("ValveBiped.Bip01_Pelvis") == nil then
-									mdl = ents.Create("prop_ragdoll")
-									mdl:SetModel(enemy:GetModel())
-									mdl:SetPos(tr.HitPos)
-									mdl:SetAngles(Angle(ang.x - 90, ang.y - 180, ang.z))
-									mdl:SetCollisionGroup(1)
-									mdl:Spawn()
-									local root = mdl:GetPhysicsObjectNum(0)
-									root:EnableMotion(false)
-									self.pEnemyRagdoll = mdl
-									mdl:Fire("StartRagdollBoogie")
-								else
-								   	mdl = ents.Create("prop_anim_survivor")
-									mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
-									mdl:SetPos(tr.HitPos)
-									mdl:SetAngles(Angle(ang.x, ang.y - 180, ang.z))
-									mdl:Spawn()
-									mdl:SetRenderMode(1)
-									mdl:SetColor(Color(0, 0, 0, 0))
-									--if enemy:IsPlayer() then
-										mdl:SetParent(self)
-									--[[else
-										mdl:SetParent(enemy)
-									end]]
-									self:IncapacitateEnemy(enemy, mdl)
-								end
-								self.pEnemyRagdoll = mdl
-								--if enemy:IsPlayer() then
-									enemy:SetParent(self)
-									enemy:SetPos(self:GetPos())
-								--[[else
-									self:SetParent(enemy)
-								end]]		
+							else
+								enemy:DropWeapon()
+							end
+						elseif enemy:IsPlayer() then
+							enemy:SetMoveType(MOVETYPE_CUSTOM)
+							self:Incap_Lighting(enemy)
+							self:StripEnemyWeapons(enemy)
+							if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+								enemy:SetObserverMode(OBS_MODE_CHASE)
+								enemy:SpectateEntity(camera)
+								enemy:DrawViewModel(false)
+								enemy:DrawWorldModel(false)
+								enemy:SetFOV(80)
 							end
 						end
+						self.pIncapacitatedEnemy = v
+						self.nextIncapSong = CurTime()
+						self:SetCustomCollisionCheck(true)
+						enemy:SetCustomCollisionCheck(true)				 
+						local ang = self:GetAngles()
+						enemy:SetNoDraw(true)								
+						local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
+						if IsValid(self.pEnemyRagdoll) then
+							self.pEnemyRagdoll:Remove()
+						end
+						local mdl
+						if enemy:IsPlayer() && enemy:LookupBone("ValveBiped.Bip01_Pelvis") == nil then
+							mdl = ents.Create("prop_ragdoll")
+							mdl:SetModel(enemy:GetModel())
+							mdl:SetPos(tr.HitPos)
+							mdl:SetAngles(Angle(ang.x - 90, ang.y - 180, ang.z))
+							mdl:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+							mdl:Spawn()
+							local root = mdl:GetPhysicsObjectNum(0)
+							root:EnableMotion(false)
+							self.pEnemyRagdoll = mdl
+							mdl:Fire("StartRagdollBoogie")
+							mdl:SetCustomCollisionCheck(true)
+						else
+							mdl = ents.Create("prop_anim_survivor")
+							mdl:SetModel("models/survivors/L4D2_Human_base.mdl")
+							mdl:SetPos(tr.HitPos)
+							mdl:SetAngles(Angle(ang.x, ang.y - 180, ang.z))
+							mdl:Spawn()
+							mdl:SetRenderMode(1)
+							mdl:SetColor(Color(0, 0, 0, 0))
+							mdl:SetParent(self)
+							self:IncapacitateEnemy(enemy, mdl)
+						end
+
+						hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
+							if (ent1 == self and ent2 == enemy) or (ent1 == self and ent2 == mdl) then return false end
+						end)
+
+						self.pEnemyRagdoll = mdl
+						enemy:SetParent(self)
+						enemy:SetPos(self:GetPos())	
 					end
 				end
 			end
-		--end
-	--end)
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountCharger()
 	self.MovementType = VJ_MOVETYPE_GROUND
 	self.HasEnemyIncapacitated = false
-	--self:SetParent(nil)
 	if self.VJ_IsBeingControlled then
 		self.AnimTbl_IdleStand = {ACT_IDLE}
 	end
@@ -400,7 +382,6 @@ function ENT:DismountCharger()
 	end
 	if !IsValid(self.pIncapacitatedEnemy) then return end
 	local enemy = self.pIncapacitatedEnemy
-	--enemy:SetMoveType(self.EnemyMoveType)
 	enemy:SetParent(nil)
 	enemy:SetPos(self:GetPos())
 	hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
@@ -418,58 +399,68 @@ function ENT:DismountCharger()
 		enemy:RemoveEFlags(EFL_NO_THINK_FUNCTION)
 	end
 	enemy:SetMoveType(self.EnemyMoveType)
-	timer.Simple(0, function()
-		local ene = enemy
-		timer.Simple(0.1, function()
-			if !IsValid(ene) then return end
-			--if not ene:IsInWorld() then
-				local pos = ene:GetPos()
-				local pX = Vector(pos.x + ene:OBBMaxs().x, pos.y , pos.z)
-				local nX = Vector(pos.x - ene:OBBMaxs().x, pos.y, pos.z)
-				local pY = Vector(pos.x, pos.y + ene:OBBMaxs().y, pos.z)
-				local nY = Vector(pos.x, pos.y - ene:OBBMaxs().y, pos.z)
 
-				local tr1 = util.TraceLine({start = pos, endpos = pX, filter = {ents.FindInSphere(pos, ene:OBBMaxs().x * 4)}})
-				local tr2 = util.TraceLine({start = pos, endpos = nX, filter = {ents.FindInSphere(pos, ene:OBBMaxs().x * 4)}})
-				local tr3 = util.TraceLine({start = pos, endpos = pY, filter = {ents.FindInSphere(pos, ene:OBBMaxs().x * 4)}})
-				local tr4 = util.TraceLine({start = pos, endpos = nY, filter = {ents.FindInSphere(pos, ene:OBBMaxs().x * 4)}})
+	local ene = enemy
+	local pos = enemy:GetPos()
+	local pX = Vector(pos.x + enemy:OBBMaxs().x * 2 + 2, pos.y , pos.z)
+	local nX = Vector(pos.x - enemy:OBBMaxs().x * 2 + 2, pos.y, pos.z)
+	local pY = Vector(pos.x, pos.y + enemy:OBBMaxs().x * 2 + 2, pos.z)
+	local nY = Vector(pos.x, pos.y - enemy:OBBMaxs().x * 2 + 2, pos.z)
 
-				if tr1.HitWorld == true then
-					if tr3.HitWorld == true then
-						ene:SetPos(Vector(nX.x, nX.y - ene:OBBMaxs().y, nX.z))
-					elseif tr4.HitWorld == true then
-						ene:SetPos(Vector(nX.x, nX.y + ene:OBBMaxs().y, nX.z))
-					else
-						ene:SetPos(nX)
-					end
-				elseif tr2.HitWorld == true then
-					if tr3.HitWorld == true then
-						ene:SetPos(Vector(pX.x, pX.y - ene:OBBMaxs().y, pX.z))
-					elseif tr4.HitWorld == true then
-						ene:SetPos(Vector(pX.x, pX.y + ene:OBBMaxs().y, pX.z))
-					else
-						ene:SetPos(pX)
-					end
-				elseif tr3.HitWorld == true then
-					if tr1.HitWorld == true then
-						ene:SetPos(Vector(nY.x - ene:OBBMaxs().x, nY.y, nY.z))
-					elseif tr2.HitWorld == true then
-						ene:SetPos(Vector(nY.x + ene:OBBMaxs().x, nY.y, nY.z))
-					else
-						ene:SetPos(nY)
-					end
-				elseif tr4.HitWorld == true then
-					if tr1.HitWorld == true then
-						ene:SetPos(Vector(pY.x - ene:OBBMaxs().x, pY.y, pY.z))
-					elseif tr2.HitWorld == true then
-						ene:SetPos(Vector(pY.x + ene:OBBMaxs().x, pY.y, pY.z))
-					else
-						ene:SetPos(pY)
-					end
-				end
-			--end
-		end)
-	end)
+	local bool = false
+
+	local tr1 = util.TraceLine({start = pos, endpos = pX, filter = ents.FindInSphere(pos, 100)})
+	local tr2 = util.TraceLine({start = pos, endpos = nX, filter = ents.FindInSphere(pos, 100)})
+	local tr3 = util.TraceLine({start = pos, endpos = pY, filter = ents.FindInSphere(pos, 100)})
+	local tr4 = util.TraceLine({start = pos, endpos = nY, filter = ents.FindInSphere(pos, 100)})
+
+	if (tr1.HitWorld && tr2.HitWorld) || (tr1.HitWorld && tr2.HitWorld) then
+		bool = true
+	end
+
+	if bool == false then
+		if tr1.HitWorld == true then
+			if tr3.HitWorld == true then
+				ene:SetPos(Vector(nX.x, nX.y - self:OBBMaxs().y, nX.z))
+			elseif tr4.HitWorld == true then
+				ene:SetPos(Vector(nX.x, nX.y + self:OBBMaxs().y, nX.z))
+			else
+				ene:SetPos(nX)
+			end
+			if tr2.HitWorld == true then
+				ene:SetPos(self:GetPos())
+			end
+		elseif tr2.HitWorld == true then
+			if tr3.HitWorld == true then
+				ene:SetPos(Vector(pX.x, pX.y - self:OBBMaxs().y, pX.z))
+			elseif tr4.HitWorld == true then
+				ene:SetPos(Vector(pX.x, pX.y + self:OBBMaxs().y, pX.z))
+			else
+				ene:SetPos(pX)
+			end
+		elseif tr3.HitWorld == true then
+			if tr1.HitWorld == true then
+				ene:SetPos(Vector(nY.x - self:OBBMaxs().x, nY.y, nY.z))
+			elseif tr2.HitWorld == true then
+				ene:SetPos(Vector(nY.x + self:OBBMaxs().x, nY.y, nY.z))
+			else
+				ene:SetPos(nY)
+			end
+		elseif tr4.HitWorld == true then
+			if tr1.HitWorld == true then
+				ene:SetPos(Vector(pY.x - self:OBBMaxs().x, pY.y, pY.z))
+			elseif tr2.HitWorld == true then
+				ene:SetPos(Vector(pY.x + self:OBBMaxs().x, pY.y, pY.z))
+			else
+				ene:SetPos(pY)
+			end
+		else
+			ene:SetPos(self:GetPos())
+		end
+	else
+		ene:SetPos(self:GetPos())
+	end
+
 	if enemy:IsPlayer() then
 		self:Incap_Lighting(enemy, true)
 		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
@@ -480,6 +471,8 @@ function ENT:DismountCharger()
 		if table.Count(self.tblEnemyWeapons) > 0 then
 			for i = 1, table.Count(self.tblEnemyWeapons) do
 				local tbl = self.tblEnemyWeapons
+				enemy.VJ_CanBePickedUpWithOutUse = true
+				enemy.VJ_CanBePickedUpWithOutUse_Class = tbl[i][1]
 				enemy:Give(tbl[i][1], true)
 				local wpn = enemy:GetWeapon(tbl[i][1])
 				if tbl[i][2][1] ~= -1 then
@@ -488,6 +481,9 @@ function ENT:DismountCharger()
 				if tbl[i][3][1] ~= -1 then
 					wpn:SetClip2(tbl[i][3][2])
 				end
+			end
+			if enemy:HasWeapon(self.EnemyActiveWeapon) then
+				enemy:SetActiveWeapon(enemy:GetWeapon(self.EnemyActiveWeapon))
 			end
 		end
 		for a, c in ipairs(self.tblEnemyAmmo) do
@@ -565,10 +561,21 @@ function ENT:CustomOnSchedule()
 	local ent = self.pIncapacitatedEnemy
 	if IsValid(ent) then
 		local dist = self:GetPos():Distance(ent:GetPos())
-		if dist <= self.IncapacitationRange then
-			if ent:Health() <= 0 then return end
-			if self.IsCarryingEnemy == false then
-				self:VJ_PlaySequence(self.IncapAnimation) 
+		if self.HasEnemyIncapacitated == true then
+			if ent:Health() > 0 then
+				if self:IsOnGround() == true then
+					if self.IsCarryingEnemy == false then
+						self:ScheduleFinished()
+						self:VJ_PlaySequence(self.IncapAnimation)
+						self:StopMoving()
+					else
+						self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
+					end
+				else
+					self:ScheduleFinished()
+					self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
+					self:StopMoving()
+				end
 			end
 		end
 	end
@@ -603,18 +610,7 @@ function ENT:Charger_Think()
 		self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
 	end
 end
-
-ENT.ChargeAngles = Angle(0, 0, 0)
-ENT.pChargeTarget = nil
-ENT.pChargeEnt = nil
-ENT.bCharged = false
-ENT.IsCarryingEnemy = false
-ENT.pCarryTarget = nil
-ENT.NextChargeAttackTime = 5
-ENT.bCanCharge = true
-ENT.vecChargePos = Vector(0, 0, 0)
-ENT.bCanContinueCharge = true
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ChargeAttack()
 	local function GetYawToTarget(ent, tgt)
 		local spos = ent:GetPos()
@@ -649,7 +645,6 @@ function ENT:ChargeAttack()
 		local ang = self:GetAngles()
 		self:VJ_TASK_FACE_X(TASK_FACE_ENEMY)
 		self.pChargeEnt = self:GetEnemy()
-		self.vecChargePos = self:GetEnemy():GetPos()
 		self:BuildPath(self.pChargeEnt)
 		self:CapabilitiesRemove(CAP_MOVE_JUMP)
 		self.ChargeAngles = Angle(ang.x, GetYawToTarget(self, self.pChargeEnt), ang.z)
@@ -659,16 +654,10 @@ function ENT:ChargeAttack()
 			if !IsValid(self) then return end
 			self.bCanCharge = true
 			self.bCanContinueCharge = true
-			if self.HasEnemyIncapacitated then
-				if self.IsIncapacitating == false then
-					self:ResetCharger()
-					self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
-				end
-			end
 		end)
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:IsPathValid(tgt)
 	local function FacePos(ent, ePos, tPos, deg)
 		local pos = ePos
@@ -706,6 +695,39 @@ function ENT:IsPathValid(tgt)
 		end
 	end
 
+	local function FaceTarget(ent, tgt, bBack)
+		local spos = ent:GetPos()
+		local ang = ent:GetAngles()
+		local tpos = tgt:GetPos()
+		local quadrants = {
+			[1] = Vector(spos.x + 45, spos.y - 45, spos.z),
+			[2] = Vector(spos.x + 45, spos.y + 45, spos.z),
+			[3] = Vector(spos.x - 45, spos.y + 45, spos.z),
+			[4] = Vector(spos.x - 45, spos.y - 45, spos.z)
+		}
+		local distX = math.max(spos.x, tpos.x) - math.min(spos.x, tpos.x)
+		local distY = math.max(spos.y, tpos.y) - math.min(spos.y, tpos.y)
+		local deg = math.deg(math.atan(distY / distX))
+		local quad = math.min(tpos:Distance(quadrants[1]), tpos:Distance(quadrants[2]), tpos:Distance(quadrants[3]), tpos:Distance(quadrants[4]))
+		if math.floor(tpos:Distance(quadrants[1])) == math.floor(quad) then
+			deg = -deg
+		elseif math.floor(tpos:Distance(quadrants[2])) == math.floor(quad) then
+			deg = deg
+		elseif math.floor(tpos:Distance(quadrants[3])) == math.floor(quad) then
+			deg = 180 - deg
+		elseif math.floor(tpos:Distance(quadrants[4])) == math.floor(quad) then
+			deg = -180 + deg
+		end
+		if bBack == true then
+			deg = deg + 180
+		end
+		if ent:IsPlayer() then
+			ent:SetEyeAngles(Angle(ang.x, deg, ang.z))
+		else
+			ent:SetAngles(Angle(ang.x, deg, ang.z))
+		end
+	end
+
 	local enemy = tgt
 	local flDistance = self:GetPos():Distance((enemy:GetPos() + enemy:GetForward() * 25))
 	local instances = 0
@@ -718,6 +740,7 @@ function ENT:IsPathValid(tgt)
 	end
 	local iteration = dSeg
 	local lastNode
+	local lastSeg = self
 	local lastUp  = 20
 	local lastPos = self:GetPos()
 	instances = math.Round(instances)
@@ -727,20 +750,31 @@ function ENT:IsPathValid(tgt)
 			local seg = ents.Create("prop_dynamic")
 			seg:SetModel("models/dav0r/hoverball.mdl")
 			seg:SetAngles(ang)
-			FacePos(seg, seg:GetPos(), enemy:GetPos())
+			FaceTarget(seg, enemy)
 			local _ents = ents.FindInSphere(self:GetPos(), 650)
 			local tr = util.TraceLine({start = lastPos, endpos = lastPos + seg:GetForward() * dSeg, filter = {_ents}})
+			local gr = util.TraceLine({start = lastPos, endpos = lastPos + seg:GetForward() * dSeg - seg:GetUp() * 10000, filter = _ents})
+			local tr2 = util.TraceLine({start = lastPos, endpos = lastPos + seg:GetForward() * dSeg - seg:GetUp() * 50, filter = _ents})
 			if tr.HitWorld == true then
-				seg:SetPos(lastPos + self:GetForward() * dSeg + seg:GetUp() * 20)
+				seg:SetPos(lastPos + lastSeg:GetForward() * dSeg + seg:GetUp() * 20)
 				lastUp = lastUp + 20
 			else
-				seg:SetPos(lastPos + self:GetForward() * dSeg + seg:GetUp() * 5)
+				if tr2.HitWorld == false then
+					seg:SetPos(gr.HitPos)
+				else
+					seg:SetPos(lastPos + lastSeg:GetForward() * dSeg + seg:GetUp() * 5)
+				end
+			end
+			FaceTarget(seg, enemy)
+			if self:GetPos().z > enemy:GetPos().z then
+				FacePos(seg, seg:GetPos(), enemy:GetPos() + enemy:OBBCenter())
 			end
 			seg:SetCollisionGroup(1)
 			seg:SetNoDraw(true)
 			seg:Spawn()
 			seg:SetOwner(self)
 			self:DeleteOnRemove(seg)
+			lastSeg = seg
 			timer.Simple(0.1, function()
 				if !IsValid(seg) then return end
 				seg:Remove()
@@ -761,9 +795,8 @@ function ENT:IsPathValid(tgt)
 		end
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:BuildPath(tgt)
-	--PrintMessage(HUD_PRINTTALK, "BUILD PATH")
 	local function FacePos(ent, ePos, tPos, deg)
 		local pos = ePos
 		local ang = ent:GetAngles()
@@ -859,58 +892,7 @@ function ENT:BuildPath(tgt)
 		end
 	end)
 end
-
-function ENT:SetCarryTarget()
-	local flDistance = 650
-	local instances = 0
-	local pos = self:GetPos()
-	local ang = self:GetAngles()
-	local dSeg = 40
-	if flDistance >= dSeg then
-		math.Round(flDistance, 1)
-		instances = flDistance / dSeg
-	end
-	local iteration = dSeg
-	local tgt
-	if instances > 0 then
-		for i = 1, instances do
-			if !IsValid(self) then return end
-			local seg = ents.Create("obj_vj_bullseye")
-			seg:SetModel("models/dav0r/hoverball.mdl")
-			local _ents = ents.FindInSphere(self:GetPos(), 650)
-			local tr = util.TraceLine({start = pos + self:EyePos(), endpos = pos + self:EyePos() + self:GetForward() * iteration, filter = _ents})
-			if tr.HitWorld == true --[[tgt:GetPos().z > self:GetPos().z + 40]] then
-				local pos1 = pos + self:GetForward() * iteration + self:GetUp() * iteration
-				local tr1 = util.TraceLine({start = pos + self:EyePos(), endpos = pos1, filter = _ents})
-				if tr1.HitWorld == false && util.IsInWorld(pos1) == true then
-					seg:SetPos(pos1)
-				else
-					self.pCarryTarget = seg
-					break
-				end
-			else
-				seg:SetPos(pos + self:GetForward() * iteration + self:GetUp() * 10)
-			end
-			seg:SetAngles(ang)
-			seg:SetCollisionGroup(1)
-			seg:SetNoDraw(false)
-			seg:Spawn()
-			seg:SetOwner(self)
-			self:DeleteOnRemove(seg)
-			self:SetTarget(seg)
-			if i == instances then
-				self.pChargeTarget = seg
-			else
-				timer.Simple(0.1, function()
-					if !IsValid(seg) then return end
-					seg:Remove()
-				end)
-			end
-			iteration = iteration + dSeg
-		end
-	end
-end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CarryEnemy()
 	if self.IsCarryingEnemy == true then return end
 	self.IsCarryingEnemy = true
@@ -925,10 +907,10 @@ function ENT:CarryEnemy()
 		if tr.HitWorld == true then
 			tgt:SetPos(tr.HitPos - self:GetForward() * 20)
 		else
-			tgt:SetPos(self:GetPos() + self:GetForward() * 650 + self:GetUp() * 10)
+			tgt:SetPos(self:GetPos() + self:GetForward() * 1000 + self:GetUp() * 10)
 		end
 		tgt:SetCollisionGroup(1)
-		tgt:SetNoDraw(false)
+		tgt:SetNoDraw(true)
 		tgt:Spawn()
 		self.pCarryTarget = tgt
 		self:BuildPath(tgt)
@@ -938,14 +920,15 @@ function ENT:CarryEnemy()
 		self:DeleteOnRemove(tgt)
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ContinueCharging()
 	if self.bCanContinueCharge == false then return end
 	self.bCanContinueCharge = false
+	self:SetVelocity(self:GetForward() * 1000)
 	self:SetAngles(self.ChargeAngles)
+	self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
 	self.AnimTbl_Run = {ACT_RUN_AIM_RELAXED}
 	self:ResetSequenceInfo()
-	self:SetLocalVelocity(self:GetForward() * 1000)
 
 	local function FacePos(ent, ePos, tPos, deg)
 		local pos = ePos
@@ -1016,9 +999,6 @@ function ENT:ContinueCharging()
 			else
 				if tr2.HitWorld == false then
 					seg:SetPos(gr.HitPos)
-					if self:IsOnGround() then
-						self:SetVelocity(self:GetForward() * 10000)
-					end
 				else
 					seg:SetPos(lastPos + self:GetForward() * dSeg + seg:GetUp() * 5)
 				end
@@ -1051,7 +1031,7 @@ function ENT:ContinueCharging()
 		tgt:SetModel("models/dav0r/hoverball.mdl")
 		tgt:SetPos(lastPos)
 		tgt:SetCollisionGroup(1)
-		tgt:SetNoDraw(false)
+		tgt:SetNoDraw(true)
 		tgt:Spawn()
 		self.pCarryTarget = tgt
 		self:BuildPath(tgt)
@@ -1060,8 +1040,35 @@ function ENT:ContinueCharging()
 		self:SetTarget(tgt)
 		self:DeleteOnRemove(tgt)
 	end
-end
 
+	local tm = (instances * dSeg) / (self:GetSequenceGroundSpeed(self:LookupSequence("Charger_charge")))
+	timer.Simple(tm, function()
+		if !IsValid(self) then return end
+		if self.HasEnemyIncapacitated == true then
+			if self:IsOnGround() == true then
+				self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
+			else
+				self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
+			end
+		else
+			self:ResetCharger()
+		end
+		timer.Simple(1, function()
+			if !IsValid(self) then return end
+			self:ResetCharger()
+			if self:IsOnGround() == true then
+				if self.HasEnemyIncapacitated then
+					self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
+				else
+					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+				end
+			else
+				self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
+			end
+		end)
+	end)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ResetCharger()
 	self.AnimTbl_Run = {ACT_RUN}
 	self:ScheduleFinished()
@@ -1075,136 +1082,137 @@ function ENT:ResetCharger()
 		self.pChargeTarget:Remove()
 	end
 end
-
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SetUpCharger()
 	self.MovementType = VJ_MOVETYPE_STATIONARY
 	self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
 end
-
-ENT.tblChargeWhitelist = {}
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:Charger_Think()
 	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
 
-	if self.IsCarryingEnemy || (self.IsCharging && self.HasEnemyIncapacitated == false) then
-		self.HasMeleeAttack = false
+	if self.VJ_IsBeingControlled == false then
+		if self.IsCarryingEnemy || (self.IsCharging && self.HasEnemyIncapacitated == false) then
+			self.HasMeleeAttack = false
 
-		self.tblChargeWhitelist = ents.FindInCone(self:GetPos(), self:GetForward() * 650, 650, math.cos(45))
-		for k, v in ipairs(self.tblChargeWhitelist) do
-			if v ~= self then
-				if v:IsEFlagSet(EFL_DONTBLOCKLOS) == false then
-
-				end
+			if self:GetSequenceActivity(self:GetSequence()) ~= ACT_RUN_AIM_RELAXED then
+				self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
 			end
-		end
 
-		local leftPos  = self:GetPos() - self:GetRight() * 45
-		local rightPos = self:GetPos() + self:GetRight() * 45
-		for k, v in ipairs(ents.FindInCone(self:GetPos(), self:GetForward(), 200, 0.707)) do
-			if self.pChargeEnt == v then return end
-			if self:IsEntityAlly(v) == false then
-				local function GetSidePos()
-					local dst = math.min(v:GetPos():Distance(leftPos), v:GetPos():Distance(rightPos))
-					if dst == v:GetPos():Distance(leftPos) then
-						return leftPos
-					else
-						return rightPos
+			local leftPos  = self:GetPos() - self:GetRight() * 45
+			local rightPos = self:GetPos() + self:GetRight() * 45
+			for k, v in ipairs(ents.FindInCone(self:GetPos(), self:GetForward(), 200, 0.707)) do
+				if v ~= self.pChargeEnt then
+					if self:IsEntityAlly(v) == false then
+						local function GetSidePos()
+							local dst = math.min(v:GetPos():Distance(leftPos), v:GetPos():Distance(rightPos))
+							if dst == v:GetPos():Distance(leftPos) then
+								return leftPos
+							else
+								return rightPos
+							end
+						end
+						local dir
+						if GetSidePos() == leftPos then
+							dir = -self:GetRight()
+						else
+							dir = self:GetRight()
+						end
+						if v:IsNPC() || v:IsNextBot() || v:IsPlayer() then
+							v:SetVelocity(v:GetUp() * 150 + self:GetForward() * 500 + dir * 400)
+						elseif v:GetClass() == "prop_physics" then
+							if util.IsValidPhysicsObject(v, 0) then
+								local force
+								if v:GetPhysicsObject():GetMass() < 150 then
+									force = v:GetPhysicsObject():GetMass() * 500
+								else
+									force = v:GetPhysicsObject():GetMass() * 200
+								end
+								v:GetPhysicsObject():ApplyForceCenter(v:GetUp() * 15 + self:GetForward() * force + dir * force)
+							end
+						end
 					end
 				end
-				local dir
-				if GetSidePos() == leftPos then
-					dir = -self:GetRight()
-				else
-					dir = self:GetRight()
-				end
-				if v:IsNPC() || v:IsNextBot() || v:IsPlayer() then
-					v:SetVelocity(v:GetUp() * 150 + self:GetForward() * 500 + dir * 400)
-				elseif v:GetClass() == "prop_physics" then
-					if not util.IsValidPhysicsObject(v, 0) then return end
-					local force
-					if v:GetPhysicsObject():GetMass() < 150 then
-						force = v:GetPhysicsObject():GetMass() * 500
-					else
-						force = v:GetPhysicsObject():GetMass() * 200
+			end
+
+			if self.IsCarryingEnemy == false then
+				local tr = util.TraceLine({start = self:GetPos() + self:OBBCenter(), endpos = self:GetPos() + self:OBBMaxs() + self:GetForward() * 70, filter = {self, ents.FindByClass("npc_*"), ents.FindByClass("player"), self.pChargeEnt, self.pIncapacitatedEnemy, self.pEnemyRagdoll}})
+				if tr.Hit == true then
+					self:ResetCharger()
+					if tr.Entity ~= self:GetEnemy() then
+						self:VJ_ACT_PLAYACTIVITY("vjseq_".."Shoved_Backward")
 					end
-					v:GetPhysicsObject():ApplyForceCenter(v:GetUp() * 15 + self:GetForward() * force + dir * force)
+				end
+			else
+				local tr = util.TraceLine({start = self:GetPos() + self:OBBCenter(), endpos = self:GetPos() + self:OBBCenter() + self:GetForward() * 75, filter = ents.FindInSphere(self:GetPos(), 200)})
+				if tr.HitWorld == true then
+					self:ResetCharger()
 				end
 			end
-		end
 
-		if self.IsCarryingEnemy == false then
-			local tr = util.TraceLine({start = self:GetPos() + self:OBBCenter(), endpos = self:GetPos() + self:OBBMaxs() + self:GetForward() * 70, filter = {self, ents.FindByClass("npc_*"), ents.FindByClass("player"), self.pChargeEnt, self.pIncapacitatedEnemy, self.pEnemyRagdoll}})
-			if tr.Hit == true then
-				print("HIT SOMETHING")
-				self:ResetCharger()
-				self:VJ_ACT_PLAYACTIVITY("vjseq_".."Shoved_Backward")
+			if IsValid(self:GetTarget()) then
+				self:FaceCertainPosition(self:GetTarget():GetPos(), 0.1)
+				self.ChargeAngles = self:GetAngles()
 			end
-		else
-			local tr = util.TraceLine({start = self:GetPos() + self:OBBCenter(), endpos = self:GetPos() + self:OBBCenter() + self:GetForward() * 75, filter = ents.FindInSphere(self:GetPos(), 200)})
-			if tr.HitWorld == true then
-				self:ResetCharger()
+
+
+			if self:IsOnGround() then
+				self:SetVelocity(self:GetForward() * 1000)
 			end
-		end
-
-		if IsValid(self:GetTarget()) then
-			self:FaceCertainPosition(self:GetTarget():GetPos(), 0.1)
-			self.ChargeAngles = self:GetAngles()
-		end
-
-
-		if self:IsOnGround() then
-			self:SetVelocity(self:GetForward() * 1000)
-		end
-
-		self:VJ_TASK_GOTO_TARGET("TASK_RUN_PATH")
-		if self.HasEnemyIncapacitated == false then
-			--if IsValid(self.pChargeEnt) then
+			self:VJ_TASK_GOTO_TARGET("TASK_RUN_PATH")
+			if self.HasEnemyIncapacitated == false then
 				local dist = self:GetPos():Distance(self.pChargeEnt:GetPos())
-				if dist <= 70 then
+				if dist <= 80 then
 					self:ResetCharger()
 					self:PummelEnemy(self.pChargeEnt)
 				end
-			--end
+			else
+				self.AnimTbl_Run = {ACT_RUN_AIM_RELAXED}
+				if IsValid(self.pCarryTarget) then
+					self.pIncapacitatedEnemy:SetLocalPos(Vector(0, 0, 200))
+					local pos = self.pCarryTarget:GetPos()
+					if self:GetPos():Distance(Vector(pos.x, pos.y, self:GetPos().z)) <= 35 then
+						self:ResetCharger()
+						self.pIncapacitatedEnemy:SetLocalPos(Vector(0, 0, 100))
+					end
+				end
+				if IsValid(self.pChargeTarget) then
+					if self:GetPos():Distance(self.pChargeTarget:GetPos()) < 40 then
+						self:ResetCharger()
+					end
+				end
+			end
 		else
-			self.AnimTbl_Run = {ACT_RUN_AIM_RELAXED}
-			if IsValid(self.pCarryTarget) then
-				self.pIncapacitatedEnemy:SetLocalPos(Vector(0, 0, 200))
-				local pos = self.pCarryTarget:GetPos()
-				if self:GetPos():Distance(Vector(pos.x, pos.y, self:GetPos().z)) <= 35 then
-					self:ResetCharger()
-					self.pIncapacitatedEnemy:SetLocalPos(Vector(0, 0, 100))
-					self:SetUpCharger()
+			if self.HasEnemyIncapacitated == false then
+				self.HasMeleeAttack = true
+			else
+				if self.IsIncapacitating == false then
+					if self:IsOnGround() == true then
+						self:SetUpCharger()
+					end
 				end
-			end
-			if IsValid(self.pChargeTarget) then
-				if self:GetPos():Distance(self.pChargeTarget:GetPos()) < 40 then
-					self:ResetCharger()
-				end
-			end
+			end 
 		end
-	else
-		if self.HasEnemyIncapacitated == false then
-			self.HasMeleeAttack = true
-		end 
-	end
 
-	if self:GetEnemy() then
-		if self.HasEnemyIncapacitated == false then
-			local dist = self:GetPos():Distance(self:GetEnemy():GetPos())
-			if self.IsCharging == false then
-				if self:IsLineOfSightClear(self:GetEnemy():GetPos() + self:GetEnemy():OBBCenter()) then
-					if self.bCanCharge == true && dist > 200 && dist <= 650 then
-						--self:VJ_DoSetEnemy(self:GetEnemy(), false, false)
-						if self:IsPathValid(self:GetEnemy()) --[[math.abs(self:GetPos().z - self:GetEnemy():GetPos().z) < 700]] then
-							self:ChargeAttack()
-							PrintMessage(HUD_PRINTTALK, "CHARGE!!")
+		if self:GetEnemy() then
+			if self.HasEnemyIncapacitated == false then
+				local dist = self:GetPos():Distance(self:GetEnemy():GetPos())
+				if self.IsCharging == false then
+					if self:IsLineOfSightClear(self:GetEnemy():GetPos() + self:GetEnemy():OBBCenter()) then
+						if self.bCanCharge == true && dist > 200 && dist <= 650 then
+		 				if self:IsPathValid(self:GetEnemy()) then
+								self:ChargeAttack()
+							end
 						end
 					end
 				end
 			end
 		end
+		self.HasLeapAttack = false
+	else
+		self.HasLeapAttack = true
 	end
 
 	if self.IsGhosted then
@@ -1225,10 +1233,6 @@ function ENT:CustomOnThink()
 		self.IsCharging = false
 	end
 
-	--[[if self.IsIncapacitating == true && self.HasEnemyIncapacitated == false then
-		self:VJ_ACT_PLAYACTIVITY("Jump", true)   
-	end]]
-
 	if self.HasEnemyIncapacitated == true then 
 		self.CombatFaceEnemy = false
 		if self.VJ_IsBeingControlled then
@@ -1239,20 +1243,12 @@ function ENT:CustomOnThink()
 			self:SetAngles(Angle(self:GetAngles().x, self.pEnemyRagdoll:GetAngles().y - 180, self:GetAngles().z))
 			self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
 			if self.pEnemyRagdoll:GetClass() == "prop_ragdoll" then
-				self.pEnemyRagdoll:Fire("StartRagdollBoogie")
-				self.pEnemyRagdoll:SetPos(self:GetAttachment(3).Pos)
+				self.pEnemyRagdoll:GetPhysicsObjectNum(0):SetPos(self:GetAttachment(4).Pos)
+				self.pEnemyRagdoll:SetAngles(self:GetAngles())
 			end
 		end
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
-			--[[local md = ents.Create("prop_dynamic")
-			md:SetModel("models/dav0r/hoverball.mdl")
-			md:SetPos(enemy:GetPos())
-			md:SetNoDraw(true)
-			md:Spawn()
-			timer.Simple(0.1, function()
-				md:Remove()
-			end)]]
 			if enemy:Health() <= 0 then
 				self:DismountCharger()
 			else
@@ -1268,10 +1264,6 @@ function ENT:CustomOnThink()
 			if not enemy:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
 				enemy:AddEFlags(EFL_NO_THINK_FUNCTION)
 			end	
-			local dist = self:GetPos():Distance(enemy:GetPos())
-			if dist > self.IncapacitationRange then
-				--self:DismountCharger()
-			end
 			--[[local Tr_PummelCeiling = util.TraceLine({
 				start = self:GetPos() +self:OBBCenter(),
 				endpos = self:GetPos() +self:OBBCenter() +self:GetUp() *150,
@@ -1291,8 +1283,13 @@ function ENT:CustomOnThink()
 			end]]
 		end
 	else
-		--self.HasMeleeAttack = true
 		self.CombatFaceEnemy = true
+	end
+
+	if self.VJ_IsBeingControlled then
+		self.ConstantlyFaceEnemy = false
+	else
+		self.ConstantlyFaceEnemy = true
 	end
 
 	if CurTime() >= self.nextBacteria then
@@ -1300,17 +1297,6 @@ function ENT:CustomOnThink()
 	end
 	
 	self:ManageHUD(self.VJ_TheController)
-	hook.Add("KeyPress", "Ghosting", function(ply, key)
-        if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
-            if key == IN_USE then
-        	    if self.IsGhosted == true then
-        	        self:SetGhost(false)
-        	    elseif self.IsGhosted == false then
-        	        self:SetGhost(true)  
-        	    end
-            end
-        end
-    end)
 
 	if self.VJ_IsBeingControlled == true then
 		self:CapabilitiesRemove(CAP_MOVE_JUMP)
@@ -1323,10 +1309,10 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
 		local function GetDirection()
 			local directions = {
-				{"Shoved_Backward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
-				{"Shoved_Leftward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() + self:GetRight() * 25)},	 --East; move left
-				{"Shoved_Forward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
-				{"Shoved_Rightward", dmginfo:GetAttacker():GetPos():Distance(self:GetPos() - self:GetRight() * 25)}	  --West; move right
+				{"Shoved_Backward", dmginfo:GetDamagePosition():Distance(self:GetPos() + self:GetForward() * 25)},   --North; move back
+				{"Shoved_Leftward", dmginfo:GetDamagePosition():Distance(self:GetPos() + self:GetRight() * 25)},	 --East; move left
+				{"Shoved_Forward", dmginfo:GetDamagePosition():Distance(self:GetPos() - self:GetForward() * 25)},   --South; move forward
+				{"Shoved_Rightward", dmginfo:GetDamagePosition():Distance(self:GetPos() - self:GetRight() * 25)}	  --West; move right
 			}
 			table.sort(directions, function(a, b) return a[2] < b[2] end)
 			return directions[1][1]
@@ -1340,12 +1326,14 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-	local attacker = dmginfo:GetAttacker()
-	if IsValid(attacker) then
-		if attacker:IsNPC() then
-			PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
-		elseif attacker:IsPlayer() then
-			PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
+	if GetConVar("vj_l4d2_print"):GetInt() == 1 then
+		local attacker = dmginfo:GetAttacker()
+		if IsValid(attacker) then
+			if attacker:IsNPC() then
+				PrintMessage(HUD_PRINTTALK, attacker:GetClass().." killed ".. self:GetName())
+			elseif attacker:IsPlayer() then
+				PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+			end
 		end
 	end
 	self:DismountCharger()
