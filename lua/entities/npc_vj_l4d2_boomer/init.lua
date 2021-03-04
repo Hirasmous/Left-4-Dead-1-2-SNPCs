@@ -456,7 +456,6 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
-	ParticleEffectAttach("boomer_leg_smoke",PATTACH_ABSORIGIN_FOLLOW,corpseEnt,corpseEnt:LookupAttachment("forward"))
 	self:L4D2_DeathMessage(dmginfo:GetAttacker())
 end
 /*-----------------------------------------------
