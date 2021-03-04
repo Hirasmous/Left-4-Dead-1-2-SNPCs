@@ -150,10 +150,6 @@ function ENT:CustomOnInitialize()
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:OnUnGhost()
-    VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_emit FootStep" then
 		self:FootStepSoundCode()
@@ -285,8 +281,6 @@ function ENT:ResetJockey()
 		if table.Count(self.tblEnemyWeapons) > 0 then
 			for i = 1, table.Count(self.tblEnemyWeapons) do
 				local tbl = self.tblEnemyWeapons
-				enemy.VJ_CanBePickedUpWithOutUse = true
-				enemy.VJ_CanBePickedUpWithOutUse_Class = tbl[i][1]
 				enemy:Give(tbl[i][1], true)
 				local wpn = enemy:GetWeapon(tbl[i][1])
 				if tbl[i][2][1] ~= -1 then
@@ -295,9 +289,6 @@ function ENT:ResetJockey()
 				if tbl[i][3][1] ~= -1 then
 					wpn:SetClip2(tbl[i][3][2])
 				end
-			end
-			if enemy:HasWeapon(self.EnemyActiveWeapon) then
-				enemy:SetActiveWeapon(enemy:GetWeapon(self.EnemyActiveWeapon))
 			end
 		end
 		for a, c in ipairs(self.tblEnemyAmmo) do
@@ -482,9 +473,6 @@ function ENT:CustomOnThink()
 							self:SetCustomCollisionCheck(true)
 							v:SetCustomCollisionCheck(true)
 							self.nextIncapSong = CurTime()
-							hook.Add("ShouldCollide", "Jockey_EnableCollisions", function(ent1, ent2)
-								if (ent1 == self and ent2 == v) then return false end
-							end)
 							self.pIncapacitatedEnemy = v
 							self.MovementType = VJ_MOVETYPE_STATIONARY
 
@@ -497,6 +485,8 @@ function ENT:CustomOnThink()
 							camera:DrawShadow(false)
 							camera:SetParent(self)
 							camera:Fire("SetParentAttachment","pelvis")
+
+							self:ClearPoseParameters()
 
 							self:DeleteOnRemove(camera)
 							v:SetNoDraw(true)
