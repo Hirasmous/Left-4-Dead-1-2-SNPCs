@@ -1,0 +1,9 @@
+"Modulate"
+{
+	"$model" "1"
+	"$basetexture" "effects/incap_overlays/invulnoverlay/invuln_overlay"
+//	"$additive" "1"
+	"$mod2x" "1"
+	"$color2" "[1 .7 .6]"
+}
+
