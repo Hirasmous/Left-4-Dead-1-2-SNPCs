@@ -582,7 +582,7 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Charger_Think()
-	if IsValid(self.pEnemyRagdoll) then
+	if IsValid(self.pEnemyRagdoll) && IsValid(self.pIncapacitatedEnemy) then
 		if self:GetSequence() == self:LookupSequence("Charger_Pound") then
 			if self.pIncapacitatedEnemy:Health() < self.pIncapacitatedEnemy:GetMaxHealth() / 3 then
 				self.pEnemyRagdoll:ResetSequence("Charger_pounded_incap")
