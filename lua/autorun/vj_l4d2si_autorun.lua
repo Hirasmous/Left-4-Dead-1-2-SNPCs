@@ -61,6 +61,7 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	game.AddParticles("particles/spitter_fx.pcf")
 	game.AddParticles("particles/witch_fx.pcf")
 	game.AddParticles("particles/tank_fx.pcf")
+	game.AddParticles("particles/item_fx.pcf")
 
 	PrecacheParticleSystem("smoker_tongue")
 
