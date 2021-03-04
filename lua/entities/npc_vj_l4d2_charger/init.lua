@@ -287,17 +287,11 @@ function ENT:PummelEnemy(v)
 							self.MovementType = VJ_MOVETYPE_STATIONARY
 						end
 
-						self.pIncapacitatedEnemy = enemy				
-						local camera = ents.Create("prop_dynamic")
-						camera:SetModel("models/error.mdl")
-						camera:SetPos(self:GetPos())
-						camera:Spawn()
-						camera:Activate()
-						camera:SetRenderMode(RENDERMODE_NONE)
-						camera:DrawShadow(false)
-						camera:SetParent(self)
-						camera:Fire("SetParentAttachment","attach_blur")
-						self:DeleteOnRemove(camera)
+						self.pIncapacitatedEnemy = enemy
+						
+						self:SpawnCamera(self,35)
+						
+
 						self.EnemyMoveType = enemy:GetMoveType()
 						if enemy:IsNPC() then
 							enemy:SetMoveType(MOVETYPE_FLY)
