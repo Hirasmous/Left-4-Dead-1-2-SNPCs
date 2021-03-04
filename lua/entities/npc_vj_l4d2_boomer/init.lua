@@ -231,7 +231,11 @@ function ENT:VomitEnemy(v,bDeath)
 		ParticleEffectAttach("boomer_vomit_survivor",PATTACH_ABSORIGIN_FOLLOW,v,0)
 		if v:IsPlayer() then
 			self:VomitEffect(v,true)
-			VJ_CreateSound(v,"vj_l4d2/music/terror/pukricide.mp3",100,self:VJ_DecideSoundPitch(100,100))
+            local filter = RecipientFilter()
+            filter:AddPlayer(v)
+            local sound = CreateSound(self, "vj_l4d2/music/terror/pukricide.mp3", filter)
+            sound:SetSoundLevel(0)
+            sound:Play()
 		elseif v:IsNPC() then
 			VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.mp3",90,self:VJ_DecideSoundPitch(100,100))  
 		end	 
@@ -452,6 +456,7 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
+	ParticleEffectAttach("boomer_leg_smoke",PATTACH_ABSORIGIN_FOLLOW,corpseEnt,corpseEnt:LookupAttachment("forward"))
 	self:L4D2_DeathMessage(dmginfo:GetAttacker())
 end
 /*-----------------------------------------------
