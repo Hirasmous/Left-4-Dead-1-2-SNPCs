@@ -113,6 +113,7 @@ General:
 -Make halos around allies green (when controlling)
 -Don't make enemies attack ghosted specials
 -Fixed inverted pose parameters
+-Fix wrong footstep sounds
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location ✅ (gone for now)
