@@ -163,23 +163,15 @@ function ENT:PhysicsCollide(data, physobj, entity)
 						end
 					end
 
-					local camera = ents.Create("prop_dynamic")
-					camera:SetModel("models/dav0r/camera.mdl")
-					camera:SetPos(owner:GetPos())
-					camera:Spawn()
-					camera:Activate()
-					camera:SetRenderMode(RENDERMODE_NONE)
-					camera:DrawShadow(false)
-					camera:SetParent(owner)
-					camera:Fire("SetParentAttachment","spine")
-					owner.Camera = camera
+					owner:SpawnCamera(dragObj,15)
 
 					if enemy:IsPlayer() then
 						owner:Incap_Lighting(enemy, false, owner.pEnemyObj)
+						owner.Light1:SetKeyValue('lightcolor', "255 255 255 255")
 						owner:StripEnemyWeapons(enemy)
 						if owner.VJ_IsBeingControlled == false && owner.VJ_TheController ~= enemy then
 							enemy:SetObserverMode(OBS_MODE_CHASE)
-							enemy:SpectateEntity(dragObj)
+							enemy:SpectateEntity(owner.Camera)
 							enemy:DrawViewModel(false)
 							enemy:DrawWorldModel(false)
 							enemy:SetFOV(85)
