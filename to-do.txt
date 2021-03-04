@@ -10,7 +10,6 @@ Boomer:
 -Make vomit music play relative to effected player
 -Don't show vomit residue on incap'd enemies; instead, make the residue show on pEnemyRagdoll
 -Don't show vomit residue on allies
--Add idle crouching when controlling
 
 Boomette:
 -Fix broken model ✅
@@ -40,7 +39,7 @@ Jockey:
 -Directional movement for incapped mdl ✅
 -Add updated IsEntityAlly() func ✅
 -Add updated StripEnemyWeapons() func ✅
--Player's view is zoomed in after jockey stops incapping
+-Player's view is zoomed in after jockey stops incapping ✅
 -Disable sounds when incapping
 -Add damage events
 
@@ -55,18 +54,15 @@ Smoker:
 -Prevent smoke cloud from damaging altogether; add smoke overlay  effect 
 -Add dangling animations for incapped enemy when it's off ground ✅
 -(L4D1) Restore tongue bodygroup after stopping incapping
--Add attachment to "smoker_tongue_attach.mdl" (on the end of the tongue) 
--Incapped player can still move freely around the world 
+-Incapped player can still move freely around the world ✅
 -Adjust tongue collision entities so that they are in line with the tongue particle
 -Give player a certain amount of time to shoot Smoker before being incap'd
--Add idle crouching when controlling
 
 Spitter:
 -Fix Spitter goo damaging Spitter ✅
 -Don't play spitter goo music for players that are controlling specials
 -Don't play spitter goo music for goo that spawns on spitter's death
--Make spitter goo spawn on ground (instead of floating) if the projectile lands on an entity
--Add idle crouching when controlling
+-Make spitter goo spawn on ground (instead of floating) if the projectile lands on an entity ✅
 
 Tank:
 -Fix textures not being applied to model ✅
@@ -85,7 +81,7 @@ Witch:
 -Reset rage pose params after triggered ✅
 -Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity)
 -Make it shove according to damage position not attacker position (DMG_BLAST only) ✅
--Remove eye color changing
+-Remove eye color changing ✅
 -Make it only attack the enemy that triggered it
 
 General:
@@ -112,7 +108,7 @@ General:
 -Resize materials (what happened to them?!)
 -Add spawners and/or random special infected spawn icons? ✅
 -Give player grenades (if he had them before) when stopping incapping
--Make all special infected be able to incap players with non-ValveBiped skeletons
+-Make all special infected be able to incap players with non-ValveBiped skeletons ✅
 -Fix other players ghosting controlled specials ✅
 -Make halos around allies green (when controlling)
 -Don't make enemies attack ghosted specials
@@ -136,7 +132,7 @@ Before release:
 
 Tensor:
 -Add new functions to features.lua ✅
--Update Charger
+-Update Charger ✅
 -Update Smoker ✅
 -Update bonemerging feature for all specials ✅
 -Update incap lighting for all specials ✅
