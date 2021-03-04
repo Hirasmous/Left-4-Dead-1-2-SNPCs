@@ -234,14 +234,10 @@ function NPC:GetGroundType(pos)
 				}
 			elseif mat == MAT_TILE then
 				self.SoundTbl_FootStep = {
-					"vj_l4d2/footsteps/infected/run/mud1.mp3",
-					"vj_l4d2/footsteps/infected/run/mud2.mp3",
-					"vj_l4d2/footsteps/infected/run/mud3.mp3",
-					"vj_l4d2/footsteps/infected/run/mud4.mp3",
-					"vj_l4d2/footsteps/infected/run/flesh1.mp3",
-					"vj_l4d2/footsteps/infected/run/flesh2.mp3",
-					"vj_l4d2/footsteps/infected/run/flesh3.mp3",
-					"vj_l4d2/footsteps/infected/run/flesh4.mp3",
+					"vj_l4d2/footsteps/infected/run/tile1.mp3",
+					"vj_l4d2/footsteps/infected/run/tile2.mp3",
+					"vj_l4d2/footsteps/infected/run/tile3.mp3",
+					"vj_l4d2/footsteps/infected/run/tile4.mp3",
 				}
 			elseif mat == MAT_SLOSH then
 				self.SoundTbl_FootStep = {
