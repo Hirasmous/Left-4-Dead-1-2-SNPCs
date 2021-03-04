@@ -311,7 +311,7 @@ function ENT:PummelEnemy(v)
 							self:StripEnemyWeapons(enemy)
 							if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
 								enemy:SetObserverMode(OBS_MODE_CHASE)
-								enemy:SpectateEntity(camera)
+								enemy:SpectateEntity(self.Camera)
 								enemy:DrawViewModel(false)
 								enemy:DrawWorldModel(false)
 								enemy:SetFOV(80)
