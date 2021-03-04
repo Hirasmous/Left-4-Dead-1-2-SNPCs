@@ -23,6 +23,7 @@ Smoker:
 -(L4D1) Restore tongue bodygroup after stopping incapping
 -Adjust tongue collision entities so that they are in line with the tongue particle
 -Give player a certain amount of time to shoot Smoker before being incap'd
+-Increase incap damage
 
 Spitter:
 -Don't play spitter goo music for players that are controlling specials
