@@ -61,14 +61,7 @@ ConVars:
 -Other special infected damage sliders ❌
 
 Before release:
--Improve Witch ✅
--Improve Boomer ✅
-	>Make zombies attracted to puked enemies ✅
-	>Improve puking feature ✅
--Add smoke screen effect ✅
--Improve smoker tongue collision ✅
--Make better incap overlay ✅
--Improve music system ✅
+-Improve Boomer vomitting
 
 Tensor:
 -Witch
