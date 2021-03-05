@@ -62,9 +62,9 @@ ConVars:
 -Other special infected damage sliders ❌
 
 Before release:
--Improve Witch
--Improve Boomer
-	>Make zombies attracted to puked enemies
+-Improve Witch ✅
+-Improve Boomer ✅
+	>Make zombies attracted to puked enemies ✅
 	>Improve puking feature ✅
 -Add smoke screen effect ✅
 -Improve smoker tongue collision ✅
@@ -73,8 +73,8 @@ Before release:
 
 Tensor:
 -Witch
-	>-Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity) ❗
-	>-Make it only attack the enemy that triggered it ❗
+	>-Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity) ✅
+	>-Make it only attack the enemy that triggered it ✅
 -Boomer
 	>-Implement puke mist/make zombies target vomitted enemies ✅
 -General
@@ -82,7 +82,7 @@ Tensor:
 
 Hirasmous:
 -Boomer
-	>-Add "vomit_jar" particle for bile smoke entity
+	>-Add "vomit_jar" particle for bile smoke entity ✅
 -Charger
 	>-Add idle crouching when controlling ❌
 -Spitter
@@ -92,7 +92,7 @@ Hirasmous:
 -Tank
 	>-Play regular idle animation when no enemies are near ❗
 -Witch
-	>-Add back red glowing eyes for SITTING witch ❗
+	>-Add back red glowing eyes for SITTING witch ✅
 -General
 	>-Make halos around allies green (when controlling) ❗
-	>-Fixed inverted pose parameters ❗
+	>-Fixed inverted pose parameters ✅
