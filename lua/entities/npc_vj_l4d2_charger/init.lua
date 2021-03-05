@@ -39,7 +39,7 @@ ENT.MeleeAttackDamage = GetConVarNumber("vj_l4d2_c_d")
 ENT.SlowPlayerOnMeleeAttack = true -- If true, then the player will slow down
 ENT.SlowPlayerOnMeleeAttackTime = 0.5 -- How much time until player's Speed resets
 ENT.HasLeapAttack = false -- Should the SNPC have a leap attack?
-ENT.LeapAttackDamage = 15
+ENT.LeapAttackDamage = 0
 ENT.LeapAttackDamageType = DMG_CRUSH -- Type of Damage
 ENT.AnimTbl_LeapAttack = {ACT_RUN_AIM_RELAXED} -- Melee Attack Animations
 ENT.TimeUntilLeapAttackVelocity = 0 -- How much time until it runs the velocity code?
@@ -135,7 +135,7 @@ ENT.pChargeTarget = nil
 ENT.pChargeEnt = nil
 ENT.IsCarryingEnemy = false
 ENT.pCarryTarget = nil
-ENT.NextChargeAttackTime = 5
+ENT.NextChargeAttackTime = 10
 ENT.bCanCharge = true
 ENT.bCanContinueCharge = true
 
@@ -290,7 +290,7 @@ function ENT:PummelEnemy(v)
 						self.pIncapacitatedEnemy = enemy
 						
 						self:SpawnCamera(self,35)
-						
+						timer.Stop("Charger"..self:EntIndex().."_HitWall")
 
 						self.EnemyMoveType = enemy:GetMoveType()
 						if enemy:IsNPC() then
@@ -496,26 +496,25 @@ function ENT:DismountCharger()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterStartTimer()
-	--timer.Stop("timer_act_playingattack"..self:EntIndex())
 	self:SetNW2Int("ChargeT",CurTime() +self.NextLeapAttackTime)
-	if timer.Exists("Charger_HitWall") then timer.Stop("Charger_HitWall") end 
-	--[[timer.Create("Charger_HitWall", 0.1, 11, function()
+	if timer.Exists("Charger"..self:EntIndex().."_HitWall") then timer.Stop("Charger"..self:EntIndex().."_HitWall") end 
+	timer.Create("Charger"..self:EntIndex().."_HitWall", 0.1, 40, function()
 		if !IsValid(self) then return end
-		local anims = VJ_PICK{"Shoved_Backward","Shoved_Leftward","Shoved_Rightward"}
-		local tr = util.TraceLine( {
-			start = self:GetPos() +self:OBBCenter() +self:OBBMaxs() +self:OBBMins(),
-			endpos = self:GetPos() + self:GetForward() *80 +self:GetUp() *20,
-			filter = {self, self:GetEnemy()},
-			mask = MASK_SOLID_BRUSHONLY,
-		} )
-		if tr.HitWorld then
-			self:VJ_ACT_PLAYACTIVITY(anims,true,VJ_GetSequenceDuration(self,anims),false)
-			VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
-			VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
-			ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
-			timer.Stop("Charger_HitWall")
+		if self.HasEnemyIncapacitated == false then
+			local tr = util.TraceLine( {
+				start = self:GetPos() + self:OBBCenter(),
+				endpos = self:GetPos() + self:OBBCenter() + self:GetForward() * 80,
+				filter = {self}
+			} )
+			if tr.HitWorld == true then
+				self:VJ_ACT_PLAYACTIVITY("Shoved_Backward",true,VJ_GetSequenceDuration(self,"Shoved_Backward"),false)
+				VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
+				VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
+				ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
+				timer.Stop("Charger"..self:EntIndex().."_HitWall")
+			end
 		end
-	end)]]
+	end)
 	timer.Simple(8, function()
 		if self.IsCharging == true then
 			self:ResetSequenceInfo()
@@ -524,13 +523,9 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
-	if self.VJ_IsBeingControlled == false then
-		self:VJ_ACT_PLAYACTIVITY(VJ_PICK{"Charger_Slam_Ground","Charger_Shoved_Backward"},true,0.1,false)
-	end
 	VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
 	VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95))	
 	self:PummelEnemy(TheHitEntity)
-	ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
 	for k, v in ipairs(ents.FindByClass("player")) do
 		if TheHitEntity:IsPlayer() then
 			VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.mp3",90,self:VJ_DecideSoundPitch(100,100))
@@ -539,6 +534,7 @@ function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
 			VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
 		end
 	end
+	return
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:MultipleMeleeAttacks()
@@ -1090,6 +1086,12 @@ function ENT:CustomOnThink()
 	self:Charger_Think()
 	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
+
+	if self.IsIncapacitating == true then
+		if !IsValid(self.pIncapacitatedEnemy) then
+			self:DismountCharger()
+		end
+	end
 
 	if self.VJ_IsBeingControlled == false then
 		if self.IsCarryingEnemy || (self.IsCharging && self.HasEnemyIncapacitated == false) then
