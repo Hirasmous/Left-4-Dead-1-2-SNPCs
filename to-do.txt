@@ -37,8 +37,8 @@ Tank:
 -Play regular idle animation when no enemies are near ✅
 
 Witch:
--Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity) ❗
--Make it only attack the enemy that triggered it ❗
+-Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity) ✅
+-Make it only attack the enemy that triggered it ✅
 -Add back red glowing eyes for SITTING witch ✅
 
 General:
@@ -68,7 +68,7 @@ Before release:
 -Add smoke screen effect ✅
 -Improve smoker tongue collision ✅
 -Make better incap overlay ✅
--Improve music system ❌
+-Improve music system ✅
 
 Tensor:
 -Witch
