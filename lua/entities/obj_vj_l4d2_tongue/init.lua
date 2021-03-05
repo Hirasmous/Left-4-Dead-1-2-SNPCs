@@ -168,6 +168,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					if enemy:IsPlayer() then
 						owner:Incap_Lighting(enemy, false, owner.pEnemyObj)
 						owner.Light1:SetKeyValue('lightcolor', "255 255 255 255")
+						owner.Light1:SetKeyValue('lightfov', '50')
 						owner:StripEnemyWeapons(enemy)
 						if owner.VJ_IsBeingControlled == false && owner.VJ_TheController ~= enemy then
 							enemy:SetObserverMode(OBS_MODE_CHASE)
