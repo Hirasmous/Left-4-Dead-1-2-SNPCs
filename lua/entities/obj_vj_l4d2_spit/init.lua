@@ -25,7 +25,8 @@ ENT.SoundTbl_SpitterAcid = Sound("SpitterZombie.Acid")
 ENT.SoundTbl_SpitterAcidTheme = Sound("vj_l4d2/music/terror/pileobile.mp3")
 ENT.SoundTbl_Idle = {"player/spitter/swarm/spitter_acid_fadeout.mp3","player/spitter/swarm/spitter_acid_fadeout2.mp3"}
 ENT.Owner = nil
-ENT.AcidCount = 20
+ENT.AcidCount = 30
+ENT.HasMusic = true
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:SetModel("models/spitball_medium.mdl")
@@ -89,22 +90,32 @@ function ENT:PhysicsCollide(data,physobj,entity)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DeathEffects(data,phys)
-    self.cspIdleAcidLoop = CreateSound(self, "vj_l4d2/music/terror/pileobile.mp3")
-    self.cspIdleAcidLoop:SetSoundLevel(70)  
-    self.cspIdleAcidLoop:PlayEx(1,100)  
+	local filter = RecipientFilter()
+	filter:AddAllPlayers()
+	for k, v in ipairs(ents.FindByClass("player")) do 
+		for l, w in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+			if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then
+				filter:RemovePlayer(v)
+			end
+		end
+	end
+
+    if self.HasMusic == true then
+	    self.cspIdleAcidLoop = CreateSound(self, "vj_l4d2/music/terror/pileobile.mp3",filter)
+	    self.cspIdleAcidLoop:SetSoundLevel(70)  
+	    self.cspIdleAcidLoop:PlayEx(1,100)  
+	end
+
     for i = 1,self.AcidCount do
         timer.Simple(i *0.2,function()
 	        if IsValid(self) then
 		        local acid = ents.Create( "obj_vj_l4d2_acidpuddle" )
-		        if self.AcidCount == 5 then
-		            acid:SetPos( self:GetPos() + Vector( math.Rand( -27, 27 ), math.Rand( -29, 29 ), 0 ) )
-		        elseif self.AcidCount == 20 then
-		            acid:SetPos( self:GetPos() + Vector( math.Rand( -57, 57 ), math.Rand( -59, 59 ), 0 ) )
+		        if self.AcidCount == 8 then
+		            acid:SetPos( self:GetPos() + Vector( math.Rand( -37, 37 ), math.Rand( -39, 39 ), 0 ) )
+		        elseif self.AcidCount == 30 then
+		            acid:SetPos( self:GetPos() + Vector( math.Rand( -87, 87 ), math.Rand( -89, 89 ), 0 ) )
 		        end
-		        acid:SetKeyValue( "firesize", "64" )
-		        acid:SetKeyValue( "damagescale", "20" )
-		        acid:SetKeyValue( "spawnflags", "2" )
-		        acid:SetOwner( self.Owner )
+		        acid:SetOwner(self:GetOwner())
 		        acid:Spawn()
 		        acid:DropToFloor()
 			end
@@ -117,7 +128,9 @@ function ENT:DeathEffects(data,phys)
     end)   
     timer.Simple(7,function()
         if IsValid(self) then
-            self.cspIdleAcidLoop:FadeOut(1)
+        	if self.cspIdleAcidLoop && self.cspIdleAcidLoop:IsPlaying() then
+                self.cspIdleAcidLoop:FadeOut(1)
+            end
         end
     end)    
 end
