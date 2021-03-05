@@ -859,6 +859,7 @@ function ENT:CustomOnThink()
 						self.IncapSong2:Stop()
 					end
 					self:PlayIncapSong()
+					self:Incap_Lighting(ene, false)
 					for k, v in ipairs(ents.FindByClass("player")) do
 						if enemy:IsNPC() then
 							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
