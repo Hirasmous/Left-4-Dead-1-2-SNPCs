@@ -8,7 +8,6 @@ include('shared.lua')
 ENT.Model = {"models/vj_l4d2/spitter.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_sp_h")
 ENT.HullType = HULL_HUMAN
-ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
 ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through walls and objects? | Can be useful if you want to make it know where the enemy is at all times
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
@@ -47,7 +46,6 @@ ENT.RangeDistance = 650 -- This is how far away it can shoot
 ENT.RangeToMeleeDistance = 50 -- How close does it have to be until it uses melee? -- This is how far away it can shoot
 ENT.NextRangeAttackTime = 25 -- How much time until it can use a range attack?
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
-ENT.FindEnemy_UseSphere = true -- Should the SNPC be able to see all around him? (360) | Objects and walls can still block its sight!
 ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
 	-- ====== Flinching Code ====== --
 ENT.CanFlinch = 0 -- 0 = Don't flinch | 1 = Flinch at any damage | 2 = Flinch only from certain damages
@@ -191,23 +189,6 @@ function ENT:ManageHUD(ply)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:SpitterAcid(fadeout)
-	if fadeout == false then
-		local table_acidloop = table.Random(self.SoundTbl_SpitterAcid)
-		local table_acidtheme = table.Random(self.SoundTbl_SpitterAcidTheme)
-		self.cspIdleThemeLoop = CreateSound(self, table_acidtheme)
-		self.cspIdleThemeLoop:SetSoundLevel(70)
-		self.cspIdleThemeLoop:Play(70)
-	end
-	if fadeout == true then
-		if self.Dead == true then
-			if self.AcidLoop && self.AcidLoop:IsPlaying() then
-				self.AcidLoop:FadeOut(1)
-			end
-		end
-	end
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomRangeAttackCode_AfterProjectileSpawn(projectile)
 	self:SetNW2Int("SpitT",CurTime() +self.NextRangeAttackTime)
 	self.IsTakingCover = true
@@ -233,6 +214,14 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos())
+	
+	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
+        self.FindEnemy_UseSphere = true 
+        self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+        self.FindEnemy_UseSphere = false 
+        self.FindEnemy_CanSeeThroughWalls = false
+    end
 	if self.IsGhosted then
 		self:Ghost()
 	end
@@ -295,7 +284,8 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
 	local acid = ents.Create("obj_vj_l4d2_spit")
 	acid:SetPos(self:GetPos() +Vector(0,0,13))
 	acid:SetAngles(self:GetAngles())
-	acid.AcidCount = 5
+	acid.AcidCount = 8
+	acid.HasMusic = false
 	acid:Activate()
 	acid:Spawn()  
 	acid:SetNoDraw(true)  
