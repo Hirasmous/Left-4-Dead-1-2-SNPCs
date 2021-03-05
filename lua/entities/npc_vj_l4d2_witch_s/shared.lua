@@ -1,4 +1,4 @@
-ENT.Base 			= "npc_vj_creature_base"
+ENT.Base 			= "npc_vj_l4d2_witch_w"
 ENT.Type 			= "ai"
 ENT.PrintName 		= "Witch"
 ENT.Author 			= "Hirasmous"
