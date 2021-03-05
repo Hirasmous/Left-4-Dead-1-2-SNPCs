@@ -86,15 +86,15 @@ Hirasmous:
 -Charger
 	>-Add idle crouching when controlling ❌
 -Spitter
-	>-Don't play spitter goo music for players that are controlling specials ❗
-	>-Don't play spitter goo music for goo that spawns on spitter's death ❗
-	>-Increase spitter goo puddle count / spread ❗
+	>-Don't play spitter goo music for players that are controlling specials ✅
+	>-Don't play spitter goo music for goo that spawns on spitter's death ✅
+	>-Increase spitter goo puddle count / spread ✅
 -Tank
-	>-Play regular idle animation when no enemies are near ❗
+	>-Play regular idle animation when no enemies are near ✅
 -Witch
 	>-Add back red glowing eyes for SITTING witch ✅
 -General
-	>-Make halos around allies green (when controlling) ❗
+	>-Add customizable halo colors (Allies,Enemies,Ghosted Allies) ✅
 	>-Fixed inverted pose parameters ✅
 	>-Add ConVar for enemy finding ❗
 	>-Fix thirdperson view when Hunter/Charger are incapping ❗
