@@ -8,8 +8,6 @@ include('shared.lua')
 ENT.Model = {"models/vj_l4d2/boomer.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_b_h")
 ENT.HullType = HULL_HUMAN
-ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
-ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through walls and objects? | Can be useful if you want to make it know where the enemy is at all times
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
 ENT.PoseParameterLooking_InvertYaw = false -- Inverts the yaw poseparameters (Y)
@@ -42,7 +40,6 @@ ENT.HasRangeAttack = true -- Should the SNPC have a range attack?
 ENT.DisableDefaultRangeAttackCode = true -- When true, it won't spawn the range attack entity, allowing you to make your own
 ENT.RangeAttackAnimationDelay = 1.5 -- It will wait certain amount of time before playing the animation
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
-ENT.FindEnemy_UseSphere = true -- Should the SNPC be able to see all around him? (360) | Objects and walls can still block its sight!
 ENT.FallingHeight = 32
 -- ====== Animation Variables ====== --
 ENT.AnimTbl_RangeAttack = {"vjges_Vomit_Attack"} -- Range Attack Animations
@@ -371,6 +368,14 @@ function ENT:CustomOnThink()
 	else
 		self.HasRangeAttack = true
 	end
+	
+	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
+        self.FindEnemy_UseSphere = true 
+        self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+        self.FindEnemy_UseSphere = false 
+        self.FindEnemy_CanSeeThroughWalls = false
+    end
 
 	if self.VJ_IsBeingControlled == false then
 		if IsValid(self:GetEnemy()) then
