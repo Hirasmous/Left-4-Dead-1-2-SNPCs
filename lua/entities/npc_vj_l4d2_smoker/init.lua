@@ -169,12 +169,12 @@ function ENT:CustomOnInitialize()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
-    VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
-    ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
-    ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
-    ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine")) 
-    ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine"))
-    ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
+	VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
+	ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
+	ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
+	ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine")) 
+	ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine"))
+	ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -282,9 +282,6 @@ function ENT:SmokerIncapacitate(ent)
 			ent:AddEFlags(EFL_NO_THINK_FUNCTION)
 		end
 	end
-end
-
-function ENT:CheckPath()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
@@ -447,7 +444,7 @@ function ENT:CustomOnSchedule()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	self:GetGroundType(self:GetPos()) -- in features.lua
+	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
 	self.vecLastPos = self:GetPos()
 	if self.IsGhosted then
@@ -830,7 +827,7 @@ function ENT:CustomOnThink()
 
 			if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
 				if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
-					self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation, true)
+					self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation)
 					self.IsChokingEnemy = true
 					if not self.IsEnemyFloating then
 						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
@@ -838,15 +835,12 @@ function ENT:CustomOnThink()
 					else
 						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
 						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
-						if self.Incap_Effects == false then
-                            self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
-                            self.Incap_Effects = true
-                            for k, v in ipairs(ents.FindByClass("player")) do
-                                if enemy:IsNPC() then
-                                    VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-                                end
-                            end
-                        end
+						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+						for k, v in ipairs(ents.FindByClass("player")) do
+							if enemy:IsNPC() then
+								VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+							end
+						end
 					end
 					for k, v in ipairs(ents.FindByClass("player")) do
 						if enemy:IsNPC() then
@@ -864,15 +858,11 @@ function ENT:CustomOnThink()
 						self.IncapSong2:Stop()
 					end
 					self:PlayIncapSong()
-					if self.Incap_Effects == false then
-                        self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
-                        self.Incap_Effects = true
-                        for k, v in ipairs(ents.FindByClass("player")) do
-                            if enemy:IsNPC() then
-                                VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-                            end
-                        end
-                    end
+					for k, v in ipairs(ents.FindByClass("player")) do
+						if enemy:IsNPC() then
+							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+						end
+					end
 				end
 			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
 				if self.IncapSong2 then
