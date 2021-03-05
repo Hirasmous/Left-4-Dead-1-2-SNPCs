@@ -215,6 +215,9 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					mdl:SetCycle(0)
 					mdl:SetLocalPos(Vector(0, 0, -10))
 					mdl:SetLocalAngles(Angle(0, 0, 0))
+					if not enemy:IsPlayer() then
+						owner:IncapacitateEnemy(enemy, mdl)
+					end
 
 					owner.pEnemyRagdoll = mdl
 
