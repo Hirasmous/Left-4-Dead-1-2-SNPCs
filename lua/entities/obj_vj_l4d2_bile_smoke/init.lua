@@ -23,8 +23,7 @@ function ENT:CustomOnInitialize()
 	self:SetNoDraw(true)
 	self:DrawShadow(false)
 	--ParticleEffectAttach("vomit_jar", PATTACH_ABSORIGIN, self, 0)
-	ParticleEffect("smoker_smokecloud",self:GetPos() +self:GetUp()*50,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil) 
-
+	
 	for i = 1, #self.PukeVictims do
 		local ent = self.PukeVictims[i]
 		self.PukeVictims[i] = {ent, 0}
