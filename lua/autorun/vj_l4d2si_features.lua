@@ -371,7 +371,7 @@ function NPC:PlayBacteria(bOverwrite)
 end
 
 function NPC:PlayIncapSong(bOverwrite)
-	if self.IncapSong && self.IncapSong:IsPlaying() then return end
+	if self.IncapSong && self.IncapSong:IsPlaying() then self:LowerSongVolume() return end
 	for k, v in ipairs(ents.FindByClass("npc_vj_l4d*")) do
 		if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy then
 			if v ~= self && v.IncapSong && v.IncapSong:IsPlaying() then
@@ -807,5 +807,26 @@ function NPC:L4D2_DeathMessage(attacker)
 				PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
 			end
 		end
+	end
+end
+
+function NPC:ShouldLowerSongVolume(song)
+	song = song or self.IncapSong
+	if song && song:IsPlaying() then
+		for k, v in ipairs(ents.GetAll()) do
+			if (string.find(v:GetClass(), "_l4d") && string.find(v:GetClass(), "witch")) || (string.find(v:GetClass(), "_l4d") && string.find(v:GetClass(), "tank")) then
+				return true
+			end 
+		end
+	end
+	return false
+end
+
+function NPC:LowerSongVolume(song)
+	song = song or self.IncapSong
+	if self:ShouldLowerSongVolume(song) then
+		song:ChangeVolume(0.5)
+	else
+		song:ChangeVolume(1)
 	end
 end
