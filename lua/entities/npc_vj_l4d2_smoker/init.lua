@@ -8,8 +8,6 @@ include('shared.lua')
 ENT.Model = {"models/vj_l4d2/smoker.mdl"} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_s_h")
 ENT.HullType = HULL_HUMAN
-ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
-ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through walls and objects? | Can be useful if you want to make it know where the enemy is at all times
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
 ENT.PoseParameterLooking_InvertYaw = false -- Inverts the yaw poseparameters (Y)
@@ -50,7 +48,6 @@ ENT.NextRangeAttackTime = 13 -- How much time until it can use a range attack?
 ENT.NextAnyAttackTime_Range = 1.8 -- How much time until it can use a attack again? | Counted in Seconds
 ENT.RangeAttackAnimationDelay = 2 -- It will wait certain amount of time before playing the animation
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
-ENT.FindEnemy_UseSphere = true -- Should the SNPC be able to see all around him? (360) | Objects and walls can still block its sight!
 ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
 ENT.FootStepTimeRun = 0.3 -- Next foot step sound when it is running
 ENT.FootStepTimeWalk = 0.4 -- Next foot step sound when it is walking
@@ -444,6 +441,14 @@ function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
 	self.vecLastPos = self:GetPos()
+	
+	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
+        self.FindEnemy_UseSphere = true 
+        self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+        self.FindEnemy_UseSphere = false 
+        self.FindEnemy_CanSeeThroughWalls = false
+    end
 	if self.IsGhosted then
 		self:Ghost()
 	end
