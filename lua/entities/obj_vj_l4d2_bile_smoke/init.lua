@@ -51,7 +51,7 @@ function ENT:CustomOnThink()
 				tbl[i][2] = dist
 			end
 			table.sort(tbl, function(a, b) return a[2] < b[2] end)
-			--if !IsValid(tbl[1]) then return end
+			if !IsValid(tbl[1]) then return end
 			x:VJ_DoSetEnemy(tbl[1][1])
 			x:SetEnemy(tbl[1][1])
 			if not table.HasValue(self.Attracted_Zombies, x) then
