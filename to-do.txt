@@ -62,6 +62,7 @@ ConVars:
 
 Before release:
 -Improve Boomer vomitting
+-Tank: Don't range when climbing 
 
 Tensor:
 -Witch
