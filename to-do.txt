@@ -29,26 +29,25 @@ Smoker:
 -Increase incap damage ✅
 
 Spitter:
--Don't play spitter goo music for players that are controlling specials ❗
--Don't play spitter goo music for goo that spawns on spitter's death ❗
--Increase spitter goo puddle count / spread ❗
+-Don't play spitter goo music for players that are controlling specials ✅
+-Don't play spitter goo music for goo that spawns on spitter's death ✅
+-Increase spitter goo puddle count / spread ✅
 
 Tank:
--Play regular idle animation when no enemies are near ❗
+-Play regular idle animation when no enemies are near ✅
 
 Witch:
 -Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity) ❗
 -Make it only attack the enemy that triggered it ❗
--Add back red glowing eyes for SITTING witch ❗
+-Add back red glowing eyes for SITTING witch ✅
 
 General:
 -Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2) ❌
 -Add original viewmodels when controlling in first-person ❌
 -Resize materials (what happened to them?!) ❌
 -Give player grenades (if he had them before) when stopping incapping ❌
--Make halos around allies green (when controlling) ❗
 -Don't make enemies attack ghosted specials ✅
--Fixed inverted pose parameters ❗
+-Fixed inverted pose parameters ✅
 -Fix wrong footstep sounds ✅
 
 Bugs:
