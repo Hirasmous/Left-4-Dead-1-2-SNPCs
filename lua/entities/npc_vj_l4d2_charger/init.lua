@@ -51,7 +51,6 @@ ENT.LeapAttackExtraTimers = {0.4,0.6,0.8,1} -- Extra leap attack timers | it wil
 ENT.StopLeapAttackAfterFirstHit = false
 ENT.NextLeapAttackTime = 15 -- How much time until it can use a leap attack?
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
-ENT.FindEnemy_UseSphere = true -- Should the SNPC be able to see all around him? (360) | Objects and walls can still block its sight!
 ENT.LeapAttackAnimationDelay = 0 -- It will wait certain amount of time before playing the animation
 ENT.LeapAttackDamageDistance = 100 -- How far does the damage go?
 ENT.FootStepTimeRun = 0.2 -- Next foot step sound when it is running
