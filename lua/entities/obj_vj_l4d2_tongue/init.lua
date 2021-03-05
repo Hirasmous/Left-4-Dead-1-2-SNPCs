@@ -169,14 +169,21 @@ function ENT:PhysicsCollide(data, physobj, entity)
 						owner:Incap_Lighting(enemy, false, owner.pEnemyObj)
 						owner.Light1:SetKeyValue('lightcolor', "255 255 255 255")
 						owner.Light1:SetKeyValue('lightfov', '50')
-						owner:StripEnemyWeapons(enemy)
-						if owner.VJ_IsBeingControlled == false && owner.VJ_TheController ~= enemy then
-							enemy:SetObserverMode(OBS_MODE_CHASE)
-							enemy:SpectateEntity(owner.Camera)
-							enemy:DrawViewModel(false)
-							enemy:DrawWorldModel(false)
-							enemy:SetFOV(85)
-						end
+						timer.Simple(0, function()
+							local own = owner 
+							local ene = enemy
+							timer.Simple(1.5, function()
+								if (!IsValid(owner) || !IsValid(enemy) || enemy:Alive() == false) then return end
+								owner:SmokerIncapacitate(enemy)
+								if IsValid(owner.pEnemyTongueAttach) then
+									owner.pEnemyTongueAttach:SetNoDraw(false)
+								end
+								if IsValid(owner.pEnemyRagdoll) then
+									owner:IncapacitateEnemy(enemy, owner.pEnemyRagdoll)
+								end
+
+							end)
+						end)
 					elseif enemy:IsNPC() then
 						if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
 							if IsValid(enemy:GetActiveWeapon()) then
@@ -208,7 +215,6 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					mdl:SetCycle(0)
 					mdl:SetLocalPos(Vector(0, 0, -10))
 					mdl:SetLocalAngles(Angle(0, 0, 0))
-					owner:IncapacitateEnemy(enemy, mdl)
 
 					owner.pEnemyRagdoll = mdl
 
@@ -217,6 +223,9 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					tongue:SetPos(owner.pEnemyObj:GetPos())
 					tongue:SetAngles(enemy:GetAngles())
 					tongue:Spawn()
+					if enemy:IsPlayer() then
+						tongue:SetNoDraw(true)
+					end
 					tongue:SetParent(mdl)
 					tongue:AddEffects(EF_BONEMERGE)
 					tongue:ResetSequence(tongue:LookupSequence("NamVet_Idle_Tongued_Dragging_Ground"))
@@ -274,9 +283,6 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					end)
 
 					owner:CallOnRemove("smoker_OnRemove", function(ent)
-						net.Start("infected_RemoveCSEnt")
-							net.WriteString(tostring(ent:EntIndex()))
-						net.Broadcast()
 						if ent.IncapSong ~= nil then
 							ent.IncapSong:Stop()
 						end
