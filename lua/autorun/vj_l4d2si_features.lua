@@ -286,14 +286,18 @@ function NPC:SetGhost(bool)
 		self:SetRenderMode(RENDERMODE_NONE)
 		self:EmitSound("ui/menu_horror01.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-		self.DisableMakingSelfEnemyToNPCs = true
+		if not self:IsFlagSet(FL_NOTARGET) then
+			self:AddFlags(FL_NOTARGET)
+		end
 	else
 		self:SetRenderMode(RENDERMODE_NORMAL)
 		self:EmitSound("ui/pickup_guitarriff10.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_NPC)
-		self.DisableMakingSelfEnemyToNPCs = false
 		if self:GetClass() == "npc_vj_l4d2_hunter" or self:GetClass() == "npc_vj_l4d_hunter" then
 			self.HasLeapAttack = true
+		end
+		if self:IsFlagSet(FL_NOTARGET) then
+			self:RemoveFlags(FL_NOTARGET)
 		end
 	end
 end
@@ -303,14 +307,10 @@ function NPC:CanSpawn()
 	local CanSpawnWhileGhosted = false
 	if self.VJ_IsBeingControlled == false then
 		if IsValid(ent) then
-			if ent:GetPos():Distance(self:GetPos()) > 500 then
-				if (ent:IsPlayer() or ent:IsNPC()) then
-					if ent:Visible(self) then
-						CanSpawnWhileGhosted = false
-					else
-						CanSpawnWhileGhosted = true
-					end
-				end
+			if (ent:IsPlayer() or ent:IsNPC()) && ent:IsLineOfSightClear(self) then
+				CanSpawnWhileGhosted = false
+			else
+				CanSpawnWhileGhosted = true
 			end
 		end
 	else
