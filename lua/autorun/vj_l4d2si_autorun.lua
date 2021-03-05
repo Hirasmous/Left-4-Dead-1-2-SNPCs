@@ -64,6 +64,7 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	game.AddParticles("particles/item_fx.pcf")
 
 	PrecacheParticleSystem("smoker_tongue")
+	PrecacheParticleSystem("vomit_jar")
 
 	-- Boomer
 	VJ.AddConVar("vj_l4d2_b_h",50)
@@ -90,6 +91,20 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	VJ.AddConVar("vj_l4d2_w_h",1000)
 	VJ.AddConVar("vj_l4d2_w_d",100)
 
+	-- Halo colors
+
+    VJ.AddClientConVar("vj_l4d2_halo_ally_r",255)
+    VJ.AddClientConVar("vj_l4d2_halo_ally_g",100)
+    VJ.AddClientConVar("vj_l4d2_halo_ally_b",0)
+
+    VJ.AddClientConVar("vj_l4d2_halo_enemy_r",0)
+    VJ.AddClientConVar("vj_l4d2_halo_enemy_g",0)
+    VJ.AddClientConVar("vj_l4d2_halo_enemy_b",255)
+
+    VJ.AddClientConVar("vj_l4d2_halo_ghost_r",0)
+    VJ.AddClientConVar("vj_l4d2_halo_ghost_g",150)
+    VJ.AddClientConVar("vj_l4d2_halo_ghost_b",150)
+
     -- Other 
     VJ.AddConVar("vj_l4d2_musictype",1)
     VJ.AddConVar("vj_l4d2_tanktype",1)
@@ -98,6 +113,7 @@ if( file.Exists( VJExists, "GAME" ) ) then
     VJ.AddConVar("vj_l4d2_incap_overlay",1) -- Turned on by default
 	VJ.AddConVar("vj_l4d2_dismount", 0) -- Turned off by default
 	VJ.AddConVar("vj_l4d2_print", 1) -- Turned on by default
+	VJ.AddConVar("vj_l4d2_enemy_finding",1) -- Turned on by default
 end
 
 if SERVER then
@@ -105,6 +121,7 @@ if SERVER then
 	util.AddNetworkString("infected_RemoveCSEnt")
 	util.AddNetworkString("Infected_IncapLight")
 	util.AddNetworkString("Infected_DrawIncapOverlay")
+	util.AddNetworkString("Smoker_CloudSmokeInit")
 end
 
 if CLIENT then
@@ -129,12 +146,44 @@ if CLIENT then
 
 			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs drop their weapons?", Command = "vj_l4d2_npcs_dropweapons"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
+			Panel:AddControl("Checkbox", {Label = "Do Special Infected see through walls/see all around?", Command = "vj_l4d2_enemy_finding"})
 			Panel:AddControl("Checkbox", {Label = "Can controlled Specials stop incapacitating (via spacebar)?", Command = "vj_l4d2_dismount"})
 			Panel:AddControl("Checkbox", {Label = "Draw incap overlay?", Command = "vj_l4d2_incap_overlay"})
 			Panel:AddControl("Checkbox", {Label = "Should information be printed on the screen?", Command = "vj_l4d2_print"})
 			Panel:AddControl("Slider", { Label 	= "Tank health", Command = "vj_l4d2_t_h", Type = "Float", Min = "3500", Max = "6000"})
 			Panel:AddControl("ComboBox", tank_musictype)
 			Panel:AddControl("ComboBox", tank_type)
+           
+			Panel:AddControl("Color",{
+				Label = "Ally Color:", 
+				Red = "vj_l4d2_halo_ally_r", 
+				Green = "vj_l4d2_halo_ally_g",
+				Blue = "vj_l4d2_halo_ally_b", 
+				ShowAlpha = "0", 
+				ShowHSV = "1",
+				ShowRGB = "1"
+			})
+
+			Panel:AddControl("Color",{
+				Label = "Enemy Color:", 
+				Red = "vj_l4d2_halo_enemy_r", 
+				Green = "vj_l4d2_halo_enemy_g", 
+				Blue = "vj_l4d2_halo_enemy_b", 
+				ShowAlpha = "0", 
+				ShowHSV = "1",
+				ShowRGB = "1"
+			})
+
+			Panel:AddControl("Color",{
+				Label = "Ghosted Color:", 
+				Red = "vj_l4d2_halo_ghost_r",
+				Green = "vj_l4d2_halo_ghost_g", 
+				Blue = "vj_l4d2_halo_ghost_b", 
+				ShowAlpha = "0", 
+				ShowHSV = "1",
+				ShowRGB = "1"
+			})
+
 		end, {})
 	end)
 	
