@@ -274,12 +274,15 @@ function ENT:Smoker_PlayIncapSong_Choke(bOverwrite,fadeout)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:SmokerIncapacitate(ent)
-	local ent = self.pIncapacitatedEnemy
-	if ent then
-		self.pIncapacitatedEnemy = ent 
-		self.HasEnemyIncapacitated = true
-		if not ent:IsEFlagSet(EFL_NO_THINK_FUNCTION) then
-			ent:AddEFlags(EFL_NO_THINK_FUNCTION)
+	if self.HasEnemyIncapacitated == true then
+		if self.pIncapacitatedEnemy ~= ent then return end
+		self:StripEnemyWeapons(ent)
+		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= ent then
+			ent:SetObserverMode(OBS_MODE_CHASE)
+			ent:SpectateEntity(self.Camera)
+			ent:DrawViewModel(false)
+			ent:DrawWorldModel(false)
+			ent:SetFOV(85)
 		end
 	end
 end
@@ -345,11 +348,11 @@ function ENT:DismountSmoker()
 	if enemy:IsPlayer() then
 		self:Incap_Lighting(enemy, true)
 		enemy:SetParent(nil)
-		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
+		--if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
 			enemy:SetObserverMode(0)
 			enemy:DrawViewModel(true)
 			enemy:DrawWorldModel(true)
-		end
+		--end
 		if table.Count(self.tblEnemyWeapons) > 0 then
 			for i = 1, table.Count(self.tblEnemyWeapons) do
 				local tbl = self.tblEnemyWeapons
@@ -607,31 +610,33 @@ function ENT:CustomOnThink()
 
 			--Create collision entities for tongue
 			if CurTime() >= self.nextSegmentCreation then
-				local bonePos = self.pEnemyTongueAttach:GetBonePosition(self.pEnemyTongueAttach:LookupBone("ValveBiped.shoulder_1"))
-				local flDistance = self:GetAttachment(3).Pos:Distance(bonePos)
-				local instances = 0
-				local pos = self:GetAttachment(3).Pos
-				local ang = self:GetAngles()
-				local dSeg = 15
-				if flDistance >= dSeg then
-					math.Round(flDistance, 1)
-					instances = flDistance / dSeg
-				end
-				local iteration = dSeg
-				if instances > 0 then
-					for i = 1, instances do
-						if !IsValid(self) then return end
-						local seg = ents.Create("obj_vj_l4d2_tongue_collision")
-						seg:SetPos(pos + self.pTongueController:GetForward() * iteration)
-						seg:SetAngles(ang)
-						seg:Spawn()
-						seg:SetOwner(self)
-						FacePos(seg, seg:GetPos(), Vector(bonePos[1], bonePos[2], bonePos[3]))
-						timer.Simple(0.1, function()
-							if !IsValid(seg) then return end
-							seg:Remove()
-						end)
-						iteration = iteration + dSeg
+				if IsValid(self.pEnemyTongueAttach) then
+					local bonePos = self.pEnemyTongueAttach:GetBonePosition(self.pEnemyTongueAttach:LookupBone("ValveBiped.shoulder_1"))
+					local flDistance = self:GetAttachment(3).Pos:Distance(bonePos)
+					local instances = 0
+					local pos = self:GetAttachment(3).Pos
+					local ang = self:GetAngles()
+					local dSeg = 15
+					if flDistance >= dSeg then
+						math.Round(flDistance, 1)
+						instances = flDistance / dSeg
+					end
+					local iteration = dSeg
+					if instances > 0 then
+						for i = 1, instances do
+							if !IsValid(self) then return end
+							local seg = ents.Create("obj_vj_l4d2_tongue_collision")
+							seg:SetPos(pos + self.pTongueController:GetForward() * iteration)
+							seg:SetAngles(ang)
+							seg:Spawn()
+							seg:SetOwner(self)
+							FacePos(seg, seg:GetPos(), Vector(bonePos[1], bonePos[2], bonePos[3]))
+							timer.Simple(0.1, function()
+								if !IsValid(seg) then return end
+								seg:Remove()
+							end)
+							iteration = iteration + dSeg
+						end
 					end
 				end
 				self.nextSegmentCreation = CurTime() + 0.1
@@ -795,6 +800,7 @@ function ENT:CustomOnThink()
 						enemy:GetPhysicsObject():EnableMotion(true)
 					end
 				else
+					self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
 					FreezeEnemy()
 				end
 			else
@@ -827,7 +833,6 @@ function ENT:CustomOnThink()
 
 			if self:GetSequence() == self:LookupSequence("Tongue_Attack_Drag_Survivor_Idle") then
 				if dist <= self.IncapacitationRange && self.IsChokingEnemy == false then
-					self:VJ_ACT_PLAYACTIVITY(self.IncapAnimation)
 					self.IsChokingEnemy = true
 					if not self.IsEnemyFloating then
 						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Tongued_Choking_Ground"))
