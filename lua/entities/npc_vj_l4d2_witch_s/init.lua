@@ -120,7 +120,6 @@ util.AddNetworkString("L4D2WitchHUD")
 function ENT:CustomOnInitialize()
 	self:SetHullType(self.HullType)
 	self:SetNWEntity("Witch"..self:EntIndex().."_TriggerEntity", nil)
-	self:StopParticles()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Controller_Initialize(ply)
