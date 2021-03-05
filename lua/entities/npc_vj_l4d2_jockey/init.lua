@@ -484,12 +484,9 @@ function ENT:CustomOnThink()
 							self.nextIncapSong = CurTime()
 							self.pIncapacitatedEnemy = v
 							self.MovementType = VJ_MOVETYPE_STATIONARY
-
 							self:SpawnCamera(self,25)
-
 							self:ClearPoseParameters()
 
-							self:DeleteOnRemove(camera)
 							v:SetNoDraw(true)
 
 							if v:IsNPC() then
