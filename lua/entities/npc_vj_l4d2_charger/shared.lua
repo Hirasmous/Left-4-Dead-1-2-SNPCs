@@ -92,9 +92,9 @@ if CLIENT then
 					end
 				end
 			end
-			halo.Add(tbL4D2Infected,Color(255,100,0),4,4,3,true,true)
-			halo.Add(tbL4D2Survivors,Color(0,0,255),4,4,3,true,true)
-			halo.Add(tbL4D2GhostedInfected,Color(0,150,150),4,4,3,true,true)
+			halo.Add(tbL4D2Infected,Color(GetConVarNumber("vj_l4d2_halo_ally_r"),GetConVarNumber("vj_l4d2_halo_ally_g"),GetConVarNumber("vj_l4d2_halo_ally_b")),4,4,3,true,true)
+			halo.Add(tbL4D2Survivors,Color(GetConVarNumber("vj_l4d2_halo_enemy_r"),GetConVarNumber("vj_l4d2_halo_enemy_g"),GetConVarNumber("vj_l4d2_halo_enemy_b")),4,4,3,true,true)
+			halo.Add(tbL4D2GhostedInfected,Color(GetConVarNumber("vj_l4d2_halo_ghost_r"),GetConVarNumber("vj_l4d2_halo_ghost_g"),GetConVarNumber("vj_l4d2_halo_ghost_b")),4,4,3,true,true)
 		end)
 		if isdeleted == true then hook.Remove("PreDrawHalos","L4D2ChargerHalo") end
 	end)
@@ -159,9 +159,9 @@ if CLIENT then
 					end
 				end
 			end
-			halo.Add(tbL4D2Infected,Color(255,100,0),4,4,3,true,true)
-			halo.Add(tbL4D2Survivors,Color(0,0,255),4,4,3,true,true)
-			halo.Add(tbL4D2GhostedInfected,Color(0,150,150),4,4,3,true,true)
+			halo.Add(tbL4D2Infected,Color(GetConVarNumber("vj_l4d2_halo_ally_r"),GetConVarNumber("vj_l4d2_halo_ally_g"),GetConVarNumber("vj_l4d2_halo_ally_b")),4,4,3,true,true)
+			halo.Add(tbL4D2Survivors,Color(GetConVarNumber("vj_l4d2_halo_enemy_r"),GetConVarNumber("vj_l4d2_halo_enemy_g"),GetConVarNumber("vj_l4d2_halo_enemy_b")),4,4,3,true,true)
+			halo.Add(tbL4D2GhostedInfected,Color(GetConVarNumber("vj_l4d2_halo_ghost_r"),GetConVarNumber("vj_l4d2_halo_ghost_g"),GetConVarNumber("vj_l4d2_halo_ghost_b")),4,4,3,true,true)
 		end)
 		if isdeleted == true then hook.Remove("PreDrawHalos","GhostL4D2ChargerHalo") end
 	end)
