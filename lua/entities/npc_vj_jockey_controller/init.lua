@@ -81,6 +81,7 @@ end
 function ENT:CustomOnSchedule() 
 	if self.VJ_IsBeingControlled == false then
 		if self.HasGoalEntity == true then
+			if !IsValid(self:GetTarget()) then return end
 			local dist = self:GetPos():Distance(self:GetTarget():GetPos())
 			if dist > 75 then
 				self:VJ_TASK_GOTO_TARGET("TASK_RUN_PATH")
