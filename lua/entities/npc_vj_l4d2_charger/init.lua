@@ -9,9 +9,6 @@ ENT.Model = {"models/vj_l4d2/charger.mdl"} -- The game will pick a random model 
 ENT.StartHealth = GetConVarNumber("vj_l4d2_c_h")
 ENT.HullType = HULL_WIDE_HUMAN
 ENT.HasBloodPool = false -- Does it have a blood pool?
-ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
--- ENT.Bacterias = {"bacteria/chargerbacteria.mp3","bacteria/chargerbacterias.mp3"}
-ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through walls and objects? | Can be useful if you want to make it know where the enemy is at all times
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
 ENT.PoseParameterLooking_InvertYaw = false -- Inverts the yaw poseparameters (Y)
@@ -1086,6 +1083,14 @@ function ENT:CustomOnThink()
 	self:Charger_Think()
 	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
+	
+	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
+        self.FindEnemy_UseSphere = true 
+        self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+        self.FindEnemy_UseSphere = false 
+        self.FindEnemy_CanSeeThroughWalls = false
+    end
 
 	if self.IsIncapacitating == true then
 		if !IsValid(self.pIncapacitatedEnemy) then
