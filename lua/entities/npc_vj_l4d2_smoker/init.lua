@@ -599,14 +599,14 @@ function ENT:CustomOnThink()
 			if IsValid(self.pTongueController) then
 				local tCtrl = self.pTongueController
 				tCtrl:SetPos(self:GetAttachment(3).Pos)
-				FacePos(tCtrl, tCtrl:GetPos(), enemy:GetPos() + enemy:OBBCenter())
+				FacePos(tCtrl, tCtrl:GetPos(), enemy:GetPos())
 				FaceTarget(tCtrl, enemy)
 			end
 
 			--Create collision entities for tongue
 			if CurTime() >= self.nextSegmentCreation then
 				if IsValid(self.pEnemyTongueAttach) then
-					local bonePos = self.pEnemyTongueAttach:GetBonePosition(self.pEnemyTongueAttach:LookupBone("ValveBiped.shoulder_1"))
+					local bonePos = enemy:GetPos()
 					local flDistance = self:GetAttachment(3).Pos:Distance(bonePos)
 					local instances = 0
 					local pos = self:GetAttachment(3).Pos
@@ -617,19 +617,21 @@ function ENT:CustomOnThink()
 						instances = flDistance / dSeg
 					end
 					local iteration = dSeg
+					local lastSeg = self.pTongueController
 					if instances > 0 then
 						for i = 1, instances do
 							if !IsValid(self) then return end
 							local seg = ents.Create("obj_vj_l4d2_tongue_collision")
+							seg:SetAngles(lastSeg:GetAngles())
+							FacePos(seg, seg:GetPos(), bonePos)
 							seg:SetPos(pos + self.pTongueController:GetForward() * iteration)
-							seg:SetAngles(ang)
 							seg:Spawn()
 							seg:SetOwner(self)
-							FacePos(seg, seg:GetPos(), Vector(bonePos[1], bonePos[2], bonePos[3]))
 							timer.Simple(0.1, function()
 								if !IsValid(seg) then return end
 								seg:Remove()
 							end)
+							lastSeg = seg
 							iteration = iteration + dSeg
 						end
 					end
