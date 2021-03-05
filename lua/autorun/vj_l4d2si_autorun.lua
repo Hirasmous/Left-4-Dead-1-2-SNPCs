@@ -193,11 +193,13 @@ if CLIENT then
 		local light = net.ReadEntity()
 		if fadeout == false then
 			if IsValid(ent) then
-				light:SetPos(ent:GetPos() + ent:GetUp() * 110)
-				light:SetAngles(Angle(90, 0, 0))
-				light:Spawn()
-				light:SetParent(ent)
-				light:Activate()
+				if IsValid(light) then
+					light:SetPos(ent:GetPos() + ent:GetUp() * 110)
+					light:SetAngles(Angle(90, 0, 0))
+					light:Spawn()
+					light:SetParent(ent)
+					light:Activate()
+				end
 			end
 		end
 	end)
