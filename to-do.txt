@@ -3,7 +3,6 @@
 ❌ - IGNORE FOR NOW
 
 Boomer:
--Don't make vomit cover particles visible in firstperson ❌
 -Make it still vomit if shoved (otherwise it has to wait 20 seconds in order to be able range attack again when it didn't even vomit) ✅
 -Smoke particles spawn at the center of the map on death ✅ (removed)
 -Make vomit music play relative to effected player ✅
@@ -14,7 +13,7 @@ Boomette:
 
 Charger:
 -Make it carry enemies up hills/steep surfaces ❌ 
--Add idle crouching when controlling ❗
+-Add idle crouching when controlling ❌
 
 Hunter:
 
@@ -77,7 +76,7 @@ Tensor:
 	>-Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity) ❗
 	>-Make it only attack the enemy that triggered it ❗
 -Boomer
-	>-Implement puke mist/make zombies target vomitted enemies
+	>-Implement puke mist/make zombies target vomitted enemies ✅
 -General
 	>-Give player grenades (if he had them before) when stopping incapping
 
@@ -85,7 +84,7 @@ Hirasmous:
 -Boomer
 	>-Add "vomit_jar" particle for bile smoke entity
 -Charger
-	>-Add idle crouching when controlling ❗
+	>-Add idle crouching when controlling ❌
 -Spitter
 	>-Don't play spitter goo music for players that are controlling specials ❗
 	>-Don't play spitter goo music for goo that spawns on spitter's death ❗
