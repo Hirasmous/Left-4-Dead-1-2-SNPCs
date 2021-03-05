@@ -955,11 +955,9 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
 	self:VJ_ACT_PLAYACTIVITY(ACT_DIERAGDOLL,true,false,false) 
 	local smoke = ents.Create("obj_vj_l4d2_cloudsmoke")
 	smoke:SetPos(self:GetPos())
-	smoke:SetKeyValue("firesize","64")
-	smoke:SetKeyValue("damagescale","20")
-	smoke:SetOwner(self)
 	smoke:Spawn()
-	timer.Simple( 5,function()
+	smoke:SetOwner(self)
+	timer.Simple(10, function()
 		if IsValid(smoke) then
 			smoke:Remove()   
 		end							
