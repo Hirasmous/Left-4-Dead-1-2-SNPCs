@@ -11,6 +11,6 @@
 	"$refracttint" "{255 115 15}"
 	"$normalmap" "effects/incap_overlays/invulnoverlay/invuln_overlay_normal"
 	"$bumpframe" "0"
-	"$bluramount" "0.5"
+	"$bluramount" "0"
 	"$refracttinttexture" "effects/incap_overlays/invulnoverlay/invuln_overlay"
 }
