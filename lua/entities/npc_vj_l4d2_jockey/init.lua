@@ -118,6 +118,7 @@ ENT.CanPounce = true
 ENT.FootStepType = "CommonLight"
 ENT.pNavigator = nil
 ENT.EnemyCollisionBounds = nil
+ENT.IncapDamage = 5
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
@@ -260,7 +261,9 @@ function ENT:ResetJockey()
 	self:Incap_Lighting(enemy, true)
 	enemy:SetCollisionBounds(self.EnemyCollisionBounds[1], self.EnemyCollisionBounds[2])
 	enemy:SetParent(nil)
-	enemy:SetPos(self:GetPos())
+	if not enemy:IsNPC() then
+		enemy:SetPos(self:GetPos())
+	end
 	if IsValid(enemy:GetActiveWeapon()) then
 		enemy:GetActiveWeapon():SetNoDraw(false)
 	end
@@ -277,10 +280,10 @@ function ENT:ResetJockey()
 	self.EnemyMoveType = nil
 	if enemy:IsPlayer() then
 		if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
-			enemy:SetPos(self.vecLastPos)
 			enemy:SetObserverMode(0)
 			enemy:DrawViewModel(true)
 			enemy:DrawWorldModel(true)
+			enemy:SetPos(self:GetPos())
 		end
 		if table.Count(self.tblEnemyWeapons) > 0 then
             for i = 1, table.Count(self.tblEnemyWeapons) do
@@ -482,9 +485,12 @@ function ENT:CustomOnThink()
 							self:SetCustomCollisionCheck(true)
 							v:SetCustomCollisionCheck(true)
 							self.nextIncapSong = CurTime()
+							self.nextIncapDamage = CurTime()
 							self.pIncapacitatedEnemy = v
 							self.MovementType = VJ_MOVETYPE_STATIONARY
+
 							self:SpawnCamera(self,25)
+
 							self:ClearPoseParameters()
 
 							v:SetNoDraw(true)
@@ -591,7 +597,7 @@ function ENT:CustomOnThink()
 			end
 		end
 	end
-	if self.HasEnemyIncapacitated == true then 
+	if self.HasEnemyIncapacitated == true then
 		if (IsValid(self.IncapSound) && self.IncapSound:IsPlaying() == false) || self.IncapSound == nil then
 			self:PlayVassalationSound()
 		end
@@ -604,6 +610,11 @@ function ENT:CustomOnThink()
 		end
 		if IsValid(self.pIncapacitatedEnemy) then
 			local enemy = self.pIncapacitatedEnemy
+			if CurTime() >= self.nextIncapDamage then
+				enemy:TakeDamage(self.IncapDamage, self, self)
+				VJ_CreateSound(self,table.Random(self.SoundTbl_MeleeAttack),75,self:VJ_DecideSoundPitch(100,100))
+				self.nextIncapDamage = CurTime() + 1.5
+			end
 			if self.VJ_IsBeingControlled == false then
 				if enemy:IsPlayer() then
 					hook.Add("SetupMove", "player_RiddenSetupMovement", function(ply, mv, cmd)
@@ -661,8 +672,15 @@ function ENT:CustomOnThink()
 					end
 				end)
 			end
-			enemy:SetLocalPos(Vector(0, 0, 0))
-			self:SetLocalPos(Vector(0, 0, 0))
+			if enemy:IsPlayer() then
+				if enemy:Alive() == true then
+					enemy:SetLocalPos(Vector(0, 0, 0))
+					self:SetLocalPos(Vector(0, 0, 0))
+				end
+			else
+				enemy:SetLocalPos(Vector(0, 0, 0))
+				self:SetLocalPos(Vector(0, 0, 0))
+			end
 			if IsValid(self.pEnemyRagdoll) then
 				self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
 				self.pEnemyRagdoll:SetLocalAngles(Angle(0, 0, 0))
