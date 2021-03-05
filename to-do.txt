@@ -82,6 +82,8 @@ Tensor:
 	>-Give player grenades (if he had them before) when stopping incapping
 
 Hirasmous:
+-Boomer
+	>-Add "vomit_jar" particle for bile smoke entity
 -Charger
 	>-Add idle crouching when controlling ❗
 -Spitter
