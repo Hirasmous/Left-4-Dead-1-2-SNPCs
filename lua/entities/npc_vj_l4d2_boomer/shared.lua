@@ -92,9 +92,9 @@ if CLIENT then
 					end
 				end
 			end
-			halo.Add(tbL4D2Infected,Color(255,100,0),4,4,3,true,true)
-			halo.Add(tbL4D2Survivors,Color(0,0,255),4,4,3,true,true)
-			halo.Add(tbL4D2GhostedInfected,Color(0,150,150),4,4,3,true,true)
+			halo.Add(tbL4D2Infected,Color(GetConVarNumber("vj_l4d2_halo_ally_r"),GetConVarNumber("vj_l4d2_halo_ally_g"),GetConVarNumber("vj_l4d2_halo_ally_b")),4,4,3,true,true)
+			halo.Add(tbL4D2Survivors,Color(GetConVarNumber("vj_l4d2_halo_enemy_r"),GetConVarNumber("vj_l4d2_halo_enemy_g"),GetConVarNumber("vj_l4d2_halo_enemy_b")),4,4,3,true,true)
+			halo.Add(tbL4D2GhostedInfected,Color(GetConVarNumber("vj_l4d2_halo_ghost_r"),GetConVarNumber("vj_l4d2_halo_ghost_g"),GetConVarNumber("vj_l4d2_halo_ghost_b")),4,4,3,true,true)
 		end)
 		if isdeleted == true then hook.Remove("PreDrawHalos","L4D2BoomerHalo") end
 	end)
@@ -159,9 +159,9 @@ if CLIENT then
 					end
 				end
 			end
-			halo.Add(tbL4D2Infected,Color(255,100,0),4,4,3,true,true)
-			halo.Add(tbL4D2Survivors,Color(0,0,255),4,4,3,true,true)
-			halo.Add(tbL4D2GhostedInfected,Color(0,150,150),4,4,3,true,true)
+			halo.Add(tbL4D2Infected,Color(GetConVarNumber("vj_l4d2_halo_ally_r"),GetConVarNumber("vj_l4d2_halo_ally_g"),GetConVarNumber("vj_l4d2_halo_ally_b")),4,4,3,true,true)
+			halo.Add(tbL4D2Survivors,Color(GetConVarNumber("vj_l4d2_halo_enemy_r"),GetConVarNumber("vj_l4d2_halo_enemy_g"),GetConVarNumber("vj_l4d2_halo_enemy_b")),4,4,3,true,true)
+			halo.Add(tbL4D2GhostedInfected,Color(GetConVarNumber("vj_l4d2_halo_ghost_r"),GetConVarNumber("vj_l4d2_halo_ghost_g"),GetConVarNumber("vj_l4d2_halo_ghost_b")),4,4,3,true,true)
 		end)
 		if isdeleted == true then hook.Remove("PreDrawHalos","GhostL4D2BoomerHalo") end
 	end)
@@ -211,7 +211,7 @@ if CLIENT then
 			local mat = Material("models/vj_l4d2/survivors/survivor_it", "alphatest")
 			cam.Start3D(EyePos(), EyeAngles())
 				for k, v in ipairs(_ents) do
-					if (IsValid(v) && util.IsValidModel(v:GetModel() or "")) && v:GetNoDraw() == false && ( (v:GetClass() == "prop_dynamic" && IsValid(v:GetParent()) &&v:GetParent():GetClass() == "prop_anim_survivor") || v:IsNPC() && not string.find(v:GetClass(), "_l4d") || v:IsNextBot() || (v:IsPlayer() && v:Alive()) ) then
+					if (IsValid(v) && util.IsValidModel(v:GetModel() or "")) && v:GetNoDraw() == false && ( (v:GetClass() == "prop_dynamic" && IsValid(v:GetParent()) && v:GetParent():GetClass() == "prop_anim_survivor")  && v:IsNPC() && not string.find(v:GetClass(), "_l4d") && v:IsNextBot() || (v:IsPlayer() && v:Alive()) ) then
 						render.SetBlend(0.8)
 						render.MaterialOverride(mat)
 						v:DrawModel()
