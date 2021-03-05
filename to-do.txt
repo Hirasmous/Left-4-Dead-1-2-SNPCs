@@ -96,3 +96,5 @@ Hirasmous:
 -General
 	>-Make halos around allies green (when controlling) ❗
 	>-Fixed inverted pose parameters ✅
+	>-Add ConVar for enemy finding ❗
+	>-Fix thirdperson view when Hunter/Charger are incapping ❗
