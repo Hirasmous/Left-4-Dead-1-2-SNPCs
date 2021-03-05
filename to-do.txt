@@ -95,5 +95,5 @@ Hirasmous:
 -General
 	>-Add customizable halo colors (Allies,Enemies,Ghosted Allies) ✅
 	>-Fixed inverted pose parameters ✅
-	>-Add ConVar for enemy finding ❗
+	>-Add ConVar for enemy finding ✅
 	>-Fix thirdperson view when Hunter/Charger are incapping ❗
