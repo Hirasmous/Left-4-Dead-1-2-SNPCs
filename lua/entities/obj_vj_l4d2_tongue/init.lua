@@ -225,13 +225,17 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					tongue:SetLocalAngles(Angle(0, 0, 0))  
 					mdl:DeleteOnRemove(tongue)
 
-					timer.Simple(0.05, function()
-						if !IsValid(owner) then return end
-						net.Start("Smoker_CreateTongue")
-							net.WriteString(tostring(owner:EntIndex()))
-							net.WriteEntity(tongue)
-							net.WriteEntity(owner)
-						net.Broadcast()
+					timer.Simple(0, function()
+						local own = owner
+						local tng = tongue
+						timer.Simple(0.1, function()
+							if !IsValid(owner) then return end
+							net.Start("Smoker_CreateTongue")
+								net.WriteString(tostring(owner:EntIndex()))
+								net.WriteEntity(tng)
+								net.WriteEntity(own)
+							net.Broadcast()
+						end)
 					end)
 
 					owner.pEnemyTongueAttach = tongue
