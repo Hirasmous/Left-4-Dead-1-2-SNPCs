@@ -666,7 +666,7 @@ function NPC:GetEnemiesInRange()
 				if self:IsEntityAlly(v) == false then
 					local dist = self:GetPos():Distance(v:GetPos())
 					if (v:IsPlayer() && util.TraceLine(util.GetPlayerTrace(v)).Entity == self && v:FlashlightIsOn()) or dist <= 200 then
-						tbl[table.Count(tbl) + 1] = {v:EntIndex(), v:GetPos():Distance(self:GetPos())}
+						tbl[table.Count(tbl) + 1] = {v, v:GetPos():Distance(self:GetPos())}
 						table.sort(tbl, function(a, b) return a[2] < b[2] end)
 						self.pTargetEntity = tbl[1][1]
 						if (self:GetClass() == "npc_vj_l4d2_witch_s" || self.Base == "npc_vj_l4d2_witch_s") then
