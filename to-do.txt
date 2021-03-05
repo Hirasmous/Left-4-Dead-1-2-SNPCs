@@ -23,11 +23,11 @@ Jockey:
 -Add damage events ✅
 
 Smoker:
--Add smoke overlay effect ❗
+-Add smoke overlay effect ✅
 -(L4D1) Restore tongue bodygroup after stopping incapping ✅
--Adjust tongue collision entities so that they are in line with the tongue particle ❗
--Give player a certain amount of time to shoot Smoker before being incap'd ❌
--Increase incap damage ❗
+-Adjust tongue collision entities so that they are in line with the tongue particle ✅
+-Give player a certain amount of time to shoot Smoker before being incap'd ✅
+-Increase incap damage ✅
 
 Spitter:
 -Don't play spitter goo music for players that are controlling specials ❗
@@ -40,13 +40,13 @@ Tank:
 Witch:
 -Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity) ❗
 -Make it only attack the enemy that triggered it ❗
--Remove yellow eye color for SITTING witch ❗
+-Add back red glowing eyes for SITTING witch ❗
 
 General:
 -Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2) ❌
 -Add original viewmodels when controlling in first-person ❌
 -Resize materials (what happened to them?!) ❌
--Give player grenades (if he had them before) when stopping incapping ❗
+-Give player grenades (if he had them before) when stopping incapping ❌
 -Make halos around allies green (when controlling) ❗
 -Don't make enemies attack ghosted specials ✅
 -Fixed inverted pose parameters ❗
@@ -67,14 +67,31 @@ Before release:
 -Improve Boomer
 	>Make zombies attracted to puked enemies
 	>Improve puking feature ✅
--Add smoke screen effect
--Improve smoker tongue collision
+-Add smoke screen effect ✅
+-Improve smoker tongue collision ✅
 -Make better incap overlay ✅
--Improve music system
+-Improve music system ❌
 
 Tensor:
--Add new functions to features.lua ✅
--Update Charger ✅
--Update Smoker ✅
--Update bonemerging feature for all specials ✅
--Update incap lighting for all specials ✅
+-Witch
+	>-Make Witch only attack NPCs, NextBots, and players (it attacks the env_fire entity) ❗
+	>-Make it only attack the enemy that triggered it ❗
+-Boomer
+	>-Implement puke mist/make zombies target vomitted enemies
+-General
+	>-Give player grenades (if he had them before) when stopping incapping
+
+Hirasmous:
+-Charger
+	>-Add idle crouching when controlling ❗
+-Spitter
+	>-Don't play spitter goo music for players that are controlling specials ❗
+	>-Don't play spitter goo music for goo that spawns on spitter's death ❗
+	>-Increase spitter goo puddle count / spread ❗
+-Tank
+	>-Play regular idle animation when no enemies are near ❗
+-Witch
+	>-Add back red glowing eyes for SITTING witch ❗
+-General
+	>-Make halos around allies green (when controlling) ❗
+	>-Fixed inverted pose parameters ❗
