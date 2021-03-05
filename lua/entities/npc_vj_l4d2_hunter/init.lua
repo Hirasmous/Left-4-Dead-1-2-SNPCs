@@ -10,8 +10,6 @@ ENT.Model = {"models/vj_l4d2/hunter.mdl"} -- The game will pick a random model f
 ENT.StartHealth = 250
 ENT.HasBloodPool = false -- Does it have a blood pool?
 ENT.HullType = HULL_HUMAN
-ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
-ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through walls and objects? | Can be useful if you want to make it know where the enemy is at all times
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
 ENT.PoseParameterLooking_InvertYaw = false -- Inverts the yaw poseparameters (Y)
@@ -648,6 +646,14 @@ function ENT:CustomOnThink()
 	elseif self.VJ_IsBeingControlled == true then
 		self.CheckEnemyTimer = 0
 	end
+	
+	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
+        self.FindEnemy_UseSphere = true 
+        self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+        self.FindEnemy_UseSphere = false 
+        self.FindEnemy_CanSeeThroughWalls = false
+    end
 
 	self:IgnoreIncappedEnemies()
 	if self:IsInWorld() then
