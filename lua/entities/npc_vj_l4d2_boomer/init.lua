@@ -106,6 +106,7 @@ ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "CommonLight"
+ENT.BileSmoke = nil
 
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
@@ -203,7 +204,6 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:VomitEnemy(v,bDeath)
 	if !IsValid(v) then return false end
-	--if self.VJ_TheController == v then return end 
 	if (v:IsPlayer() or v:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
 		--[[local numBones = v:GetBoneCount()
 		self.Vomit = {}
@@ -228,7 +228,10 @@ function ENT:VomitEnemy(v,bDeath)
 				self.Vomit[i +numBones] = ent
 			end			
 		end]]
-		ParticleEffectAttach("boomer_vomit_survivor",PATTACH_ABSORIGIN_FOLLOW,v,0)
+		if not table.HasValue(self.tblPukedVictims, v) then
+			table.insert(self.tblPukedVictims, v)
+		end
+		--ParticleEffectAttach("boomer_vomit_survivor",PATTACH_ABSORIGIN_FOLLOW,v,0)
 		if v:IsPlayer() then
 			self:VomitEffect(v,true)
             local filter = RecipientFilter()
@@ -267,7 +270,6 @@ function ENT:CustomRangeAttackCode()
 				if IsValid(x) && IsValid(self) then
 					if (x:IsPlayer() or x:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && x:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(x) == false) || self:Disposition(x) == D_HT then
 						if self:IsLineOfSightClear(x) && self:Visible(x) then
-							table.insert(self.tblPukedVictims,x)
 							self:VomitEnemy(x)
 							self.Enemy_IsPuked = true
 							self.NextRangeAttackTime = 20
@@ -291,7 +293,6 @@ function ENT:CustomRangeAttackCode()
 			if IsValid(x) && IsValid(self) then
 				if (x:IsPlayer() or x:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && x:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(x) == false) || self:Disposition(x) == D_HT then
 					if self:IsLineOfSightClear(x) && self:Visible(x) then
-						table.insert(self.tblPukedVictims,x)
 						self:VomitEnemy(x)
 						self.Enemy_IsPuked = true
 						self.NextRangeAttackTime = 20
@@ -311,11 +312,23 @@ function ENT:CustomRangeAttackCode()
 		end	 
 		self:SetNW2Float("VomitT",CurTime() +self.NextRangeAttackTime)	
 		ParticleEffectAttach("boomer_vomit",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))		 
-		timer.Create("Boomer"..self:EntIndex().."_VomitBile", 0.1, 7, function()
+		timer.Create("Boomer"..self:EntIndex().."_VomitBile", 0.1, 25, function()
 			if !IsValid(self) then return end
 			self:VomitBile(75)
 		end)
 	end
+	timer.Simple(0.25, function()
+		if !IsValid(self) then return end
+		local bile = ents.Create("obj_vj_l4d2_bile_smoke")
+		bile:SetPos(self:GetPos())
+		bile.PukeVictims = self.tblPukedVictims
+		bile:Spawn()
+		self.BileSmoke = bile
+	end)
+	timer.Simple(10, function()
+		if !IsValid(self) then return end
+		table.Empty(self.tblPukedVictims)
+	end)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_AfterStartTimer()
@@ -446,13 +459,19 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
 			if (x:IsPlayer() or x:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && x:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(x) == false) || self:Disposition(x) == D_HT then
 				if self:IsLineOfSightClear(x) then
 					if !IsValid(x) then return end
-					table.insert(self.tblPukedVictims,x)
 					self:VomitEnemy(x, true)
 					self.Enemy_IsPuked = true
 				end
 			end
 		end
 	end 
+
+	if IsValid(self.BileSmoke) then self.BileSmoke:Remove() end
+
+	local bile = ents.Create("obj_vj_l4d2_bile_smoke")
+	bile:SetPos(self:GetPos())
+	bile.PukeVictims = self.tblPukedVictims
+	bile:Spawn()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
