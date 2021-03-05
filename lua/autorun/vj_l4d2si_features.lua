@@ -697,24 +697,23 @@ end
 
 NPC.Light1 = nil
 function NPC:Incap_Lighting(ply, fadeout, parent)
-	local spotlightpoint1
+	if IsValid(self.Light1) then self.Light1:Remove() end
 	fadeout = fadeout or false
 	if fadeout == false then
-		self.spotlightpoint = ents.Create("env_projectedtexture")
-		self.spotlightpoint:SetKeyValue('lightcolor', "255 25 12")
+		self.Light1 = ents.Create("env_projectedtexture")
+		self.Light1:SetKeyValue('lightcolor', "255 25 12")
 		if self:GetClass() == "npc_vj_l4d2_charger" then
-			self.spotlightpoint:SetKeyValue('lightfov', '100')
+			self.Light1:SetKeyValue('lightfov', '80')
 		else
-			self.spotlightpoint:SetKeyValue('lightfov', '75')
+			self.Light1:SetKeyValue('lightfov', '60')
 		end
-		self.spotlightpoint:SetKeyValue('brightnessscale','10')
-		self.spotlightpoint:SetKeyValue('farz', '612')
-		self.spotlightpoint:SetKeyValue('nearz', '0.1')
-		self.spotlightpoint:SetKeyValue('shadowquality', '1')
-		self.spotlightpoint:SetKeyValue('enableshadows', '0')
-		self.spotlightpoint:SetKeyValue('texturename', 'effects/flashlight/soft')
-		self:DeleteOnRemove(self.spotlightpoint)
-		self.Light1 = self.spotlightpoint
+		self.Light1:SetKeyValue('brightnessscale','10')
+		self.Light1:SetKeyValue('farz', '612')
+		self.Light1:SetKeyValue('nearz', '0.1')
+		self.Light1:SetKeyValue('shadowquality', '1')
+		self.Light1:SetKeyValue('enableshadows', '0')
+		self.Light1:SetKeyValue('texturename', 'effects/flashlight/hard')
+		self:DeleteOnRemove(self.Light1)
 		if parent then
 			self.Light1:SetParent(parent)
 		end
