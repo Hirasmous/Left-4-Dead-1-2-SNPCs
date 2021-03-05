@@ -12,23 +12,35 @@ ENT.RadiusDamageUseRealisticRadius = true -- Should the damage decrease the fart
 ENT.RadiusDamage = 10 -- How much damage should it deal? Remember this is a radius damage, therefore it will do less damage the farther away the entity is from its enemy
 ENT.RadiusDamageType = DMG_NERVEGAS -- Damage type
 ENT.Model = {"models/spitball_medium.mdl"} -- The models it should spawn with | Picks a random one from the table} -- The models it should spawn with | Picks a random one from the table
+
+ENT.SentPlayers = {}
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	local sphere = ents.FindInSphere(self:GetPos(), 150)
 	local owner = self:GetOwner()
-	for k, v in ipairs(sphere) do
+	for k, v in ipairs(ents.FindInSphere(self:GetPos(), 200)) do
 		if (v:IsPlayer()) then
-	    if math.random(1, 6) == 1 then
-		    VJ_EmitSound(v,VJ_PICKRANDOMTABLE({"ambient/voices/cough1.wav","ambient/voices/cough2.wav","ambient/voices/cough3.wav","ambient/voices/cough4.wav"}),70,math.random(100,100))
+			if math.random(1, 6) == 1 then
+				VJ_EmitSound(v,VJ_PICKRANDOMTABLE({"ambient/voices/cough1.wav","ambient/voices/cough2.wav","ambient/voices/cough3.wav","ambient/voices/cough4.wav"}),70,math.random(100,100))
+			end
+			local dist = v:GetPos():Distance(self:GetPos())
+			val = math.Remap(dist, -200, 0, -1, -0.15)
+			if not table.HasValue(self.SentPlayers, v) then
+				net.Start("Smoker_CloudSmokeInit")
+					net.WriteString(tostring(self:EntIndex()))
+					net.WriteVector(self:GetPos())
+				net.Send(v)
+				self.SentPlayers[#self.SentPlayers + 1] = v
+			end
 		end
-	    end
-    end  		
+	end 
+	self:NextThink(CurTime())
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	ParticleEffect("smoker_smokecloud",self:GetPos() +self:GetUp()*50,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil) 
 	self:SetNoDraw(true)
 	self:DrawShadow(false)
+	self:SetOwner(self:GetOwner())
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PhysicsCollide(data,physobj,entity)
