@@ -19,14 +19,16 @@ function ENT:CustomOnThink()
 	local owner = self:GetOwner()
 	for k, v in ipairs(ents.FindInSphere(self:GetPos(), 200)) do
 		if (v:IsPlayer()) then
-			local dist = v:GetPos():Distance(self:GetPos())
-			val = math.Remap(dist, -200, 0, -1, -0.15)
-			if not table.HasValue(self.SentPlayers, v) then
-				net.Start("Smoker_CloudSmokeInit")
-					net.WriteString(tostring(self:EntIndex()))
-					net.WriteVector(self:GetPos())
-				net.Send(v)
-				self.SentPlayers[#self.SentPlayers + 1] = v
+			if v:Alive() then
+				local dist = v:GetPos():Distance(self:GetPos())
+				val = math.Remap(dist, -200, 0, -1, -0.15)
+				if not table.HasValue(self.SentPlayers, v) then
+					net.Start("Smoker_CloudSmokeInit")
+						net.WriteString(tostring(self:EntIndex()))
+						net.WriteVector(self:GetPos())
+					net.Send(v)
+					self.SentPlayers[#self.SentPlayers + 1] = v
+				end
 			end
 		end
 	end 
