@@ -102,7 +102,6 @@ ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "CommonLight"
 ENT.BileSmoke = nil
-ENT.NextAlertSound = CurTime()
 
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
@@ -189,6 +188,7 @@ function ENT:VomitBile()
 		local ent = ents.Create("obj_vj_l4d2_bile")
 		ent:SetPos(self:GetPos())
 		ent:SetOwner(self)
+		ent.bIsVomit = true
 		ent:Spawn()
 		ent:Activate()
 		local phys = ent:GetPhysicsObject()
@@ -201,33 +201,9 @@ end
 function ENT:VomitEnemy(v,bDeath)
 	if !IsValid(v) then return false end
 	if (v:IsPlayer() or v:IsNPC()) && self.Enemy_IsPuked == true && (self.VJ_IsBeingControlled && v:GetClass() ~= "obj_vj_bullseye" && self:IsEntityAlly(v) == false) || self:Disposition(v) == D_HT then
-		--[[local numBones = v:GetBoneCount()
-		self.Vomit = {}
-		for i = 0, numBones -1 do
-			local bonepos, boneang = v:GetBonePosition(i)
-			local ent = ents.Create("info_particle_system")
-			ent:SetParent(v)
-			ent:SetPos(bonepos)
-			ent:SetKeyValue("effect_name","boomer_vomit_survivor")
-			ent:SetKeyValue("start_active","1")
-			ent:Spawn()
-			ent:Activate()
-			self.Vomit[i] = ent
-			if(i > 0) then
-				local ent = ents.Create("info_particle_system")
-				ent:SetParent(v)
-				ent:SetPos(bonepos +(v:GetBonePosition(i -1) -bonepos):GetNormal() *bonepos:Distance(v:GetBonePosition(i -1)))
-				ent:SetKeyValue("effect_name","boomer_vomit_survivor")
-				ent:SetKeyValue("start_active","1")
-				ent:Spawn()
-				ent:Activate()
-				self.Vomit[i +numBones] = ent
-			end			
-		end]]
 		if not table.HasValue(self.tblPukedVictims, v) then
 			table.insert(self.tblPukedVictims, v)
 		end
-		--ParticleEffectAttach("boomer_vomit_survivor",PATTACH_ABSORIGIN_FOLLOW,v,0)
 		if v:IsPlayer() then
 			self:VomitEffect(v,true)
 		elseif v:IsNPC() then
@@ -305,7 +281,7 @@ function ENT:CustomRangeAttackCode()
 		ParticleEffectAttach("boomer_vomit",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))		 
 		timer.Create("Boomer"..self:EntIndex().."_VomitBile", 0.1, 25, function()
 			if !IsValid(self) then return end
-			self:VomitBile(75)
+			self:VomitBile()
 		end)
 	end
 	timer.Simple(0.25, function()
@@ -341,9 +317,6 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos()) -- in the features.lua
-	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
-	    self:Special_Think()
-	end
 	local ent = self:GetEnemy()
 	if self.VJ_IsBeingControlled == false then
 		if IsValid(ent) then
@@ -372,6 +345,10 @@ function ENT:CustomOnThink()
 	elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
 		self.FindEnemy_UseSphere = false 
 		self.FindEnemy_CanSeeThroughWalls = false
+	end
+
+	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
+	    self:Special_Think()
 	end
 
 	if self.VJ_IsBeingControlled == false then
