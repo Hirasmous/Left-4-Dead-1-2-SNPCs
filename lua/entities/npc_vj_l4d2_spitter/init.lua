@@ -77,9 +77,7 @@ ENT.AlertSoundLevel = 95
 ENT.IdleSoundLevel = 95
 ENT.DeathSoundLevel = 85
 ENT.BeforeRangeAttackSoundLevel = 100
-ENT.NextSoundTime_Idle1 = 1
-ENT.NextSoundTime_Idle2 = 2
-ENT.IdleSoundChance = 1
+ENT.NextSoundTime_Idle = VJ_Set(2,2)
 
 ENT.GeneralSoundPitch1 = 95
 ENT.GeneralSoundPitch2 = 105
