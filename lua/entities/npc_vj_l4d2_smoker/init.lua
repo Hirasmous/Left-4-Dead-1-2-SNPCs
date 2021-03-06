@@ -123,6 +123,7 @@ ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "Common"
 ENT.NextAlertSound = CurTime()
+ENT.IncapLights_Spawned = false
 
 util.AddNetworkString("L4D2SmokerHUD")
 util.AddNetworkString("L4D2SmokerHUDGhost")
@@ -846,6 +847,18 @@ function ENT:CustomOnThink()
 					else
 						self.pEnemyRagdoll:ResetSequence(self.pEnemyRagdoll:LookupSequence("Idle_Incap_Hanging_SmokerChoke_Germany"))
 						self.pEnemyTongueAttach:ResetSequence(self.pEnemyTongueAttach:LookupSequence("NamVet_Idle_Hanging_Waist_SmokerChoke"))
+						if self.IncapLights_Spawned == false then
+							self.IncapLights_Spawned = true
+							self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+							for k, v in ipairs(ents.FindByClass("player")) do
+								if enemy:IsNPC() then
+									VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+								end
+							end
+						end
+					end
+					if self.IncapLights_Spawned == false then
+						self.IncapLights_Spawned = true
 						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
 						for k, v in ipairs(ents.FindByClass("player")) do
 							if enemy:IsNPC() then
@@ -853,13 +866,11 @@ function ENT:CustomOnThink()
 							end
 						end
 					end
-					for k, v in ipairs(ents.FindByClass("player")) do
-						if enemy:IsNPC() then
-							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-						end
-					end
 					if ene:IsPlayer() then
-						self:Incap_Lighting(ene, false)
+						if self.IncapLights_Spawned == false then
+							self.IncapLights_Spawned = true
+							self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+						end
 						ene:SpectateEntity(self.Camera)
 						ene:SetFOV(80)
 					end
@@ -869,10 +880,13 @@ function ENT:CustomOnThink()
 						self.IncapSong2:Stop()
 					end
 					self:PlayIncapSong()
-					self:Incap_Lighting(ene, false)
-					for k, v in ipairs(ents.FindByClass("player")) do
-						if enemy:IsNPC() then
-							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+					if self.IncapLights_Spawned == false then
+						self.IncapLights_Spawned = true
+						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+						for k, v in ipairs(ents.FindByClass("player")) do
+							if enemy:IsNPC() then
+								VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+							end
 						end
 					end
 				end
