@@ -61,3 +61,13 @@ Hirasmous:
 -General
 	>-Add customizable halo colors (Allies,Enemies,Ghosted Allies) ✅
 	>-Fix thirdperson view when Hunter/Charger are incapping ❗
+	
+Next update:
+-Rewrite Boomer
+-Give player grenades after incap'd
+-Touch up the music system
+-Improve Charger
+-Temporarily incap player when hit by Tank
+-Temporarily incap player if hit by a charger carrying an enemy
+-Add configurable damage via sliders
+-Resize materials
