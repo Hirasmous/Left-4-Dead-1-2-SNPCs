@@ -719,6 +719,7 @@ function NPC:Incap_Lighting(ply, fadeout, parent)
 		end
 		timer.Simple(0.05, function()
 			if !IsValid(self) then return end
+			if !IsValid(self.pIncapacitatedEnemy) then return end
 			if self.pIncapacitatedEnemy:IsPlayer() then
 				net.Start("Infected_IncapLight")
 					net.WriteBool(fadeout)
