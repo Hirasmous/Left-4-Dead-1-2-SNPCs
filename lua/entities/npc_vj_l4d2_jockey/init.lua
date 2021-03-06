@@ -116,6 +116,7 @@ ENT.FootStepType = "CommonLight"
 ENT.pNavigator = nil
 ENT.EnemyCollisionBounds = nil
 ENT.IncapDamage = 3
+ENT.NextAlertSound = CurTime()
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
@@ -349,6 +350,10 @@ end
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
+	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
+	    self:Special_Think()
+	end
+	
 	if self.IsGhosted then
 		self:Ghost()
 	end
@@ -609,8 +614,8 @@ function ENT:CustomOnThink()
 			local enemy = self.pIncapacitatedEnemy
 			if CurTime() >= self.nextIncapDamage then
 				enemy:TakeDamage(self.IncapDamage, self, self)
-				VJ_CreateSound(self,table.Random(self.SoundTbl_MeleeAttack),75,self:VJ_DecideSoundPitch(100,100))
-				self.nextIncapDamage = CurTime() + 1.5
+				VJ_CreateSound(self,table.Random(self.SoundTbl_MeleeAttack),90,self:VJ_DecideSoundPitch(100,100))
+				self.nextIncapDamage = CurTime() + 1
 			end
 			if self.VJ_IsBeingControlled == false then
 				if enemy:IsPlayer() then
