@@ -101,6 +101,7 @@ ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "Common"
+ENT.NextAlertSound = CurTime()
 
 util.AddNetworkString("L4D2SpitterHUD")
 util.AddNetworkString("L4D2SpitterHUDGhost")
@@ -214,6 +215,9 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos())
+	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
+	    self:Special_Think()
+	end
 	
 	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
         self.FindEnemy_UseSphere = true 
