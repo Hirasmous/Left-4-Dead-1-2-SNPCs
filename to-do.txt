@@ -34,10 +34,11 @@ General:
 
 Bugs:
 -Multiplayer:
-	>-Can't ghost
+	>-Can't ghost ✅
 - Sometimes when an incapper dies the enemy gets sent to a random location ✅ (gone for now)
-- Charger never reaches carry target sometimes
+- Charger never reaches carry target sometimes ✅
 - The first Boomer overlay to be initiated in the server doesn't show
+- Witch music plays remaining song duration after it's removed
 
 ConVars:
 -Spitter goo damage slider ❌
