@@ -37,7 +37,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	for i = 1, #self.PukeVictims do
-		if !IsValid(self.PukeVictims[i][1]) then
+		if self.PukeVictims[i][1] && !IsValid(self.PukeVictims[i][1]) then
 			table.remove(self.PukeVictims, table.KeyFromValue(self.PukeVictims, self.PukeVictims[i][1]))
 		end
 	end
@@ -52,10 +52,12 @@ function ENT:CustomOnThink()
 			table.sort(tbl, function(a, b) return a[2] < b[2] end)
 			if !IsValid(tbl[1]) then return end
 			x:VJ_DoSetEnemy(tbl[1][1])
+			x:SetTarget(tb1[1][1])
 			x:SetEnemy(tbl[1][1])
 			if not table.HasValue(self.Attracted_Zombies, x) then
 				table.insert(self.Attracted_Zombies, x)
 			end
+			x:VJ_TASK_GOTO_TARGET("TASK_RUN_PATH")
 		end
 	end
 end
