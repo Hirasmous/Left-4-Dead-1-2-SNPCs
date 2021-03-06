@@ -397,7 +397,9 @@ function NPC:PlayIncapSong(bOverwrite)
 	end
 	local sndIncap = table.Random(self.SoundTbl_Incapacitation)
 	local filter = RecipientFilter()
-	filter:AddPlayer(self.pIncapacitatedEnemy)
+	if IsValid(self.pIncapacitatedEnemy) then
+		filter:AddPlayer(self.pIncapacitatedEnemy)
+	end
 	local sound = CreateSound(self, sndIncap, filter)
 	self.IncapSong = sound
 	sound:SetSoundLevel(0)
