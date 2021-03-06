@@ -428,9 +428,11 @@ function ENT:CustomOnSchedule()
 	if IsValid(ent) then
 		if ent:Health() <= 0 then return end
 		local dist = self:GetPos():Distance(ent:GetPos())
-		if dist <= self.IncapacitationRange then
+		if self.IsChokingEnemy == true then
 			self:VJ_PlaySequence(self.IncapAnimation)
-			self.IsChokingEnemy = true 
+			if dist > self.IncapacitationRange then
+				self:DismountSmoker()
+			end
 		else
 			self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
 		end
