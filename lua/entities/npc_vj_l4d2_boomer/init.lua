@@ -74,9 +74,7 @@ ENT.SoundTbl_Pain = {"BoomerZombie.Pain","BoomerZombie.PainShort"}
 ENT.SoundTbl_Death = {"BoomerZombie.Detonate"}
 ENT.SoundTbl_BoomerFall = {"BoomerZombie.Fall"}
 
-ENT.NextSoundTime_Idle1 = 0.8
-ENT.NextSoundTime_Idle2 = 1.8
-ENT.IdleSoundChance = 1.8
+ENT.NextSoundTime_Idle = VJ_Set(2,2)
 ENT.PainSoundChance = 1
 ENT.NextSoundTime_Pain1 = 0.5
 ENT.NextSoundTime_Pain2 = 1
@@ -343,7 +341,9 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos()) -- in the features.lua
-	self:Special_Think()
+	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
+	    self:Special_Think()
+	end
 	local ent = self:GetEnemy()
 	if self.VJ_IsBeingControlled == false then
 		if IsValid(ent) then
