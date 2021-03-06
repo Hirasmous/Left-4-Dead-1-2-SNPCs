@@ -594,6 +594,9 @@ function ENT:Charger_Think()
 			self.pEnemyRagdoll:ResetSequence("Charger_carried")
 			self.pEnemyRagdoll:ResetSequenceInfo()
 			self.pEnemyRagdoll:SetCycle(self:GetCycle())
+		else
+			self.pEnemyRagdoll:ResetSequence("Charger_carried")
+			self.pEnemyRagdoll:ResetSequenceInfo()
 		end
 		self.pEnemyRagdoll:SetPlaybackRate(1)
 		self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
