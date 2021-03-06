@@ -340,6 +340,7 @@ function NPC:Ghost()
 end
 
 function NPC:PlayBacteria(bOverwrite)
+	if GetConVar("vj_l4d2_music"):GetInt() ~= 1 then return end
 	for k, v in ipairs(ents.FindByClass("npc_vj_l4d*")) do
 		if (v ~= self && v.BacteriaSound && v.BacteriaSound:IsPlaying()) || (v.IncapSong && v.IncapSong:IsPlaying()) then
 			if bOverwrite == true then
@@ -371,6 +372,7 @@ function NPC:PlayBacteria(bOverwrite)
 end
 
 function NPC:PlayIncapSong(bOverwrite)
+	if GetConVar("vj_l4d2_music"):GetInt() ~= 1 then return end
 	if self.IncapSong && self.IncapSong:IsPlaying() then self:LowerSongVolume() return end
 	for k, v in ipairs(ents.FindByClass("npc_vj_l4d*")) do
 		if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy then
@@ -496,6 +498,7 @@ end
 
 -- Witch --
 function NPC:PlayCalmIdleSound()
+	if GetConVar("vj_l4d2_music"):GetInt() ~= 1 then return end
 	if self.m_idleSound && self.m_idleSound:IsPlaying() then return end
 	if math.random(1, 10) ~= 1 then return end
 	if self.bTriggered then return end
@@ -524,6 +527,7 @@ function NPC:PlayCalmIdleSound()
 end
 
 function NPC:PlayIrritatedSound(level)
+	if GetConVar("vj_l4d2_music"):GetInt() ~= 1 then return end
 	if self.bTriggered then return end
 	if not self:CanPlayMusic(2) then return end
 	local idleSound
@@ -585,6 +589,7 @@ function NPC:CanPlayMusic(iType)
 end
 
 function NPC:PlayWitchMusic(iType, bOverwrite)
+	if GetConVar("vj_l4d2_music"):GetInt() ~= 1 then return end
 	if self.Dead then return end
 	if not self:CanPlayMusic(1) then return end
 	local song
@@ -751,46 +756,53 @@ end
 
 -- Add hooks here
 function NPC:L4D2_InitializeHooks()
-	hook.Add("KeyPress", "Infected_Ghost", function(ply, key)
-		if self.VJ_IsBeingControlled && ply == self.VJ_TheController then
-			if key == IN_USE then
-				if self.IsGhosted == true then
-					self:SetGhost(false)
-				elseif self.IsGhosted == false then
-					self:SetGhost(true)
+	local tbHk = hook.GetTable()
+	if not table.HasValue(tbHk, "Infected_Ghost") then
+		hook.Add("KeyPress", "Infected_Ghost", function(ply, key)
+			if self.VJ_IsBeingControlled && self.VJ_TheController == ply then
+				if key == IN_USE then
+					if self.IsGhosted == true then
+						self:SetGhost(false)
+					elseif self.IsGhosted == false then
+						self:SetGhost(true)
+					end
 				end
 			end
-		end
-	end)
-	hook.Add("KeyPress", "Infected_Crouch", function(ply, key)
-		if self.VJ_IsBeingControlled == true && self.VJ_TheController == ply then
-			if key == IN_DUCK then
-				if self:LookupSequence("Crouch_Idle_Upper_Knife") ~= -1 then
-					seq = "Crouch_Idle_Upper_Knife"
-				elseif self:LookupSequence("Crouch_Idle") ~= -1 then
-					seq = "Crouch_Idle"
-				elseif self:LookupSequence("Idle_Crouching_01") then
-					seq = "Idle_Crouching_01"
+		end)
+	end
+	if not table.HasValue(tbHk, "Infected_Crouch") then
+		hook.Add("KeyPress", "Infected_Crouch", function(ply, key)
+			if self.VJ_IsBeingControlled == true && self.VJ_TheController == ply then
+				if key == IN_DUCK then
+					if self:LookupSequence("Crouch_Idle_Upper_Knife") ~= -1 then
+						seq = "Crouch_Idle_Upper_Knife"
+					elseif self:LookupSequence("Crouch_Idle") ~= -1 then
+						seq = "Crouch_Idle"
+					elseif self:LookupSequence("Idle_Crouching_01") then
+						seq = "Idle_Crouching_01"
+					end
+					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(seq))}
+					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
+					self.AnimTbl_Run = {ACT_RUN_CROUCH}
+					self:VJ_ACT_PLAYACTIVITY(self:GetSequenceActivity(self:LookupSequence(seq)))
+					self:ResetSequenceInfo()
 				end
-				self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(seq))}
-				self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-				self.AnimTbl_Run = {ACT_RUN_CROUCH}
-				self:VJ_ACT_PLAYACTIVITY(self:GetSequenceActivity(self:LookupSequence(seq)))
-				self:ResetSequenceInfo()
 			end
-		end
-	end)
-	hook.Add("KeyRelease", "Infected_CrouchRelease", function(ply, key)
-		if self.VJ_IsBeingControlled == true && self.VJ_TheController == ply then
-			if key == IN_DUCK then
-				self.AnimTbl_IdleStand = {ACT_IDLE}
-				self.AnimTbl_Walk = {ACT_WALK}
-				self.AnimTbl_Run = {ACT_RUN}
-				self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
-				self:ResetSequenceInfo()
+		end)
+	end
+	if not table.HasValue(tbHk, "Infected_CrouchRelease") then
+		hook.Add("KeyRelease", "Infected_CrouchRelease", function(ply, key)
+			if self.VJ_IsBeingControlled == true && self.VJ_TheController == ply then
+				if key == IN_DUCK then
+					self.AnimTbl_IdleStand = {ACT_IDLE}
+					self.AnimTbl_Walk = {ACT_WALK}
+					self.AnimTbl_Run = {ACT_RUN}
+					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+					self:ResetSequenceInfo()
+				end
 			end
-		end
-	end)
+		end)
+	end
 end
 
 function NPC:Infected_IsCrouching()
