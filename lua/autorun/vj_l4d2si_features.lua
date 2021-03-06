@@ -768,6 +768,7 @@ end
 
 -- Add hooks here
 function NPC:L4D2_InitializeHooks()
+	self.IsSpecialInfected = true
 end
 
 function NPC:Infected_IsCrouching()
