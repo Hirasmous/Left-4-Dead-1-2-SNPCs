@@ -250,6 +250,14 @@ function NPC:GetGroundType(pos)
 		end
 	end
 end
+function NPC:Special_Think()
+	if IsValid(self:GetEnemy()) then
+		if CurTime() >= self.NextAlertSound && self.HasSounds == true then
+			VJ_CreateSound(self,self.SoundTbl_Alert,85,self:VJ_DecideSoundPitch(95,105))  
+			self.NextAlertSound = CurTime() +8
+	    end
+	end
+end
 
 function NPC:SpawnCamera(parent,height)
 	local camera = ents.Create("prop_dynamic")
@@ -286,6 +294,7 @@ function NPC:SetGhost(bool)
 		self:SetRenderMode(RENDERMODE_NONE)
 		self:EmitSound("ui/menu_horror01.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+		self.AnimationPlaybackRate = 1.3 
 		if not self:IsFlagSet(FL_NOTARGET) then
 			self:AddFlags(FL_NOTARGET)
 		end
@@ -293,6 +302,7 @@ function NPC:SetGhost(bool)
 		self:SetRenderMode(RENDERMODE_NORMAL)
 		self:EmitSound("ui/pickup_guitarriff10.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_NPC)
+		self.AnimationPlaybackRate = 1
 		if self:GetClass() == "npc_vj_l4d2_hunter" or self:GetClass() == "npc_vj_l4d_hunter" then
 			self.HasLeapAttack = true
 		end
