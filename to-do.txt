@@ -9,7 +9,7 @@ Boomette:
 
 Charger:
 -Make it carry enemies up hills/steep surfaces ❌ 
--Add idle crouching when controlling ❌
+-Add idle crouching when controlling ✅
 
 Hunter:
 
@@ -25,12 +25,12 @@ Tank:
 Witch:
 
 General:
--Reset recharge after Dismount*() is called? (Not sure if it recharges after incapping an enemy in L4D2) ❌
+-Reset recharge after Dismount*() is called ❌
 -Add original viewmodels when controlling in first-person ❌
 -Resize materials (what happened to them?!) ❌
 -Give player grenades (if he had them before) when stopping incapping ❌
 -Don't player tag sounds for specials ❌
--Make ConVar to disable music system
+-Make ConVar to disable music system ✅
 
 Bugs:
 -Multiplayer:
@@ -44,9 +44,7 @@ ConVars:
 -Other special infected damage sliders ❌
 
 Before release:
--Improve Boomer vomitting
 -Tank: Don't range when climbing ✅
--Show Witch blood slash particles only if it hit something
 
 Tensor:
 -General
@@ -54,8 +52,11 @@ Tensor:
 	>-Add ConVar to disable music system ✅
 
 Hirasmous:
--Charger
-	>-Add idle crouching when controlling ❌
+-Boomer
+	>-Improve Boomer vomitting (match ability to effect enemy with vomit particle) ❗
+	>-Stop playing vomit anim if enemy is too far and it didn't vomit ❗
+-Witch
+	>-Show Witch blood slash particles only if it hit something ❗
 -General
 	>-Add customizable halo colors (Allies,Enemies,Ghosted Allies) ✅
 	>-Fix thirdperson view when Hunter/Charger are incapping ❗
