@@ -115,7 +115,7 @@ ENT.CanPounce = true
 ENT.FootStepType = "CommonLight"
 ENT.pNavigator = nil
 ENT.EnemyCollisionBounds = nil
-ENT.IncapDamage = 5
+ENT.IncapDamage = 3
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
