@@ -248,6 +248,7 @@ function ENT:ResetJockey()
 	end
 	self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
 	self:SetParent(nil)
+	self:SetPos(self.pNavigator:GetPos())
 	self.AnimTbl_IdleStand = {ACT_IDLE}
 	self.MovementType = VJ_MOVETYPE_GROUND
 	self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, self:OBBMaxs().z / 2))
@@ -257,6 +258,7 @@ function ENT:ResetJockey()
 	self:Incap_Lighting(enemy, true)
 	enemy:SetCollisionBounds(self.EnemyCollisionBounds[1], self.EnemyCollisionBounds[2])
 	enemy:SetParent(nil)
+	enemy:SetPos(self:GetPos())
 	if not enemy:IsNPC() then
 		enemy:SetPos(self:GetPos())
 	end
@@ -279,7 +281,6 @@ function ENT:ResetJockey()
 			enemy:SetObserverMode(0)
 			enemy:DrawViewModel(true)
 			enemy:DrawWorldModel(true)
-			enemy:SetPos(self:GetPos())
 		end
 		if table.Count(self.tblEnemyWeapons) > 0 then
             for i = 1, table.Count(self.tblEnemyWeapons) do
