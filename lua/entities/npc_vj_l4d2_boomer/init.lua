@@ -117,7 +117,7 @@ function ENT:CustomOnInitialize()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
-    VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
+	VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -231,11 +231,6 @@ function ENT:VomitEnemy(v,bDeath)
 		--ParticleEffectAttach("boomer_vomit_survivor",PATTACH_ABSORIGIN_FOLLOW,v,0)
 		if v:IsPlayer() then
 			self:VomitEffect(v,true)
-            local filter = RecipientFilter()
-            filter:AddPlayer(v)
-            local sound = CreateSound(self, "vj_l4d2/music/terror/pukricide.mp3", filter)
-            sound:SetSoundLevel(0)
-            sound:Play()
 		elseif v:IsNPC() then
 			VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.mp3",90,self:VJ_DecideSoundPitch(100,100))  
 		end	 
@@ -370,12 +365,12 @@ function ENT:CustomOnThink()
 	end
 	
 	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
-        self.FindEnemy_UseSphere = true 
-        self.FindEnemy_CanSeeThroughWalls = true 
-    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
-        self.FindEnemy_UseSphere = false 
-        self.FindEnemy_CanSeeThroughWalls = false
-    end
+		self.FindEnemy_UseSphere = true 
+		self.FindEnemy_CanSeeThroughWalls = true 
+	elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+		self.FindEnemy_UseSphere = false 
+		self.FindEnemy_CanSeeThroughWalls = false
+	end
 
 	if self.VJ_IsBeingControlled == false then
 		if IsValid(self:GetEnemy()) then
