@@ -13,6 +13,7 @@ ENT.Damage = 45
 ENT.DamageDistance = 200
 ENT.Dead = false
 ENT.DecalTbl_DeathDecals = {"VJ_Blood_Red"} -- Decals that paint when the projectile dies | It picks a random one from this table
+ENT.bIsVomit = false
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Initialize()
@@ -65,6 +66,13 @@ function ENT:PhysicsCollide(data,physobj,entity)
 	ParticleEffect("blood_impact_red_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)		
 	ParticleEffect("blood_impact_infected_01",self:GetPos() +self:GetUp()*0,Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)),nil)
 	
+	if self.bIsVomit == true && IsValid(self:GetOwner()) then
+		local x = data.HitEntity
+		if (x:IsPlayer() or x:IsNPC()) && self:GetOwner().Enemy_IsPuked == true && (self:GetOwner().VJ_IsBeingControlled && x:GetClass() ~= "obj_vj_bullseye" && self:GetOwner():IsEntityAlly(x) == false) || self:GetOwner():Disposition(x) == D_HT then
+			self:GetOwner():VomitEnemy(x)
+		end
+	end
+
 	-- Effects
 	self:Remove()
 end
