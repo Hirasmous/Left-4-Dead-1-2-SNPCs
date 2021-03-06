@@ -170,15 +170,14 @@ function ENT:EnableAggression(enemy)
 	if self.bTriggered == true then return end
 	self.HasIdleSounds = true
 	self.pTargetEntity = enemy
-	self.AnimTbl_IdleStand = {ACT_TERROR_WITCH_RETREAT}
 	if self.AggressionSound && self.AggressionSound:IsPlaying() then self.AggressionSound:Stop() end
 	self.HasPoseParameterLooking = true
 	self.Behavior = VJ_BEHAVIOR_AGGRESSIVE
 	self:VJ_ACT_PLAYACTIVITY("Wander_Acquire")
     if GetConVar("vj_l4d2_print"):GetInt() == 1 then
-    	if self.pTargetEntity:IsNPC() || self.pTargetEntity:IsPlayer() then
+    	if self.pTargetEntity:IsNPC() then
     		PrintMessage(HUD_PRINTTALK, self.pTargetEntity:GetClass().." startled the ".. self:GetName())
-    	elseif ent:IsPlayer() then
+    	elseif self.pTargetEntity:IsPlayer() then
     		PrintMessage(HUD_PRINTTALK, self.pTargetEntity:GetName().." startled the ".. self:GetName())
     	end
     end
