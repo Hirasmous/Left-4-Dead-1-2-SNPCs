@@ -227,7 +227,9 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:ResetJockey()
 	self:ClearPoseParameters()
+	self:SetParent(nil)
 	if IsValid(self.pNavigator) then
+		self:SetPos(self.pNavigator:GetPos())
 		if self.pNavigator.VJ_IsBeingControlled == true then
 			local ctrl = self.pNavigator.VJ_TheController
 			ctrl.VJ_TheControllerEntity:StopControlling(true)
@@ -247,8 +249,6 @@ function ENT:ResetJockey()
 		self.IncapSong = nil
 	end
 	self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
-	self:SetParent(nil)
-	self:SetPos(self.pNavigator:GetPos())
 	self.AnimTbl_IdleStand = {ACT_IDLE}
 	self.MovementType = VJ_MOVETYPE_GROUND
 	self:SetCollisionBounds(Vector(-13, -13, 0),Vector(13, 13, self:OBBMaxs().z / 2))
