@@ -329,6 +329,7 @@ function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayTankSong(bOverwrite)
+	if GetConVar("vj_l4d2_music"):GetInt() ~= 1 then return end
 	if self.TankSong && self.TankSong:IsPlaying() then return end
 	for k, v in ipairs(ents.FindByClass("npc_vj_l4d*")) do
 		if string.find(v:GetClass(), "tank") then 
@@ -371,73 +372,11 @@ function ENT:CustomOnThink()
 		self.SoundTbl_Pain = {"HulkZombie.Pain"} 
 	end
 
-	--[[//print(self:GetBlockingEntity())
-	// IsValid(self:GetBlockingEntity()) && !self:GetBlockingEntity():IsNPC() && !self:GetBlockingEntity():IsPlayer()
-	if self.AllowClimbing == true && self.Dead == false && self.Climbing == false && CurTime() > self.NextClimb then
-		//print("-------------------------------------------------------------------------------------")
-		local anim = false
-		local finalpos = self:GetPos()
-		local tr5 = util.TraceLine({start = self:GetPos() + self:GetUp()*144, endpos = self:GetPos() + self:GetUp()*144 + self:GetForward()*40, filter = function(ent) if (ent:GetClass() == "prop_physics") then return true end end}) -- 144
-		local tr4 = util.TraceLine({start = self:GetPos() + self:GetUp()*120, endpos = self:GetPos() + self:GetUp()*120 + self:GetForward()*40, filter = function(ent) if (ent:GetClass() == "prop_physics") then return true end end}) -- 120
-		local tr3 = util.TraceLine({start = self:GetPos() + self:GetUp()*96, endpos = self:GetPos() + self:GetUp()*96 + self:GetForward()*40, filter = function(ent) if (ent:GetClass() == "prop_physics") then return true end end}) -- 96
-		local tr2 = util.TraceLine({start = self:GetPos() + self:GetUp()*72, endpos = self:GetPos() + self:GetUp()*72 + self:GetForward()*40, filter = function(ent) if (ent:GetClass() == "prop_physics") then return true end end}) -- 72
-		local tr1 = util.TraceLine({start = self:GetPos() + self:GetUp()*48, endpos = self:GetPos() + self:GetUp()*48 + self:GetForward()*40, filter = function(ent) if (ent:GetClass() == "prop_physics") then return true end end}) -- 48
-		local tru = util.TraceLine({start = self:GetPos(), endpos = self:GetPos() + self:GetUp()*200, filter = self})
-		
-		//VJ_CreateTestObject(tru.StartPos,self:GetAngles(),Color(0,0,255))
-		//VJ_CreateTestObject(tru.HitPos,self:GetAngles(),Color(0,255,0))
-		//PrintTable(tr2)
-		if !IsValid(tru.Entity) then
-			if IsValid(tr5.Entity) then
-				local tr5b = util.TraceLine({start = self:GetPos() + self:GetUp()*160, endpos = self:GetPos() + self:GetUp()*160 + self:GetForward()*40, filter = function(ent) if (ent:GetClass() == "prop_physics") then return true end end})
-				if !IsValid(tr5b.Entity) then
-					anim = VJ_PICKRANDOMTABLE({"Jump_Climb150"})
-					finalpos = tr5.HitPos
-										VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
-				end
-			elseif IsValid(tr4.Entity) then
-				anim = VJ_PICKRANDOMTABLE({"Jump_Climb115"})
-				finalpos = tr4.HitPos
-								VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
-			elseif IsValid(tr3.Entity) then
-				anim = VJ_PICKRANDOMTABLE({"Jump_Climb70"})
-				finalpos = tr3.HitPos
-								VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
-			elseif IsValid(tr2.Entity) then
-				anim = VJ_PICKRANDOMTABLE({"Jump_Climb50"})
-				finalpos = tr2.HitPos
-								VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
-			elseif IsValid(tr1.Entity) then
-				anim = VJ_PICKRANDOMTABLE({"Jump_Climb38"})
-				finalpos = tr1.HitPos 
-								VJ_CreateSound(self,self.SoundTbl_HulkClimb,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
-			end
-		
-			if anim != false then
-				//print(anim)
-				self:SetGroundEntity(NULL)
-				self.Climbing = true
-				timer.Simple(0.4,function()
-					if IsValid(self) then
-						self:SetPos(finalpos)
-					end
-				end)
-				self:VJ_ACT_PLAYACTIVITY(anim,true,false/*self:DecideAnimationLength(anim,false,0.4)*/,true,0,{},function(vsched)
-					vsched.RunCode_OnFinish = function()
-						//self:SetGroundEntity(NULL)
-						//self:SetPos(finalpos)
-						self.Climbing = false
-					end
-				end)
-			end
-			self.NextClimb = CurTime() + 0.1 //5
-		end
-	end
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) then 
+		self.HasRangeAttack = false
 	else
-		self.ConstantlyFaceEnemy = true
-	end]]
+		self.HasRangeAttack = true
+	end
 
 	if self:Infected_IsCrouching() == true then
 		self.FootStepTimeRun = 0.5
