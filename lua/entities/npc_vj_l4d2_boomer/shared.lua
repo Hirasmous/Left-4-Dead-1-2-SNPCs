@@ -176,9 +176,7 @@ if CLIENT then
 		sound:Play()
 		timer.Create("ply"..LocalPlayer():EntIndex().."_Boomer_Pukricide", 0.1, 140, function()
 			if LocalPlayer():Alive() == false then
-				--if IsValid(sound) then
 				sound:Stop()
-				--end
 				timer.Stop("ply"..LocalPlayer():EntIndex().."_Boomer_Pukricide")
 			end
 		end)
@@ -226,7 +224,7 @@ if CLIENT then
 			local mat = Material("models/vj_l4d2/survivors/survivor_it", "alphatest")
 			cam.Start3D(EyePos(), EyeAngles())
 				for k, v in ipairs(_ents) do
-					if (IsValid(v) && util.IsValidModel(v:GetModel() or "")) && v:GetNoDraw() == false && ( (v:GetClass() == "prop_dynamic" && IsValid(v:GetParent()) && v:GetParent():GetClass() == "prop_anim_survivor")  && v:IsNPC() && not string.find(v:GetClass(), "_l4d") && v:IsNextBot() || (v:IsPlayer() && v:Alive()) ) then
+					if (IsValid(v) && util.IsValidModel(v:GetModel() or "")) && v:GetNoDraw() == false && ( (v:GetClass() == "prop_dynamic" && IsValid(v:GetParent()) && v:GetParent():GetClass() == "prop_anim_survivor") || v:IsNPC() && not string.find(v:GetClass(), "_l4d") || v:IsNextBot() || (v:IsPlayer() && v:Alive()) ) then
 						render.SetBlend(0.8)
 						render.MaterialOverride(mat)
 						v:DrawModel()
