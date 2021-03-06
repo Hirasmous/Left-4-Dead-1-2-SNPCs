@@ -136,6 +136,7 @@ ENT.pCarryTarget = nil
 ENT.NextChargeAttackTime = 10
 ENT.bCanCharge = true
 ENT.bCanContinueCharge = true
+ENT.HasChargeAttack = true
 
 util.AddNetworkString("L4D2ChargerHUD")
 util.AddNetworkString("L4D2ChargerHUDGhost")
@@ -628,7 +629,7 @@ function ENT:ChargeAttack()
 
 	if self.bCanCharge == true then
 		self.bCanHitWall = true
-		VJ_EmitSound(self,self.SoundTbl_LeapAttackJump,100,self:VJ_DecideSoundPitch(105,95)) 
+		VJ_EmitSound(self,VJ_PICK(self.SoundTbl_LeapAttackJump),100,self:VJ_DecideSoundPitch(105,95)) 
 		self.bCanCharge = false
 		self.bCanContinueCharge = true
 		self.HasMeleeAttack = false
@@ -856,7 +857,7 @@ function ENT:BuildPath(tgt)
 				seg:SetPos(pos + seg:GetForward() * iteration + seg:GetUp() * 10)
 			end
 			seg:SetCollisionGroup(1)
-			seg:SetNoDraw(true)
+			seg:SetRenderMode(1)
 			seg:Spawn()
 			seg:SetOwner(self)
 			self:DeleteOnRemove(seg)
@@ -900,7 +901,7 @@ function ENT:CarryEnemy()
 			tgt:SetPos(self:GetPos() + self:GetForward() * 1000 + self:GetUp() * 10)
 		end
 		tgt:SetCollisionGroup(1)
-		tgt:SetNoDraw(true)
+		tgt:SetRenderMode(1)
 		tgt:Spawn()
 		local tm = (650) / (self:GetSequenceGroundSpeed(self:LookupSequence("Charger_charge")))
 		timer.Simple(tm, function()
@@ -1211,10 +1212,12 @@ function ENT:CustomOnThink()
 			end
 			self:VJ_TASK_GOTO_TARGET("TASK_RUN_PATH")
 			if self.HasEnemyIncapacitated == false then
-				local dist = self:GetPos():Distance(self.pChargeEnt:GetPos())
-				if dist <= 80 then
-					self:ResetCharger()
-					self:PummelEnemy(self.pChargeEnt)
+				if IsValid(self.pChargeEnt) then
+					local dist = self:GetPos():Distance(self.pChargeEnt:GetPos())
+					if dist <= 80 then
+						self:ResetCharger()
+						self:PummelEnemy(self.pChargeEnt)
+					end
 				end
 			else
 				self.AnimTbl_Run = {ACT_RUN_AIM_RELAXED}
@@ -1244,7 +1247,7 @@ function ENT:CustomOnThink()
 			end 
 		end
 
-		if self:GetEnemy() then
+		if self:GetEnemy() && self.HasChargeAttack then
 			if self.HasEnemyIncapacitated == false then
 				local dist = self:GetPos():Distance(self:GetEnemy():GetPos())
 				if self.IsCharging == false then
@@ -1265,6 +1268,12 @@ function ENT:CustomOnThink()
 
 	if self.IsGhosted then
 		self:Ghost()
+	end
+
+	if self.IsGhosted then
+		self.HasChargeAttack = false
+	else
+		self.HasChargeAttack = true
 	end
 
 	self.vecLastPos = self:GetPos()
