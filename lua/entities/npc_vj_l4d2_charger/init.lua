@@ -70,7 +70,10 @@ ENT.SoundTbl_Alert = {"ChargerZombie.Alert","ChargerZombie.Recognize"}
 ENT.SoundTbl_MeleeAttackMiss = {"vj_l4d2/pz/miss/claw_miss_1.mp3","vj_l4d2/pz/miss/claw_miss_2.mp3"}
 ENT.SoundTbl_MeleeAttack = {"ChargerZombie.Smash"}
 ENT.SoundTbl_BeforeMeleeAttack = {"ChargerZombie.VocalizePummel"}
-ENT.SoundTbl_LeapAttackJump = {"ChargerZombie.Charge"}
+ENT.SoundTbl_LeapAttackJump = {
+	"player/charger/voice/attack/Charger_Charge_01.mp3",
+	"player/charger/voice/attack/Charger_Charge_02.mp3",
+}
 ENT.SoundTbl_LeapAttackDamage = {}
 ENT.SoundTbl_Pain = {"ChargerZombie.Pain"}
 ENT.SoundTbl_Death = {"ChargerZombie.Death"}
@@ -86,9 +89,7 @@ ENT.AlertSoundLevel = 90
 ENT.IdleSoundLevel = 95
 ENT.DeathSoundLevel = 85
 ENT.LeapAttackJumpSoundLevel = 100
-ENT.NextSoundTime_Idle1 = 1
-ENT.NextSoundTime_Idle2 = 2
-ENT.IdleSoundChance = 1
+ENT.NextSoundTime_Idle = VJ_Set(1,2)
 ENT.FootStepSoundPitch1 = 100
 ENT.FootStepSoundPitch2 = 100
 ENT.GeneralSoundPitch1 = 95
@@ -124,6 +125,7 @@ ENT.NextChargeTime = CurTime()
 ENT.ChargeStopT = CurTime()
 ENT.PummelType = "Down"
 ENT.EnemyMoveType = 3
+ENT.NextAlertSound = CurTime()
 
 -- Charging
 ENT.ChargeAngles = Angle(0, 0, 0)
@@ -291,9 +293,6 @@ function ENT:PummelEnemy(v)
 						self.EnemyMoveType = enemy:GetMoveType()
 						if enemy:IsNPC() then
 							enemy:SetMoveType(MOVETYPE_FLY)
-							for k, v in ipairs(ents.FindByClass("player")) do
-								VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-							end
 							if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
 								if IsValid(enemy:GetActiveWeapon()) then
 									enemy:GetActiveWeapon():SetNoDraw(true)
@@ -302,9 +301,10 @@ function ENT:PummelEnemy(v)
 								enemy:DropWeapon()
 							end
 						elseif enemy:IsPlayer() then
-							enemy:SetMoveType(MOVETYPE_CUSTOM)
-							self:Incap_Lighting(enemy)
 							self:StripEnemyWeapons(enemy)
+							self:Incap_Lighting(enemy,false)
+							self.Light1:SetKeyValue('lightcolor', "255 255 255 255")
+							enemy:SetMoveType(MOVETYPE_CUSTOM)
 							if self.VJ_IsBeingControlled == false && self.VJ_TheController ~= enemy then
 								enemy:SetObserverMode(OBS_MODE_CHASE)
 								enemy:SpectateEntity(self.Camera)
@@ -628,6 +628,7 @@ function ENT:ChargeAttack()
 
 	if self.bCanCharge == true then
 		self.bCanHitWall = true
+		VJ_EmitSound(self,self.SoundTbl_LeapAttackJump,100,self:VJ_DecideSoundPitch(105,95)) 
 		self.bCanCharge = false
 		self.bCanContinueCharge = true
 		self.HasMeleeAttack = false
@@ -933,6 +934,14 @@ function ENT:CarryEnemy()
 		self:VJ_DoSetEnemy(tgt, false, true)
 		self:SetTarget(tgt)
 		self:DeleteOnRemove(tgt)
+		VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95)) 
+		for k, v in ipairs(ents.FindByClass("player")) do
+			if self.pChargeEnt:IsPlayer() then
+				VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.mp3",90,self:VJ_DecideSoundPitch(100,100))
+			elseif self.pChargeEnt:IsNPC() then
+				VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
+			end
+		end		
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1101,12 +1110,21 @@ end
 function ENT:SetUpCharger()
 	self.MovementType = VJ_MOVETYPE_STATIONARY
 	self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
+	self:Incap_Lighting(self.pIncapacitatedEnemy, false)
+	for k, v in ipairs(ents.FindByClass("player")) do
+		if self.pIncapacitatedEnemy:IsNPC() then
+			VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:Charger_Think()
 	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
+	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
+	    self:Special_Think()
+	end
 	
 	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
         self.FindEnemy_UseSphere = true 
@@ -1253,6 +1271,7 @@ function ENT:CustomOnThink()
 
 	if string.find(self:GetSequenceName(self:GetSequence()), "Charger_pound") then
 		self.IsIncapacitating = true
+		self:PlayIncapSong()
 	else
 		self.IsIncapacitating = false
 	end
@@ -1268,7 +1287,6 @@ function ENT:CustomOnThink()
 		if self.VJ_IsBeingControlled then
 			self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
 		end
-		self:PlayIncapSong()
 		if IsValid(self.pEnemyRagdoll) then
 			self:SetAngles(Angle(self:GetAngles().x, self.pEnemyRagdoll:GetAngles().y - 180, self:GetAngles().z))
 			self.pEnemyRagdoll:SetLocalPos(Vector(0, 0, 0))
