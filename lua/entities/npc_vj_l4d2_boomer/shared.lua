@@ -170,6 +170,19 @@ if CLIENT then
 		hook.Add("RenderScreenspaceEffects", "hkBoomer_VomitOverlay", function()
 			DrawMaterialOverlay("models/props_lab/Tank_Glass001", 1)
 		end)
+
+		local sound = CreateSound(LocalPlayer(), "vj_l4d2/music/terror/pukricide.mp3", filter)
+		sound:SetSoundLevel(0)
+		sound:Play()
+		timer.Create("ply"..LocalPlayer():EntIndex().."_Boomer_Pukricide", 0.1, 140, function()
+			if LocalPlayer():Alive() == false then
+				--if IsValid(sound) then
+				sound:Stop()
+				--end
+				timer.Stop("ply"..LocalPlayer():EntIndex().."_Boomer_Pukricide")
+			end
+		end)
+
 		timer.Create("tmBoomer"..LocalPlayer():EntIndex().."_RemoveVomitOverlay", 0.1, 150, function()
 			local tm = "tmBoomer"..LocalPlayer():EntIndex().."_RemoveVomitOverlay"
 			if not LocalPlayer():Alive() then
@@ -190,6 +203,8 @@ if CLIENT then
 		hook.Add("PreCleanupMap", "hkBoomer_CleanupOverlay", function()
 			hook.Remove("RenderScreenspaceEffects", "hkBoomer_VomitOverlay")
 			timer.Stop("tmBoomer"..LocalPlayer():EntIndex().."_RemoveVomitOverlay")
+			sound:Stop()
+			timer.Stop("ply"..LocalPlayer():EntIndex().."_Boomer_Pukricide")
 		end)
 	end)
 
