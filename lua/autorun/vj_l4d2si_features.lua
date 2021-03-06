@@ -448,7 +448,6 @@ function NPC:IgnoreIncappedEnemies()
 	end
 end
 
-
 function NPC:IsEntityAlly(ent)
 	if ent:GetClass() == "obj_vj_bullseye" then
 		return true
@@ -467,6 +466,11 @@ function NPC:IsEntityAlly(ent)
 		end
 		if self.VJ_IsBeingControlled && self.VJ_TheController == ent then 
 			return true
+		end
+		for l, w in ipairs(ents.FindByClass("npc_vj_l4d*")) do
+			if w.VJ_IsBeingControlled == true && w.VJ_TheController == ent then
+				return true
+			end
 		end
 	end
 	return false
