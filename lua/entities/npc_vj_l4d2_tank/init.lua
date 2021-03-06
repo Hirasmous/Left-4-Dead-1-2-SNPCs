@@ -321,10 +321,23 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
 	if self.VJ_IsBeingControlled == false then
-		if math.random(1,2) == 1 then
-			self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.74,true)
-			VJ_CreateSound(self,self.SoundTbl_Alert,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+		if hitEnt:IsPlayer() or hitEnt:IsNPC() then
+			if math.random(1,2) == 1 then
+				self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_ANGRY,true,1.74,true)
+				VJ_CreateSound(self,self.SoundTbl_Alert,self.IdleSoundLevel,self:VJ_DecideSoundPitch(100,92))
+			end
 		end
+	end
+	if hitEnt:IsPlayer() then
+		hitEnt:Freeze(true)
+		hitEnt:DrawViewModel(false)
+		timer.Simple(1,function()
+			if !IsValid(self) then hitEnt:Freeze(false) hitEnt:DrawViewModel(true) end
+			if IsValid(self) then
+				hitEnt:Freeze(false)
+				hitEnt:DrawViewModel(true)
+			end
+		end)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
