@@ -122,6 +122,7 @@ ENT.SoundTracks = nil
 ENT.SoundTrack = {"vj_l4d2/music/tank/taank.mp3","vj_l4d2/music/tank/tank.mp3"}
 ENT.TankSongDuration = 0
 ENT.TankSong = nil
+ENT.Debris = nil
 
 util.AddNetworkString("L4D2TankHUD")
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -217,8 +218,8 @@ function ENT:RangeAttackCode_OverrideProjectilePos(TheProjectile)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:RemoveDebris() 
-	if IsValid(self.Concrete) then
-		self.Concrete:Remove()
+	if IsValid(self.Debris) then
+		self.Debris:Remove()
 	end
 	if IsValid(self.Log) then
 		self.Log:Remove()
@@ -265,31 +266,32 @@ function ENT:CustomOnRangeAttack_AfterStartTimer()
 	self:SetNW2Float("RockT",CurTime() +self.NextRangeAttackTime)
 	timer.Simple(0.7,function()
 		if IsValid(self) then
+			if IsValid(self.Debris) then self.Debris:Remove() end
 			ParticleEffectAttach("tank_rock_throw_ground_generic_cracks_2",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("forward")) 
 			if self.DebrisType == "Rock" then
-				self.Concrete = ents.Create("prop_vj_animatable")
-				self.Concrete:SetPos(self:GetPos())
-				self.Concrete:SetModel("models/vj_l4d2/concrete_chunk01a.mdl")
-				self.Concrete:SetOwner(self)
-				self.Concrete:SetParent(self)
-				self.Concrete:Spawn()
-				self.Concrete:Activate()
-				self.Concrete:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
-				self.Concrete:SetSolid(SOLID_NONE)
-				self.Concrete:AddEffects(EF_BONEMERGE) 
+				self.Debris = ents.Create("prop_vj_animatable")
+				self.Debris:SetPos(self:GetPos())
+				self.Debris:SetModel("models/vj_l4d2/concrete_chunk01a.mdl")
+				self.Debris:SetOwner(self)
+				self.Debris:SetParent(self)
+				self.Debris:Spawn()
+				self.Debris:Activate()
+				self.Debris:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
+				self.Debris:SetSolid(SOLID_NONE)
+				self.Debris:AddEffects(EF_BONEMERGE) 
 				self.RangeAttackEntityToSpawn = "obj_vj_l4d2_debris"
 			elseif self.DebrisType == "Log" then
-				self.Log = ents.Create("prop_vj_animatable")
-				self.Log:SetPos(self:GetPos())
-				self.Log:SetModel("models/vj_l4d2/tree_trunk.mdl")
-				self.Log:SetOwner(self)
-				self.Log:SetParent(self)
-				self.Log:Spawn()
-				self.Log:Activate()
-				self.Log:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
-				self.Log:SetSolid(SOLID_NONE)
-				self.Log:AddEffects(EF_BONEMERGE)
-				self.Log:SetModelScale(1.2)
+				self.Debris = ents.Create("prop_vj_animatable")
+				self.Debris:SetPos(self:GetPos())
+				self.Debris:SetModel("models/vj_l4d2/tree_trunk.mdl")
+				self.Debris:SetOwner(self)
+				self.Debris:SetParent(self)
+				self.Debris:Spawn()
+				self.Debris:Activate()
+				self.Debris:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)	
+				self.Debris:SetSolid(SOLID_NONE)
+				self.Debris:AddEffects(EF_BONEMERGE)
+				self.Debris:SetModelScale(1.2)
 				self.RangeAttackEntityToSpawn = "obj_vj_l4d2_log"
 			end
 		end
@@ -374,37 +376,8 @@ function ENT:CustomOnThink()
 
 	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) then 
 		self.HasRangeAttack = false
-		self.ConstantlyFaceEnemy = false
 	else
 		self.HasRangeAttack = true
-		self.ConstantlyFaceEnemy = true
-	end
-
-	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
-    	self.FindEnemy_UseSphere = true 
-    	self.FindEnemy_CanSeeThroughWalls = true 
-    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
-    	self.FindEnemy_UseSphere = false 
-    	self.FindEnemy_CanSeeThroughWalls = false
-    end
-
-    if self.VJ_IsBeingControlled == false then
-		if IsValid(self:GetEnemy()) then
-			self.AnimTbl_IdleStand = {ACT_IDLE_AGITATED}
-		else
-			self.AnimTbl_IdleStand = {ACT_IDLE}
-		end
-    end
-	for _, v in ipairs(ents.FindInSphere(self:GetPos(), 1000000)) do
-		if IsValid(v) then
-			if (v:IsNPC() or v:IsPlayer()) && self:Disposition(v) == D_HT then
-				if self:Visible(v) then
-					self.SoundTbl_CombatIdle = {"HulkZombie.Yell"}
-				else
-					self.SoundTbl_CombatIdle = {"HulkZombie.Voice","HulkZombie.Breathe","HulkZombie.Growl"}
-				end
-			end
-		end
 	end
 
 	if self:Infected_IsCrouching() == true then
@@ -416,6 +389,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	if self:IsShoved() then return end
+	if IsValid(self.Debris) then self.Debris:Remove() end
 	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
 		local function GetDirection()
 			local directions = {
