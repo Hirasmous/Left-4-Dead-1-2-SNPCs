@@ -1,9 +1,10 @@
 AddCSLuaFile("shared.lua")
 include('shared.lua')
 
-ENT.IsSitting = true
-
+ENT.DisableWandering = true
 ENT.AnimTbl_IdleStand = {ACT_IDLE_RELAXED}
+
+ENT.IsSitting = true
 
 function ENT:CustomOnInvestigate(ent)
 	self:VJ_ACT_PLAYACTIVITY(ACT_IDLE_AGITATED)
