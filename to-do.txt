@@ -71,3 +71,5 @@ Next update:
 -Temporarily incap player if hit by a charger carrying an enemy
 -Add configurable damage via sliders
 -Resize materials
+-Fix incap'd enemies getting stuck in special after it is shoved
+-Improve Jockey hitbox when incapping
