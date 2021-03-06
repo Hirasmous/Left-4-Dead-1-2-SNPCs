@@ -36,12 +36,6 @@ function ENT:CustomOnInitialize()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
-	for i = 1, #self.PukeVictims do
-		if self.PukeVictims[i][1] && !IsValid(self.PukeVictims[i][1]) then
-			table.remove(self.PukeVictims, table.KeyFromValue(self.PukeVictims, self.PukeVictims[i][1]))
-		end
-	end
-
 	for _, x in ipairs(ents.FindInSphere(self:GetPos(), 12000)) do
 		if x:IsNPC() && string.find(x:GetClass(), "npc_vj_l4d_com") then
 			local tbl = self.PukeVictims
