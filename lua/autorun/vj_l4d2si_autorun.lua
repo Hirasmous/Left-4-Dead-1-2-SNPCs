@@ -93,9 +93,9 @@ if( file.Exists( VJExists, "GAME" ) ) then
 
 	-- Halo colors
 
-    VJ.AddClientConVar("vj_l4d2_halo_ally_r",255)
-    VJ.AddClientConVar("vj_l4d2_halo_ally_g",100)
-    VJ.AddClientConVar("vj_l4d2_halo_ally_b",0)
+    VJ.AddClientConVar("vj_l4d2_halo_ally_r",0)
+    VJ.AddClientConVar("vj_l4d2_halo_ally_g",215)
+    VJ.AddClientConVar("vj_l4d2_halo_ally_b",25)
 
     VJ.AddClientConVar("vj_l4d2_halo_enemy_r",0)
     VJ.AddClientConVar("vj_l4d2_halo_enemy_g",0)
@@ -114,6 +114,7 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	VJ.AddConVar("vj_l4d2_dismount", 0) -- Turned off by default
 	VJ.AddConVar("vj_l4d2_print", 1) -- Turned on by default
 	VJ.AddConVar("vj_l4d2_enemy_finding",1) -- Turned on by default
+	VJ.AddConVar("vj_l4d2_music", 1) -- Turned on by default
 end
 
 if SERVER then
@@ -143,19 +144,19 @@ if CLIENT then
 			tank_type.Options["Default"] = {vj_l4d2_tanktype = 1}
 			tank_type.Options["TheSacrifice"] = {vj_l4d2_tanktype = 2}
 
-
+			Panel:AddControl("Checkbox", {Label = "Should the music system play?", Command = "vj_l4d2_music"})
 			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs drop their weapons?", Command = "vj_l4d2_npcs_dropweapons"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected see through walls/see all around?", Command = "vj_l4d2_enemy_finding"})
 			Panel:AddControl("Checkbox", {Label = "Can controlled Specials stop incapacitating (via spacebar)?", Command = "vj_l4d2_dismount"})
-			Panel:AddControl("Checkbox", {Label = "Draw incap overlay?", Command = "vj_l4d2_incap_overlay"})
+			Panel:AddControl("Checkbox", {Label = "Draw overlay for when players are incap'd?", Command = "vj_l4d2_incap_overlay"})
 			Panel:AddControl("Checkbox", {Label = "Should information be printed on the screen?", Command = "vj_l4d2_print"})
 			Panel:AddControl("Slider", { Label 	= "Tank health", Command = "vj_l4d2_t_h", Type = "Float", Min = "3500", Max = "6000"})
 			Panel:AddControl("ComboBox", tank_musictype)
 			Panel:AddControl("ComboBox", tank_type)
            
 			Panel:AddControl("Color",{
-				Label = "Ally Color:", 
+				Label = "Halo - Ally Color:", 
 				Red = "vj_l4d2_halo_ally_r", 
 				Green = "vj_l4d2_halo_ally_g",
 				Blue = "vj_l4d2_halo_ally_b", 
@@ -165,7 +166,7 @@ if CLIENT then
 			})
 
 			Panel:AddControl("Color",{
-				Label = "Enemy Color:", 
+				Label = "Halo - Enemy Color:", 
 				Red = "vj_l4d2_halo_enemy_r", 
 				Green = "vj_l4d2_halo_enemy_g", 
 				Blue = "vj_l4d2_halo_enemy_b", 
@@ -175,7 +176,7 @@ if CLIENT then
 			})
 
 			Panel:AddControl("Color",{
-				Label = "Ghosted Color:", 
+				Label = "Halo - Ghosted Color:", 
 				Red = "vj_l4d2_halo_ghost_r",
 				Green = "vj_l4d2_halo_ghost_g", 
 				Blue = "vj_l4d2_halo_ghost_b", 
@@ -249,4 +250,3 @@ timer.Simple(1,function()
 		end
 	end
 end)
-
