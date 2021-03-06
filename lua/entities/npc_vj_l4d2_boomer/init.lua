@@ -102,6 +102,7 @@ ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "CommonLight"
 ENT.BileSmoke = nil
+ENT.NextAlertSound = CurTime()
 
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
