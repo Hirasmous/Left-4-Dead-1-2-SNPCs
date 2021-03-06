@@ -103,8 +103,6 @@ function ENT:PhysicsCollide(data, physobj, entity)
 
 					local enemy = data.HitEntity
 
-					enemy:SetNoDraw(true)
-
 					--custom vars 
 					owner.nextIncapSong = CurTime()
 					owner.pIncapacitatedEnemy = enemy
@@ -121,6 +119,8 @@ function ENT:PhysicsCollide(data, physobj, entity)
 
 					if enemy:IsPlayer() then
 						enemy:SetMoveType(MOVETYPE_CUSTOM)
+					else
+						enemy:SetNoDraw(true)
 					end
 
 					--VJ vars
@@ -174,6 +174,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 							local ene = enemy
 							timer.Simple(1.5, function()
 								if (!IsValid(owner) || !IsValid(enemy) || enemy:Alive() == false) then return end
+								enemy:SetNoDraw(true)
 								owner:SmokerIncapacitate(enemy)
 								if IsValid(owner.pEnemyTongueAttach) then
 									owner.pEnemyTongueAttach:SetNoDraw(false)
