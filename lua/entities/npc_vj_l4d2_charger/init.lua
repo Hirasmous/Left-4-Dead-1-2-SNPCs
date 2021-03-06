@@ -377,7 +377,7 @@ function ENT:DismountCharger()
 	if !IsValid(self.pIncapacitatedEnemy) then return end
 	local enemy = self.pIncapacitatedEnemy
 	enemy:SetParent(nil)
-	enemy:SetPos(self:GetPos())
+	enemy:SetPos(self:GetPos() + self:GetUp() * 5)
 	hook.Add("ShouldCollide", "Charger_EnableCollisions", function(ent1, ent2)
 		if (ent1 == self and ent2 == enemy) then return true end
 	end)
@@ -519,8 +519,6 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
-	VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
-	VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95))	
 	self:PummelEnemy(TheHitEntity)
 	for k, v in ipairs(ents.FindByClass("player")) do
 		if TheHitEntity:IsPlayer() then
@@ -553,7 +551,7 @@ function ENT:CustomOnSchedule()
 		local dist = self:GetPos():Distance(ent:GetPos())
 		if self.HasEnemyIncapacitated == true then
 			if ent:Health() > 0 then
-				if self:IsOnGround() == true then
+				if self:IsOnGround() == true || self:IsEFlagSet(EFL_TOUCHING_FLUID) then
 					if self.IsCarryingEnemy == false then
 						self:ScheduleFinished()
 						self:VJ_PlaySequence(self.IncapAnimation)
@@ -629,6 +627,7 @@ function ENT:ChargeAttack()
 	end
 
 	if self.bCanCharge == true then
+		self.bCanHitWall = true
 		self.bCanCharge = false
 		self.bCanContinueCharge = true
 		self.HasMeleeAttack = false
@@ -902,6 +901,32 @@ function ENT:CarryEnemy()
 		tgt:SetCollisionGroup(1)
 		tgt:SetNoDraw(true)
 		tgt:Spawn()
+		local tm = (650) / (self:GetSequenceGroundSpeed(self:LookupSequence("Charger_charge")))
+		timer.Simple(tm, function()
+			if !IsValid(self) then return end
+			if self.HasEnemyIncapacitated == true then
+				if self:IsOnGround() == true then
+				--	self:ResetSequenceInfo()
+				else
+					self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
+				end
+			else
+				self:ResetCharger()
+			end
+			timer.Simple(1, function()
+				if !IsValid(self) then return end
+				self:ResetCharger()
+				if self:IsOnGround() == true then
+					if self.HasEnemyIncapacitated then
+					--	self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
+					else
+						self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+					end
+				else
+					self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
+				end
+			end)
+		end)
 		self.pCarryTarget = tgt
 		self:BuildPath(tgt)
 		self:ClearEnemyMemory(self:GetEnemy())
@@ -1036,7 +1061,7 @@ function ENT:ContinueCharging()
 		if !IsValid(self) then return end
 		if self.HasEnemyIncapacitated == true then
 			if self:IsOnGround() == true then
-				self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
+				self:ResetSequenceInfo()
 			else
 				self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
 			end
@@ -1101,13 +1126,9 @@ function ENT:CustomOnThink()
 		if self.IsCarryingEnemy || (self.IsCharging && self.HasEnemyIncapacitated == false) then
 			self.HasMeleeAttack = false
 
-			if self:GetSequenceActivity(self:GetSequence()) ~= ACT_RUN_AIM_RELAXED then
-				self:VJ_ACT_PLAYACTIVITY(ACT_RUN_AIM_RELAXED)
-			end
-
 			local leftPos  = self:GetPos() - self:GetRight() * 45
 			local rightPos = self:GetPos() + self:GetRight() * 45
-			for k, v in ipairs(ents.FindInCone(self:GetPos(), self:GetForward(), 200, 0.707)) do
+			for k, v in ipairs(ents.FindInCone(self:GetPos(), self:GetForward(), 100, 0.707)) do
 				if v ~= self.pChargeEnt then
 					if self:IsEntityAlly(v) == false then
 						local function GetSidePos()
@@ -1141,12 +1162,17 @@ function ENT:CustomOnThink()
 				end
 			end
 
-			if self.IsCarryingEnemy == false then
-				local tr = util.TraceLine({start = self:GetPos() + self:OBBCenter(), endpos = self:GetPos() + self:OBBMaxs() + self:GetForward() * 70, filter = {self, ents.FindByClass("npc_*"), ents.FindByClass("player"), self.pChargeEnt, self.pIncapacitatedEnemy, self.pEnemyRagdoll}})
+			if self.IsCarryingEnemy == false && self.bCanHitWall == true then
+				local tr = util.TraceLine({start = self:GetPos() + self:OBBCenter(), endpos = self:GetPos() + self:OBBMaxs() + self:GetForward() * 50, filter = {self, ents.FindByClass("npc_*"), ents.FindByClass("player"), self.pChargeEnt, self.pIncapacitatedEnemy, self.pEnemyRagdoll}})
 				if tr.Hit == true then
-					self:ResetCharger()
 					if tr.Entity ~= self:GetEnemy() then
+						self.bCanHitWall = false
+						self:ResetCharger()
+						self:StopMoving()
 						self:VJ_ACT_PLAYACTIVITY("vjseq_".."Shoved_Backward")
+						VJ_EmitSound(self,self.SoundTbl_Pain,75,self:VJ_DecideSoundPitch(100,95)) 
+						VJ_EmitSound(self,self.SoundTbl_Charger_ImpactHard,75,self:VJ_DecideSoundPitch(100,95))				 
+						ParticleEffectAttach("charger_wall_impact",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("lhand"))
 					end
 				end
 			else
@@ -1278,22 +1304,23 @@ function ENT:CustomOnThink()
 				endpos = self:GetPos() +self:OBBCenter() +self:GetForward() *150,
 				filter = {self,self.pIncapacitatedEnemy}
 			})
-			if Tr_PummelWall.HitWorld then
+			local anim
+			if Tr_PummelWall.HitWorld && Tr_PummelCeiling.HitWorld then
+				self.PummelType = "Up"
+				--self.IncapAnimation = "Charger_Pound_Up"
+				self.IncapAnimation = VJ_PICK({"Charger_Pound_Up", "Charger_Pound_North", "Charger_Pound"})
+			elseif Tr_PummelWall.HitWorld then
 				self.PummelType = "North"
-				self.IncapAnimation = "Charger_Pound_North"
+				--self.IncapAnimation = "Charger_Pound_North"
+				self.IncapAnimation = VJ_PICK({"Charger_Pound_North", "Charger_Pound"})
 			elseif Tr_PummelCeiling.HitWorld then
 				self.PummelType = "Up"
-				self.IncapAnimation = "Charger_Pound_Up"
+				--self.IncapAnimation = "Charger_Pound_Up"
+				self.IncapAnimation = VJ_PICK({"Charger_Pound_Up", "Charger_Pound"})
 			end]]
 		end
 	else
 		self.CombatFaceEnemy = true
-	end
-
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
-	else
-		self.ConstantlyFaceEnemy = true
 	end
 
 	if CurTime() >= self.nextBacteria then
