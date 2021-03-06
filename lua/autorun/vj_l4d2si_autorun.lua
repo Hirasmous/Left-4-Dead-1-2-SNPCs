@@ -118,11 +118,54 @@ if( file.Exists( VJExists, "GAME" ) ) then
 end
 
 if SERVER then
-    util.AddNetworkString("infected_PounceEnemy")
+	util.AddNetworkString("infected_PounceEnemy")
 	util.AddNetworkString("infected_RemoveCSEnt")
 	util.AddNetworkString("Infected_IncapLight")
 	util.AddNetworkString("Infected_DrawIncapOverlay")
 	util.AddNetworkString("Smoker_CloudSmokeInit")
+
+	hook.Add("KeyPress", "Infected_Ghost", function(ply, key)
+		if ply.IsControlingNPC == true then
+			if key == IN_USE then
+				if ply.VJ_TheControllerEntity.VJCE_NPC.IsGhosted == true then
+					ply.VJ_TheControllerEntity.VJCE_NPC:SetGhost(false)
+				elseif ply.VJ_TheControllerEntity.VJCE_NPC.IsGhosted == false then
+					ply.VJ_TheControllerEntity.VJCE_NPC:SetGhost(true)
+				end
+			end
+		end
+	end)
+	hook.Add("KeyPress", "Infected_Crouch", function(ply, key)
+		if ply.IsControlingNPC == true then
+			if key == IN_DUCK then
+				local npc = ply.VJ_TheControllerEntity.VJCE_NPC
+				if npc:LookupSequence("Crouch_Idle_Upper_Knife") ~= -1 then
+					seq = "Crouch_Idle_Upper_Knife"
+				elseif npc:LookupSequence("Crouch_Idle") ~= -1 then
+					seq = "Crouch_Idle"
+				elseif npc:LookupSequence("Idle_Crouching_01") then
+					seq = "Idle_Crouching_01"
+				end
+				npc.AnimTbl_IdleStand = {npc:GetSequenceActivity(npc:LookupSequence(seq))}
+				npc.AnimTbl_Walk = {ACT_RUN_CROUCH}
+				npc.AnimTbl_Run = {ACT_RUN_CROUCH}
+				npc:VJ_ACT_PLAYACTIVITY(npc:GetSequenceActivity(npc:LookupSequence(seq)))
+				npc:ResetSequenceInfo()
+			end
+		end
+	end)
+	hook.Add("KeyRelease", "Infected_CrouchRelease", function(ply, key)
+		if ply.IsControlingNPC == true then
+			if key == IN_DUCK then
+				local npc = ply.VJ_TheControllerEntity.VJCE_NPC
+				npc.AnimTbl_IdleStand = {ACT_IDLE}
+				npc.AnimTbl_Walk = {ACT_WALK}
+				npc.AnimTbl_Run = {ACT_RUN}
+				npc:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+				npc:ResetSequenceInfo()
+			end
+		end
+	end)
 end
 
 if CLIENT then
