@@ -374,8 +374,37 @@ function ENT:CustomOnThink()
 
 	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) then 
 		self.HasRangeAttack = false
+		self.ConstantlyFaceEnemy = false
 	else
 		self.HasRangeAttack = true
+		self.ConstantlyFaceEnemy = true
+	end
+
+	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
+    	self.FindEnemy_UseSphere = true 
+    	self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+    	self.FindEnemy_UseSphere = false 
+    	self.FindEnemy_CanSeeThroughWalls = false
+    end
+
+    if self.VJ_IsBeingControlled == false then
+		if IsValid(self:GetEnemy()) then
+			self.AnimTbl_IdleStand = {ACT_IDLE_AGITATED}
+		else
+			self.AnimTbl_IdleStand = {ACT_IDLE}
+		end
+    end
+	for _, v in ipairs(ents.FindInSphere(self:GetPos(), 1000000)) do
+		if IsValid(v) then
+			if (v:IsNPC() or v:IsPlayer()) && self:Disposition(v) == D_HT then
+				if self:Visible(v) then
+					self.SoundTbl_CombatIdle = {"HulkZombie.Yell"}
+				else
+					self.SoundTbl_CombatIdle = {"HulkZombie.Voice","HulkZombie.Breathe","HulkZombie.Growl"}
+				end
+			end
+		end
 	end
 
 	if self:Infected_IsCrouching() == true then
