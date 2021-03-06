@@ -37,6 +37,7 @@ Bugs:
 	>-Can't ghost
 - Sometimes when an incapper dies the enemy gets sent to a random location ✅ (gone for now)
 - Charger never reaches carry target sometimes
+- The first Boomer overlay to be initiated in the server doesn't show
 
 ConVars:
 -Spitter goo damage slider ❌
@@ -44,12 +45,13 @@ ConVars:
 
 Before release:
 -Improve Boomer vomitting
--Tank: Don't range when climbing 
+-Tank: Don't range when climbing ✅
+-Show Witch blood slash particles only if it hit something
 
 Tensor:
 -General
 	>-Give player grenades (if he had them before) when stopping incapping
-	>-Add ConVar to disable music system
+	>-Add ConVar to disable music system ✅
 
 Hirasmous:
 -Charger
