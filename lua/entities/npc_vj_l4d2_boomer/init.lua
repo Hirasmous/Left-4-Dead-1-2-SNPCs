@@ -104,6 +104,7 @@ ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "CommonLight"
 ENT.BileSmoke = nil
+ENT.NextAlertSound = CurTime()
 
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
@@ -342,6 +343,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos()) -- in the features.lua
+	self:Special_Think()
 	local ent = self:GetEnemy()
 	if self.VJ_IsBeingControlled == false then
 		if IsValid(ent) then
