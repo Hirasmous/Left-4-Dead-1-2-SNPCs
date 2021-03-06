@@ -49,12 +49,14 @@ General:
 -Don't make enemies attack ghosted specials ✅
 -Fixed inverted pose parameters ✅
 -Fix wrong footstep sounds ✅
+-Don't player tag sounds for specials ❌
 
 Bugs:
 - Sometimes when an incapper dies the enemy gets sent to a random location ✅ (gone for now)
 - You have to click IN_USE many times before ghosting turns on ✅
 - Smoker doesn't stop incapping after the enemy dies ✅
 - Too many smoker_tongue_fall particles spawn when smoker misses or is killed while incapping ✅
+- Charger never reaches carry target sometimes
 
 ConVars:
 -Spitter goo damage slider ❌
