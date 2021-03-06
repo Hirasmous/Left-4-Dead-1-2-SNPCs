@@ -8,11 +8,9 @@ include('shared.lua')
 ENT.Model = {} -- The game will pick a random model from the table when the SNPC is spawned | Add as many as you want
 ENT.StartHealth = GetConVarNumber("vj_l4d2_t_h")
 ENT.HullType = HULL_HUMAN
-ENT.DisableWandering = true -- Disables wandering when the SNPC is idle
 ENT.HasWorldShakeOnMove = true -- Should the world shake when it's moving?
 ENT.NextWorldShakeOnRun = 0.24 -- How much time until the world shakes while it's running
 ENT.NextWorldShakeOnWalk = 0.4 -- How much time until the world shakes while it's walking
-ENT.FindEnemy_CanSeeThroughWalls = true -- Should it be able to see through walls and objects? | Can be useful if you want to make it know where the enemy is at all times
 ENT.HasPoseParameterLooking = true -- Does it look at its enemy using poseparameters?
 ENT.PoseParameterLooking_InvertPitch = false -- Inverts the pitch poseparameters (X)
 ENT.PoseParameterLooking_InvertYaw = false -- Inverts the yaw poseparameters (Y)
@@ -374,10 +372,39 @@ function ENT:CustomOnThink()
 		self.SoundTbl_Pain = {"HulkZombie.Pain"} 
 	end
 
-	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) then 
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DISMOUNT) then 
 		self.HasRangeAttack = false
+		self.ConstantlyFaceEnemy = false
 	else
 		self.HasRangeAttack = true
+		self.ConstantlyFaceEnemy = true
+	end
+
+	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
+    	self.FindEnemy_UseSphere = true 
+    	self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+    	self.FindEnemy_UseSphere = false 
+    	self.FindEnemy_CanSeeThroughWalls = false
+    end
+
+    if self.VJ_IsBeingControlled == false then
+		if IsValid(self:GetEnemy()) then
+			self.AnimTbl_IdleStand = {ACT_IDLE_AGITATED}
+		else
+			self.AnimTbl_IdleStand = {ACT_IDLE}
+		end
+    end
+	for _, v in ipairs(ents.FindInSphere(self:GetPos(), 1000000)) do
+		if IsValid(v) then
+			if (v:IsNPC() or v:IsPlayer()) && self:Disposition(v) == D_HT then
+				if self:Visible(v) then
+					self.SoundTbl_CombatIdle = {"HulkZombie.Yell"}
+				else
+					self.SoundTbl_CombatIdle = {"HulkZombie.Voice","HulkZombie.Breathe","HulkZombie.Growl"}
+				end
+			end
+		end
 	end
 
 	if self:Infected_IsCrouching() == true then
