@@ -19,9 +19,6 @@ function ENT:CustomOnThink()
 	local owner = self:GetOwner()
 	for k, v in ipairs(ents.FindInSphere(self:GetPos(), 200)) do
 		if (v:IsPlayer()) then
-			if math.random(1, 6) == 1 then
-				VJ_EmitSound(v,VJ_PICKRANDOMTABLE({"ambient/voices/cough1.wav","ambient/voices/cough2.wav","ambient/voices/cough3.wav","ambient/voices/cough4.wav"}),70,math.random(100,100))
-			end
 			local dist = v:GetPos():Distance(self:GetPos())
 			val = math.Remap(dist, -200, 0, -1, -0.15)
 			if not table.HasValue(self.SentPlayers, v) then
