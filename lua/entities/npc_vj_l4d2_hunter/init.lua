@@ -77,10 +77,9 @@ ENT.SoundTbl_Death = {"HunterZombie.Death"}
 ENT.SoundTbl_HunterPounceMiss = {"HunterZombie.Pounce.Miss"}
 ENT.SoundTbl_HunterFlyLoop = {"HunterZombie.Pounce.FlyLoop"}
 ENT.SoundTbl_Shred = {"player/hunter/voice/attack/hunter_shred_01.mp3", "player/hunter/voice/attack/hunter_shred_02.mp3", "player/hunter/voice/attack/hunter_shred_03.mp3", "player/hunter/voice/attack/hunter_shred_04.mp3", "player/hunter/voice/attack/hunter_shred_05.mp3", "player/hunter/voice/attack/hunter_shred_06.mp3", "player/hunter/voice/attack/hunter_shred_07.mp3", "player/hunter/voice/attack/hunter_shred_08.mp3", "player/hunter/voice/attack/hunter_shred_09.mp3", "player/hunter/voice/attack/hunter_shred_10.mp3", "player/hunter/voice/attack/hunter_shred_11.mp3", "player/hunter/voice/attack/hunter_shred_12.mp3"}
-ENT.NextSoundTime_Idle1 = 1
-ENT.NextSoundTime_Idle2 = 2
-ENT.IdleSoundChance = 2
 
+
+ENT.NextSoundTime_Idle = VJ_Set(2,2)
 ENT.PainSoundChance = 1
 ENT.NextSoundTime_Pain1 = 0.5
 ENT.NextSoundTime_Pain2 = 1
@@ -90,8 +89,6 @@ ENT.IdleSoundLevel = 95
 ENT.DeathSoundLevel = 85
 ENT.LeapAttackJumpSoundLevel = 95
 ENT.BeforeLeapAttackSoundLevel = 105
-ENT.NextSoundTime_Idle1 = 1
-ENT.NextSoundTime_Idle2 = 2
 ENT.LeapAttackJumpSoundPitch1 = 95
 ENT.LeapAttackJumpSoundPitch1 = 105
 
@@ -125,6 +122,7 @@ ENT.CheckEnemyTimer = 2
 ENT.FootStepType = "Common"
 ENT.NextFlyLoopSound = CurTime()
 ENT.EnemyMoveType = 3
+ENT.NextAlertSound = CurTime()
 
 util.AddNetworkString("L4D2HunterHUD")
 util.AddNetworkString("L4D2HunterHUDGhost")
@@ -659,6 +657,9 @@ function ENT:CustomOnThink()
 		self.LastInWorldPos = self:GetPos()
 	else
 		if self.LastInWorldPos then self:SetPos(self.LastInWorldPos) end
+	end
+	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
+	    self:Special_Think()
 	end
 	if self.HasEnemyIncapacitated == false && IsValid(self:GetEnemy()) && self.IsIncapacitating == false then
 		local enemy = self:GetEnemy()
