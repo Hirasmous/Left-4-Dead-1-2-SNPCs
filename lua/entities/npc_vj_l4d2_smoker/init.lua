@@ -181,7 +181,7 @@ function ENT:CustomOnAcceptInput(key,activator,caller,data)
 		if self.IsEnemyStuck == true || self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
 			local incapent = self.pIncapacitatedEnemy
 			if IsValid(incapent) then
-				incapent:TakeDamage(5, self, incapent)
+				incapent:TakeDamage(math.random(2, 4), self, incapent)
 				VJ_CreateSound(incapent,VJ_PICKRANDOMTABLE{"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"},65,self:VJ_DecideSoundPitch(100,100))
 			end
 		end
