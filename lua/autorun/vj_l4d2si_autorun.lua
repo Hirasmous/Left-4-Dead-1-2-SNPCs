@@ -127,10 +127,12 @@ if SERVER then
 	hook.Add("KeyPress", "Infected_Ghost", function(ply, key)
 		if ply.IsControlingNPC == true then
 			if key == IN_USE then
-				if ply.VJ_TheControllerEntity.VJCE_NPC.IsGhosted == true then
-					ply.VJ_TheControllerEntity.VJCE_NPC:SetGhost(false)
-				elseif ply.VJ_TheControllerEntity.VJCE_NPC.IsGhosted == false then
-					ply.VJ_TheControllerEntity.VJCE_NPC:SetGhost(true)
+				if ply.VJ_TheControllerEntity.VJCE_NPC.IsSpecialInfected == true then
+					if ply.VJ_TheControllerEntity.VJCE_NPC.IsGhosted == true then
+						ply.VJ_TheControllerEntity.VJCE_NPC:SetGhost(false)
+					elseif ply.VJ_TheControllerEntity.VJCE_NPC.IsGhosted == false then
+						ply.VJ_TheControllerEntity.VJCE_NPC:SetGhost(true)
+					end
 				end
 			end
 		end
@@ -139,18 +141,20 @@ if SERVER then
 		if ply.IsControlingNPC == true then
 			if key == IN_DUCK then
 				local npc = ply.VJ_TheControllerEntity.VJCE_NPC
-				if npc:LookupSequence("Crouch_Idle_Upper_Knife") ~= -1 then
-					seq = "Crouch_Idle_Upper_Knife"
-				elseif npc:LookupSequence("Crouch_Idle") ~= -1 then
-					seq = "Crouch_Idle"
-				elseif npc:LookupSequence("Idle_Crouching_01") then
-					seq = "Idle_Crouching_01"
+				if npc.IsSpecialInfected == true then
+					if npc:LookupSequence("Crouch_Idle_Upper_Knife") ~= -1 then
+						seq = "Crouch_Idle_Upper_Knife"
+					elseif npc:LookupSequence("Crouch_Idle") ~= -1 then
+						seq = "Crouch_Idle"
+					elseif npc:LookupSequence("Idle_Crouching_01") then
+						seq = "Idle_Crouching_01"
+					end
+					npc.AnimTbl_IdleStand = {npc:GetSequenceActivity(npc:LookupSequence(seq))}
+					npc.AnimTbl_Walk = {ACT_RUN_CROUCH}
+					npc.AnimTbl_Run = {ACT_RUN_CROUCH}
+					npc:VJ_ACT_PLAYACTIVITY(npc:GetSequenceActivity(npc:LookupSequence(seq)))
+					npc:ResetSequenceInfo()
 				end
-				npc.AnimTbl_IdleStand = {npc:GetSequenceActivity(npc:LookupSequence(seq))}
-				npc.AnimTbl_Walk = {ACT_RUN_CROUCH}
-				npc.AnimTbl_Run = {ACT_RUN_CROUCH}
-				npc:VJ_ACT_PLAYACTIVITY(npc:GetSequenceActivity(npc:LookupSequence(seq)))
-				npc:ResetSequenceInfo()
 			end
 		end
 	end)
@@ -158,11 +162,13 @@ if SERVER then
 		if ply.IsControlingNPC == true then
 			if key == IN_DUCK then
 				local npc = ply.VJ_TheControllerEntity.VJCE_NPC
-				npc.AnimTbl_IdleStand = {ACT_IDLE}
-				npc.AnimTbl_Walk = {ACT_WALK}
-				npc.AnimTbl_Run = {ACT_RUN}
-				npc:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
-				npc:ResetSequenceInfo()
+				if npc.IsSpecialInfected == true then
+					npc.AnimTbl_IdleStand = {ACT_IDLE}
+					npc.AnimTbl_Walk = {ACT_WALK}
+					npc.AnimTbl_Run = {ACT_RUN}
+					npc:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
+					npc:ResetSequenceInfo()
+				end
 			end
 		end
 	end)
