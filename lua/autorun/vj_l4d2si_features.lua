@@ -756,53 +756,6 @@ end
 
 -- Add hooks here
 function NPC:L4D2_InitializeHooks()
-	local tbHk = hook.GetTable()
-	if not table.HasValue(tbHk, "Infected_Ghost") then
-		hook.Add("KeyPress", "Infected_Ghost", function(ply, key)
-			if self.VJ_IsBeingControlled && self.VJ_TheController == ply then
-				if key == IN_USE then
-					if self.IsGhosted == true then
-						self:SetGhost(false)
-					elseif self.IsGhosted == false then
-						self:SetGhost(true)
-					end
-				end
-			end
-		end)
-	end
-	if not table.HasValue(tbHk, "Infected_Crouch") then
-		hook.Add("KeyPress", "Infected_Crouch", function(ply, key)
-			if self.VJ_IsBeingControlled == true && self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					if self:LookupSequence("Crouch_Idle_Upper_Knife") ~= -1 then
-						seq = "Crouch_Idle_Upper_Knife"
-					elseif self:LookupSequence("Crouch_Idle") ~= -1 then
-						seq = "Crouch_Idle"
-					elseif self:LookupSequence("Idle_Crouching_01") then
-						seq = "Idle_Crouching_01"
-					end
-					self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(seq))}
-					self.AnimTbl_Walk = {ACT_RUN_CROUCH}
-					self.AnimTbl_Run = {ACT_RUN_CROUCH}
-					self:VJ_ACT_PLAYACTIVITY(self:GetSequenceActivity(self:LookupSequence(seq)))
-					self:ResetSequenceInfo()
-				end
-			end
-		end)
-	end
-	if not table.HasValue(tbHk, "Infected_CrouchRelease") then
-		hook.Add("KeyRelease", "Infected_CrouchRelease", function(ply, key)
-			if self.VJ_IsBeingControlled == true && self.VJ_TheController == ply then
-				if key == IN_DUCK then
-					self.AnimTbl_IdleStand = {ACT_IDLE}
-					self.AnimTbl_Walk = {ACT_WALK}
-					self.AnimTbl_Run = {ACT_RUN}
-					self:VJ_ACT_PLAYACTIVITY(ACT_IDLE)
-					self:ResetSequenceInfo()
-				end
-			end
-		end)
-	end
 end
 
 function NPC:Infected_IsCrouching()
