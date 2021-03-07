@@ -130,6 +130,7 @@ util.AddNetworkString("L4D2SmokerHUDGhost")
 
 util.AddNetworkString("Smoker_CreateTongue")
 util.AddNetworkString("Smoker_DestroyTongue")
+util.AddNetworkString("Smoker_InitializeParticles")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:L4D2_InitializeHooks()
@@ -154,23 +155,20 @@ function ENT:CustomOnInitialize()
 
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
-	if GetConVarNumber("vj_l4d2_ghosted") == 0 then
-		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
-		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
-		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine")) 
-		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine"))
-		ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
-	end
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
+	net.Start("Smoker_InitializeParticles")
+		net.WriteEntity(self)
+	net.Broadcast()
 	VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
-	ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
-	ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
-	ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine")) 
-	ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine"))
-	ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnUnSetGhost()
+	net.Start("Smoker_InitializeParticles")
+		net.WriteEntity(self)
+	net.Broadcast()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -431,7 +429,7 @@ function ENT:CustomOnSchedule()
 		if self.IsChokingEnemy == true then
 			self:VJ_PlaySequence(self.IncapAnimation)
 			if dist > self.IncapacitationRange then
-				self:DismountSmoker()
+				self.IsChokingEnemy = true
 			end
 		else
 			self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
@@ -460,7 +458,6 @@ function ENT:CustomOnThink()
 	end
 	if self.IsGhosted then
 		self.HasRangeAttack = false
-		self:StopParticles()
 	else
 		self.HasRangeAttack = true
 	end
@@ -859,7 +856,6 @@ function ENT:CustomOnThink()
 					end
 					if self.IncapLights_Spawned == false then
 						self.IncapLights_Spawned = true
-						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
 						for k, v in ipairs(ents.FindByClass("player")) do
 							if enemy:IsNPC() then
 								VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
@@ -867,10 +863,7 @@ function ENT:CustomOnThink()
 						end
 					end
 					if ene:IsPlayer() then
-						if self.IncapLights_Spawned == false then
-							self.IncapLights_Spawned = true
-							self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
-						end
+						self:Incap_Lighting(ene, false)
 						ene:SpectateEntity(self.Camera)
 						ene:SetFOV(80)
 					end
@@ -883,10 +876,10 @@ function ENT:CustomOnThink()
 					if self.IncapLights_Spawned == false then
 						self.IncapLights_Spawned = true
 						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
-						for k, v in ipairs(ents.FindByClass("player")) do
-							if enemy:IsNPC() then
-								VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-							end
+					end
+					for k, v in ipairs(ents.FindByClass("player")) do
+						if enemy:IsNPC() then
+							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
 						end
 					end
 				end
