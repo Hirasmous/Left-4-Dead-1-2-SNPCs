@@ -17,10 +17,11 @@ if CLIENT then
 		local val
 		if not timer.Exists("Smoker"..id.."_DrawScreenSmoke") then
 			timer.Create("Smoker"..id.."_DrawScreenSmoke", 0.1, 100, function()
-				for k, v in ipairs(ents.FindInSphere(vec, 200)) do
+				for k, v in ipairs(ents.FindInSphere(vec, 500)) do
 					if IsValid(v) then
 						if v == LocalPlayer() then
 							local dist = v:GetPos():Distance(vec)
+							if dist > 200 then dist = 200 end
 							val = math.Remap(dist or 0, 250, 0, 1, 0.05)
 							tab = {
 								[ "$pp_colour_addr" ] = 0.0,
