@@ -158,11 +158,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					owner.lastEFlagsReset = CurTime()
 					owner.nextSegmentCreation = CurTime()
 
-					for k, v in ipairs(ents.FindByClass("player")) do
-						if data.HitEntity:IsNPC() then
-							VJ_CreateSound(v,"vj_l4d2/music/tags/tonguetiedhit.mp3",95,owner:VJ_DecideSoundPitch(100,100))
-						end
-					end
+					owner:PlayIncapTagSound("vj_l4d2/music/tags/tonguetiedhit.mp3")
 
 					owner:SpawnCamera(dragObj,15)
 
