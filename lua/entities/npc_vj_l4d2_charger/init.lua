@@ -946,11 +946,7 @@ function ENT:CarryEnemy()
 		self:SetTarget(tgt)
 		self:DeleteOnRemove(tgt)
 		VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95)) 
-		if self.pChargeEnt:IsNPC() then
-			self:PlayIncapTagSound("vj_l4d2/music/tags/contusionhit.mp3", tgt, true)
-		elseif self.pChargeEnt:IsPlayer() then
-			self:PlayIncapTagSound("vj_l4d2/music/special_attacks/contusion.mp3", tgt, true)
-		end
+		self:PlayIncapTagSound("vj_l4d2/music/tags/contusionhit.mp3", tgt, true)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
