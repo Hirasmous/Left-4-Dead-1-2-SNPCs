@@ -17,6 +17,28 @@ killicon.Add("#"..LangName,"HUD/killicons/default",Color ( 255, 80, 0, 255 ) )
 end
 
 if CLIENT then
+
+	net.Receive("Smoker_InitializeParticles", function()
+		local entity = net.ReadEntity()
+		if GetConVar("vj_l4d2_particles"):GetInt() == 1 then
+			ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,entity,entity:LookupAttachment("smoker_mouth")) 
+			ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,entity,entity:LookupAttachment("smoker_mouth")) 
+			ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,entity,entity:LookupAttachment("spine")) 
+			ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,entity,entity:LookupAttachment("spine"))
+			ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,entity,0)
+		end
+	end)
+
+	function ENT:Initialize()
+		if GetConVar("vj_l4d2_particles"):GetInt() == 1 then
+			ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
+			ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
+			ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine")) 
+			ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine"))
+			ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
+		end
+	end
+
 	net.Receive("L4D2SmokerHUD",function(len,pl)
 		local isdeleted = net.ReadBool()
 		local entity = net.ReadEntity()
@@ -89,6 +111,7 @@ if CLIENT then
 		end)
 		if isdeleted == true then hook.Remove("PreDrawHalos","L4D2SmokerHalo") end
 	end)
+
 	net.Receive("L4D2SmokerHUDGhost",function(len,pl)
 		local isdeleted = net.ReadBool()
 		local entity = net.ReadEntity()
