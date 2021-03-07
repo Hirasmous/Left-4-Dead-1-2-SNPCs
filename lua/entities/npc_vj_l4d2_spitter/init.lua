@@ -99,34 +99,39 @@ ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "Common"
-ENT.NextAlertSound = CurTime()
-ENT.GlowLight = nil
+ENT.NextAlertSound = CurTime() 
+ENT.HasRandomAlertSounds = false
+ENT.Light = nil
 
 util.AddNetworkString("L4D2SpitterHUD")
 util.AddNetworkString("L4D2SpitterHUDGhost")
-
-util.AddNetworkString("Spitter_InitializeParticles")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:L4D2_InitializeHooks()
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
 	if GetConVarNumber("vj_l4d2_ghosted") == 0 then
-		local light = ents.Create("light_dynamic")
-		light:SetKeyValue("_light","110 230 0 255")
-		light:SetKeyValue("brightness","0.1")
-		light:SetKeyValue("distance","150")
-		light:SetKeyValue("style","0")
-		light:SetPos(self:GetPos())
-		light:SetParent(self)
-		light:Spawn()
-		light:Activate()
-		light:Fire("SetParentAttachment","mouth")
-		light:Fire("TurnOn","",0)
-		self:DeleteOnRemove(light)
-		self.GlowLight = light
+		local glowlight = ents.Create("light_dynamic")
+		glowlight:SetKeyValue("_light","110 230 0 255")
+		glowlight:SetKeyValue("brightness","0.1")
+		glowlight:SetKeyValue("distance","150")
+		glowlight:SetKeyValue("style","0")
+		glowlight:SetPos(self:GetPos())
+		glowlight:SetParent(self)
+		glowlight:Spawn()
+		glowlight:Activate()
+		glowlight:Fire("SetParentAttachment","mouth")
+		glowlight:Fire("TurnOn","",0)
+		self.Light = glowlight
+		self:DeleteOnRemove(glowlight)
 	end
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnGhost()
+    if IsValid(self.Light) then
+    	self.Light:Remove()
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
@@ -217,21 +222,23 @@ end
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos())
 	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
-		self:Special_Think()
+	    self:Special_Think()
 	end
 	
 	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
-		self.FindEnemy_UseSphere = true 
-		self.FindEnemy_CanSeeThroughWalls = true 
-	elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
-		self.FindEnemy_UseSphere = false 
-		self.FindEnemy_CanSeeThroughWalls = false
-	end
+        self.FindEnemy_UseSphere = true 
+        self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+        self.FindEnemy_UseSphere = false 
+        self.FindEnemy_CanSeeThroughWalls = false
+    end
 	if self.IsGhosted then
 		self:Ghost()
 	end
+	
 	if self.IsGhosted then
 		self.HasRangeAttack = false
+		self:StopParticles()
 	else
 		self.HasRangeAttack = true
 	end
@@ -256,10 +263,14 @@ function ENT:CustomOnThink()
 		self:PlayBacteria()
 	end
 
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
-	else
-		self.ConstantlyFaceEnemy = true
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
+		if !self.IsGhosted then
+			self.ConstantlyFaceEnemy = false
+		    self.HasRangeAttack = false
+		else
+			self.ConstantlyFaceEnemy = true
+			self.HasRangeAttack = true
+		end
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -280,8 +291,12 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:L4D2_DeathMessage("SKE",ent)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt) 
-	self:L4D2_DeathMessage(dmginfo:GetAttacker())
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)

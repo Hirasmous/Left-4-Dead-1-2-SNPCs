@@ -176,9 +176,9 @@ function ENT:EnableAggression(enemy)
 	self:VJ_ACT_PLAYACTIVITY("Wander_Acquire")
     if GetConVar("vj_l4d2_print"):GetInt() == 1 then
     	if self.pTargetEntity:IsNPC() then
-    		PrintMessage(HUD_PRINTTALK, self.pTargetEntity:GetClass().." startled the ".. self:GetName())
+    		PrintMessage(HUD_PRINTTALK, self.pTargetEntity:GetClass().." startled the ".. self:GetName() .. "!")
     	elseif self.pTargetEntity:IsPlayer() then
-    		PrintMessage(HUD_PRINTTALK, self.pTargetEntity:GetName().." startled the ".. self:GetName())
+    		PrintMessage(HUD_PRINTTALK, self.pTargetEntity:GetName().." startled the ".. self:GetName() .. "!")
     	end
     end
 	self.bTriggered = true
@@ -356,7 +356,12 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo, hitgroup)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:L4D2_DeathMessage("SKE",ent)
+end  
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomDeathAnimationCode(dmginfo, hitgroup)
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 	if self:IsMoving() && self:GetActivity() == ACT_RUN then
 		self.AnimTbl_Death = {ACT_DIESIMPLE}
 	end

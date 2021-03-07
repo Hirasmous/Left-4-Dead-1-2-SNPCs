@@ -49,7 +49,7 @@ ENT.LeapAttackAnimationFaceEnemy = true -- Should it face the enemy while playin
 ENT.LeapAttackAnimationDecreaseLengthAmount = 0 -- This will decrease the time until starts chasing again. Use it to fix animation pauses until it chases the enemy.
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
 ENT.LeapDistance = 750 -- The distance of the leap, for example if it is set to 500, when the SNPC is 500 Unit away, it will jump
-ENT.LeapToMeleeDistance = 200 -- How close does it have to be until it uses melee?
+ENT.LeapToMeleeDistance = 50 -- How close does it have to be until it uses melee?
 ENT.LeapAttackDamageDistance = 100 -- How far does the damage go?
 ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
 	-- ====== Flinching Code ====== --
@@ -122,7 +122,8 @@ ENT.CheckEnemyTimer = 2
 ENT.FootStepType = "Common"
 ENT.NextFlyLoopSound = CurTime()
 ENT.EnemyMoveType = 3
-ENT.NextAlertSound = CurTime()
+ENT.NextAlertSound = CurTime() 
+ENT.HasRandomAlertSounds = false
 
 util.AddNetworkString("L4D2HunterHUD")
 util.AddNetworkString("L4D2HunterHUDGhost")
@@ -168,6 +169,9 @@ function ENT:CustomOnInitialize()
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnGhost()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
@@ -540,7 +544,9 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 											self:IncapacitateEnemy(enemy, mdl)
 										end
 										self.pEnemyRagdoll = mdl
+
 										self:PlayIncapTagSound("vj_l4d2/music/tags/exenterationhit.mp3")
+										
 										enemy:CallOnRemove("hunter_ClearParent", function(ent)
 											if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
 												self:DismountHunter()
@@ -690,9 +696,17 @@ function ENT:CustomOnThink()
 	if self.IsGhosted then
 		self:Ghost()
 	end
+
 	if self.IsGhosted then
 		self.HasLeapAttack = false
 	end
+
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
+    	self.ConstantlyFaceEnemy = false 
+    else
+    	self.ConstantlyFaceEnemy = true
+    end
+	
 	self.vecLastPos = self:GetPos()
 	if self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
 		self.IsIncapacitating = true
@@ -780,12 +794,6 @@ function ENT:CustomOnThink()
 		self.CombatFaceEnemy = true
 	end
 
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
-	else
-		self.ConstantlyFaceEnemy = true
-	end
-
 	self:ManageHUD(self.VJ_TheController)
 	
 	if self.VJ_IsBeingControlled == true then
@@ -830,12 +838,16 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:L4D2_DeathMessage("SKE",ent)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
 	self:VJ_ACT_PLAYACTIVITY("ACT_DIERAGDOLL",true,1.74,false)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, GetCorpse)
-	self:L4D2_DeathMessage(dmginfo:GetAttacker())
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 	self:DismountHunter()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------

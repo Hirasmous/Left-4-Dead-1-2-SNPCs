@@ -102,7 +102,8 @@ ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "CommonLight"
 ENT.BileSmoke = nil
-ENT.NextAlertSound = CurTime()
+ENT.NextAlertSound = CurTime() 
+ENT.HasRandomAlertSounds = false
 
 util.AddNetworkString("L4D2BoomerHUD")
 util.AddNetworkString("L4D2BoomerHUDGhost")
@@ -113,6 +114,9 @@ function ENT:CustomOnInitialize()
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0  
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnGhost()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
@@ -338,6 +342,16 @@ function ENT:CustomOnThink()
 	else
 		self.HasRangeAttack = true
 	end
+
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
+		if !self.IsGhosted then
+			self.ConstantlyFaceEnemy = false
+		    self.HasRangeAttack = false
+		else
+			self.ConstantlyFaceEnemy = true
+			self.HasRangeAttack = true
+		end
+	end
 	
 	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
 		self.FindEnemy_UseSphere = true 
@@ -362,12 +376,6 @@ function ENT:CustomOnThink()
 	end
 
 	self:ManageHUD(self.VJ_TheController)
-
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
-	else
-		self.ConstantlyFaceEnemy = true
-	end
 		
 	if self.VJ_IsBeingControlled == false then
 		self.TimeUntilRangeAttackProjectileRelease = 1.5
@@ -453,8 +461,12 @@ function ENT:CustomOnKilled(dmginfo,hitgroup)
 	bile:Spawn()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:L4D2_DeathMessage("SKE",ent)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,corpseEnt)
-	self:L4D2_DeathMessage(dmginfo:GetAttacker())
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 end
 /*-----------------------------------------------
 	*** Copyright (c) 2018-2021 by Hirasmous, All rights reserved. ***

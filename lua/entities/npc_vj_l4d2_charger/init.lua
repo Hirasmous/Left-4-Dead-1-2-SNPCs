@@ -89,7 +89,7 @@ ENT.AlertSoundLevel = 90
 ENT.IdleSoundLevel = 95
 ENT.DeathSoundLevel = 85
 ENT.LeapAttackJumpSoundLevel = 100
-ENT.NextSoundTime_Idle = VJ_Set(1,2)
+ENT.NextSoundTime_Idle = VJ_Set(2,2)
 ENT.FootStepSoundPitch1 = 100
 ENT.FootStepSoundPitch2 = 100
 ENT.GeneralSoundPitch1 = 95
@@ -125,7 +125,8 @@ ENT.NextChargeTime = CurTime()
 ENT.ChargeStopT = CurTime()
 ENT.PummelType = "Down"
 ENT.EnemyMoveType = 3
-ENT.NextAlertSound = CurTime()
+ENT.NextAlertSound = CurTime() 
+ENT.HasRandomAlertSounds = false
 
 -- Charging
 ENT.ChargeAngles = Angle(0, 0, 0)
@@ -146,6 +147,9 @@ function ENT:CustomOnInitialize()
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnGhost()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
@@ -625,6 +629,7 @@ function ENT:ChargeAttack()
 
 	if self.bCanCharge == true then
 		self.bCanHitWall = true
+		ParticleEffectAttach("charger_motion_blur",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("attach_blur"))
 		VJ_EmitSound(self,VJ_PICK(self.SoundTbl_LeapAttackJump),100,self:VJ_DecideSoundPitch(105,95)) 
 		self.bCanCharge = false
 		self.bCanContinueCharge = true
@@ -759,6 +764,8 @@ function ENT:IsPathValid(tgt)
 			seg:SetCollisionGroup(1)
 			seg:DrawShadow(false)
 			seg:SetNoDraw(true)
+			seg:SetRenderMode(1)
+			seg:SetMaterial("materials/nodraw")
 			seg:Spawn()
 			seg:SetOwner(self)
 			self:DeleteOnRemove(seg)
@@ -856,6 +863,8 @@ function ENT:BuildPath(tgt)
 			seg:SetCollisionGroup(1)
 			seg:DrawShadow(false)
 			seg:SetNoDraw(true)
+			seg:SetRenderMode(1)
+			seg:SetMaterial("materials/nodraw")
 			seg:Spawn()
 			seg:SetOwner(self)
 			self:DeleteOnRemove(seg)
@@ -901,6 +910,8 @@ function ENT:CarryEnemy()
 		tgt:SetCollisionGroup(1)
 		tgt:DrawShadow(false)
 		tgt:SetNoDraw(true)
+		tgt:SetRenderMode(1)
+		tgt:SetMaterial("materials/nodraw")
 		tgt:Spawn()
 		local tm = (650) / (self:GetSequenceGroundSpeed(self:LookupSequence("Charger_charge")))
 		timer.Simple(tm, function()
@@ -935,7 +946,11 @@ function ENT:CarryEnemy()
 		self:SetTarget(tgt)
 		self:DeleteOnRemove(tgt)
 		VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95)) 
-		self:PlayIncapTagSound("vj_l4d2/music/tags/contusionhit.mp3", tgt, true)
+		if self.pChargeEnt:IsNPC() then
+			self:PlayIncapTagSound("vj_l4d2/music/tags/contusionhit.mp3", tgt, true)
+		elseif self.pChargeEnt:IsPlayer() then
+			self:PlayIncapTagSound("vj_l4d2/music/special_attacks/contusion.mp3", tgt, true)
+		end
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1024,6 +1039,8 @@ function ENT:ContinueCharging()
 			seg:SetCollisionGroup(1)
 			seg:DrawShadow(false)
 			seg:SetNoDraw(true)
+			seg:SetRenderMode(1)
+			seg:SetMaterial("materials/nodraw")
 			FacePos(seg, lastPos + self:GetForward() * dSeg, lastPos + self:GetForward() * dSeg * 2)
 			seg:Spawn()
 			seg:SetOwner(self)
@@ -1052,6 +1069,8 @@ function ENT:ContinueCharging()
 		tgt:SetCollisionGroup(1)
 		tgt:DrawShadow(false)
 		tgt:SetNoDraw(true)
+		tgt:SetMaterial("materials/nodraw")
+		tgt:SetRenderMode(1)
 		tgt:Spawn()
 		self.pCarryTarget = tgt
 		self:BuildPath(tgt)
@@ -1119,11 +1138,21 @@ function ENT:CustomOnThink()
 	end
 	
 	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
-        self.FindEnemy_UseSphere = true 
-        self.FindEnemy_CanSeeThroughWalls = true 
+		self.FindEnemy_UseSphere = true
+        self.FindEnemy_CanSeeThroughWalls = true
     elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
         self.FindEnemy_UseSphere = false 
         self.FindEnemy_CanSeeThroughWalls = false
+    end
+
+    if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
+    	if !self.IsGhosted then
+	    	self.ConstantlyFaceEnemy = false 
+	    	self.HasChargeAttack = false
+	    else
+	    	self.ConstantlyFaceEnemy = true
+	    	self.HasChargeAttack = true
+	    end
     end
 
 	if self.IsIncapacitating == true then
@@ -1263,8 +1292,24 @@ function ENT:CustomOnThink()
 
 	if self.IsGhosted then
 		self.HasChargeAttack = false
+		--[[if self.VJ_IsBeingControlled then
+			self.HasLeapAttack = false
+		end]]
 	else
 		self.HasChargeAttack = true
+		--[[if self.VJ_IsBeingControlled then
+			self.HasLeapAttack = true
+		end]]
+	end
+
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
+		if !self.IsGhosted then
+			self.ConstantlyFaceEnemy = false
+		    self.HasChargeAttack = false
+		else
+			self.ConstantlyFaceEnemy = true
+			self.HasChargeAttack = true
+		end
 	end
 
 	self.vecLastPos = self:GetPos()
@@ -1283,7 +1328,7 @@ function ENT:CustomOnThink()
 	end
 
 	if self.HasEnemyIncapacitated == true then 
-		self.CombatFaceEnemy = false
+		self.ConstantlyFaceEnemy = false
 		if self.VJ_IsBeingControlled then
 			self.AnimTbl_IdleStand = {self:GetSequenceActivity(self:LookupSequence(self.IncapAnimation))}
 		end
@@ -1374,8 +1419,12 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:L4D2_DeathMessage("SKE",ent)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-	self:L4D2_DeathMessage(dmginfo:GetAttacker())
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 	self:DismountCharger()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------

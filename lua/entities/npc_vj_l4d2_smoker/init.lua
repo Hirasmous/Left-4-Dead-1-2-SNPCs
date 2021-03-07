@@ -39,7 +39,7 @@ ENT.HasRangeAttack = true -- Should the SNPC have a range attack?
 ENT.AnimTbl_RangeAttack = {"vjseq_Tongue_Attack_Grab_Survivor"} -- Range Attack Animations
 ENT.RangeAttackPos_Up = 47
 ENT.RangeDistance = 780 -- This is how far away it can shoot
-ENT.RangeToMeleeDistance = 250 -- How close does it have to be until it uses melee? -- This is how far away it can shoot
+ENT.RangeToMeleeDistance = 5 -- How close does it have to be until it uses melee? -- This is how far away it can shoot
 ENT.RangeUseAttachmentForPos = true -- Should the projectile spawn on a attachment?
 ENT.RangeUseAttachmentForPosID = "smoker_mouth" -- The attachment used on the range attack if RangeUseAttachmentForPos is set to true
 ENT.RangeAttackEntityToSpawn = "obj_vj_l4d2_tongue" -- The entity that is spawned when range attacking
@@ -122,15 +122,15 @@ ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "Common"
-ENT.NextAlertSound = CurTime()
+ENT.NextAlertSound = CurTime() 
 ENT.IncapLights_Spawned = false
+ENT.HasRandomAlertSounds = false
 
 util.AddNetworkString("L4D2SmokerHUD")
 util.AddNetworkString("L4D2SmokerHUDGhost")
 
 util.AddNetworkString("Smoker_CreateTongue")
 util.AddNetworkString("Smoker_DestroyTongue")
-util.AddNetworkString("Smoker_InitializeParticles")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:L4D2_InitializeHooks()
@@ -155,7 +155,17 @@ function ENT:CustomOnInitialize()
 
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
+	if GetConVarNumber("vj_l4d2_ghosted") == 0 then
+		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
+		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
+		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine")) 
+		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine"))
+		ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
+	end
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnGhost()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
@@ -163,12 +173,6 @@ function ENT:OnUnGhost()
 		net.WriteEntity(self)
 	net.Broadcast()
 	VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnUnSetGhost()
-	net.Start("Smoker_InitializeParticles")
-		net.WriteEntity(self)
-	net.Broadcast()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -277,10 +281,12 @@ function ENT:SmokerIncapacitate(ent)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:DismountSmoker()
-	if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:Health() > 0 then
-		util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pIncapacitatedEnemy:GetPos(), false, self:EntIndex(), 3)
-	else
-		VJ_CreateSound(self, "player/smoker/miss/smoker_reeltonguein_05.mp3", 75, self:VJ_DecideSoundPitch(100,95))
+	if self:IsFlagSet(FL_KILLME) == false then
+		if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy:Health() > 0 then
+			util.ParticleTracerEx("smoker_tongue_new_fall", self:GetPos(), self.pIncapacitatedEnemy:GetPos(), false, self:EntIndex(), 3)
+		else
+			VJ_CreateSound(self, "player/smoker/miss/smoker_reeltonguein_05.mp3", 75, self:VJ_DecideSoundPitch(100,95))
+		end
 	end
 	net.Start("Smoker_DestroyTongue")
 		net.WriteString(tostring(self:EntIndex()))
@@ -376,7 +382,8 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_BeforeStartTimer(seed) 
 	if self:IsShoved() then return end
-	if self.VJ_IsBeingControlled == false then
+	if self.VJ_IsBeingControlled == false && !self.IsGhosted then
+		if self.IsGhosted then self.vStopAttacks = true self:StopAttacks(true) end
 		self:VJ_ACT_PLAYACTIVITY("vjseq_Tongue_Attack_Antic",false,VJ_GetSequenceDuration(self,"vjseq_Tongue_Attack_Antic"),false)
 	end
 end
@@ -429,7 +436,7 @@ function ENT:CustomOnSchedule()
 		if self.IsChokingEnemy == true then
 			self:VJ_PlaySequence(self.IncapAnimation)
 			if dist > self.IncapacitationRange then
-				self.IsChokingEnemy = true
+				self:DismountSmoker()
 			end
 		else
 			self:VJ_PlaySequence("Tongue_Attack_Drag_Survivor_Idle")
@@ -458,6 +465,7 @@ function ENT:CustomOnThink()
 	end
 	if self.IsGhosted then
 		self.HasRangeAttack = false
+		self:StopParticles()
 	else
 		self.HasRangeAttack = true
 	end
@@ -847,15 +855,24 @@ function ENT:CustomOnThink()
 						if self.IncapLights_Spawned == false then
 							self.IncapLights_Spawned = true
 							self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+
 							self:PlayIncapTagSound("vj_l4d2/music/tags/asphyxiationhit.mp3")
 						end
 					end
 					if self.IncapLights_Spawned == false then
 						self.IncapLights_Spawned = true
-						self:PlayIncapTagSound("vj_l4d2/music/tags/asphyxiationhit.mp3")
+						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+						for k, v in ipairs(ents.FindByClass("player")) do
+							if enemy:IsNPC() then
+								VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
+							end
+						end
 					end
 					if ene:IsPlayer() then
-						self:Incap_Lighting(ene, false)
+						if self.IncapLights_Spawned == false then
+							self.IncapLights_Spawned = true
+							self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+						end
 						ene:SpectateEntity(self.Camera)
 						ene:SetFOV(80)
 					end
@@ -868,6 +885,7 @@ function ENT:CustomOnThink()
 					if self.IncapLights_Spawned == false then
 						self.IncapLights_Spawned = true
 						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
+						self:PlayIncapTagSound("vj_l4d2/music/tags/asphyxiationhit.mp3")
 					end
 				end
 			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
@@ -904,10 +922,14 @@ function ENT:CustomOnThink()
 		self:PlayBacteria()
 	end
 
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
-	else
-		self.ConstantlyFaceEnemy = true
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
+		if !self.IsGhosted then
+			self.ConstantlyFaceEnemy = false
+		    self.HasRangeAttack = false
+		else
+			self.ConstantlyFaceEnemy = true
+			self.HasRangeAttack = true
+		end
 	end
 
 	self:ManageHUD(self.VJ_TheController)
@@ -968,9 +990,13 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
 	end) 
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:L4D2_DeathMessage("SKE",ent)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, corpseEnt)
 	corpseEnt:GetPhysicsObject():SetVelocity(corpseEnt:GetPhysicsObject():GetVelocity() +self:GetUp() *15000 +VectorRand() *15000)
-	self:L4D2_DeathMessage(dmginfo:GetAttacker())
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 	self:DismountSmoker()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------

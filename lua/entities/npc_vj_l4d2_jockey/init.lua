@@ -114,7 +114,8 @@ ENT.FootStepType = "CommonLight"
 ENT.pNavigator = nil
 ENT.EnemyCollisionBounds = nil
 ENT.IncapDamage = 3
-ENT.NextAlertSound = CurTime()
+ENT.NextAlertSound = CurTime() 
+ENT.HasRandomAlertSounds = false
 
 util.AddNetworkString("L4D2JockeyHUD")
 util.AddNetworkString("L4D2JockeyHUDGhost")
@@ -145,6 +146,9 @@ function ENT:CustomOnInitialize()
 	self.nextBacteria = 0
 	self.soundVassal = ""
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:OnGhost()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
@@ -358,10 +362,20 @@ function ENT:CustomOnThink()
 	end
 	if self.IsGhosted then
 		self.HasLeapAttack = false
+		self.HasMeleeAttack = false
 		self.CanPounce = false
 	else
 		self.HasLeapAttack = true
+		self.HasMeleeAttack = true
 		self.CanPounce = true
+	end
+
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
+		if !self.IsGhosted then
+			self.ConstantlyFaceEnemy = false
+		else
+			self.ConstantlyFaceEnemy = true
+		end
 	end
 
 	self.vecLastPos = self:GetPos()
@@ -495,7 +509,7 @@ function ENT:CustomOnThink()
 							self:ClearPoseParameters()
 
 							v:SetNoDraw(true)
-							
+
 							self:PlayIncapTagSound("vj_l4d2/music/tags/vassalationhit.mp3")
 
 							if v:IsNPC() then
@@ -697,14 +711,10 @@ function ENT:CustomOnThink()
 			self.IncapSound:Stop()
 		end
 		self.HasIdleSounds = true
-		self.HasMeleeAttack = true
 		self.CombatFaceEnemy = true
-	end
-
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
-	else
-		self.ConstantlyFaceEnemy = true
+		if !self.IsGhosted then
+			self.HasMeleeAttack = true
+		end
 	end
 
 	self:ManageHUD(self.VJ_TheController)
@@ -736,8 +746,12 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:L4D2_DeathMessage("SKE",ent)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo,hitgroup,GetCorpse)
-	self:L4D2_DeathMessage(dmginfo:GetAttacker())
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 	self:ResetJockey()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------

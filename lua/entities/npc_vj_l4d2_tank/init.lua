@@ -182,6 +182,7 @@ function ENT:CheckRangeAttack(pos)
 				self.DebrisType = "Rock"
 				self.HasRangeAttack = true
 			else 
+				self.DebrisType = "Rock"
 				self.HasRangeAttack = false
 			end
 		end
@@ -296,10 +297,6 @@ function ENT:CustomOnRangeAttack_AfterStartTimer()
 	end)		
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnDoKilledEnemy(argent,attacker,inflictor)
-	self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,VJ_GetSequenceDuration(self,ACT_ARM),true)
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_land" then
 		VJ_CreateSound(self,"player/tank/fall/tank_death_bodyfall_01.mp3",85,self:VJ_DecideSoundPitch(100,100))
@@ -358,13 +355,13 @@ function ENT:PlayTankSong(bOverwrite)
 	local sndIncap = self.SoundTrack[1]
 	local filter = RecipientFilter()
 	filter:AddAllPlayers()
-	for k, v in ipairs(ents.FindByClass("player")) do 
+	--[[for k, v in ipairs(ents.FindByClass("player")) do 
 		for l, w in ipairs(ents.FindByClass("npc_vj_l4d*")) do
 			if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then
 				filter:RemovePlayer(v)
 			end
 		end
-	end
+	end]]
 	local sound = CreateSound(self, sndIncap, filter)
 	self.TankSong = sound
 	sound:SetSoundLevel(0)
@@ -448,17 +445,15 @@ function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
 			end
 		end)
 	end
-end			  
+end			
+---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:VJ_ACT_PLAYACTIVITY(ACT_ARM,true,VJ_GetSequenceDuration(self,ACT_ARM),true)
+	self:L4D2_DeathMessage("SKE",ent)
+end  
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomDeathAnimationCode(dmginfo,hitgroup)	  
-	local attacker = dmginfo:GetAttacker()
-	if IsValid(attacker) then
-		if attacker:IsNPC() then
-			PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
-		elseif attacker:IsPlayer() then
-			PrintMessage(HUD_PRINTTALK, attacker:Nick().." killed ".. self:GetName())
-		end
-	end
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 	if self:IsMoving() && self:GetActivity() == ACT_RUN then
 		self.AnimTbl_Death = {"Death_2"}
 	end
