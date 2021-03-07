@@ -1,75 +1,56 @@
-❗ - BEFORE RELEASE
 ✅ - COMPLETED
-❌ - IGNORE FOR NOW
 
 Boomer:
--Make it still vomit if shoved (otherwise it has to wait 20 seconds in order to be able range attack again when it didn't even vomit) ✅
+-Improve Boomer vomitting (match ability to effect enemy with vomit particle)
+-Stop playing vomit anim if enemy is too far and it didn't vomit
 
 Boomette:
 
 Charger:
--Make it carry enemies up hills/steep surfaces ❌ 
--Add idle crouching when controlling ✅
+-Make it carry enemies up hills/steep surfaces
+-Incap light starts flashing sometimes when transitioning from carry to pound
 
 Hunter:
 
 Jockey:
--Disable sounds when incapping ❌
 
 Smoker:
+-Stops incapacitating when the enemy is within incap range
 
 Spitter:
 
 Tank:
 
 Witch:
+-Show Witch blood slash particles only if it hit something
+-Wandering Witch:
+	>-Don't wander if an enemy is within range
 
 General:
--Reset recharge after Dismount*() is called ❌
--Add original viewmodels when controlling in first-person ❌
--Resize materials (what happened to them?!) ❌
--Give player grenades (if he had them before) when stopping incapping ❌
--Don't player tag sounds for specials ❌
--Make ConVar to disable music system ✅
+-Reset recharge after Dismount*() is called
+-Add original viewmodels when controlling in first-person
+-Resize materials (what happened to them?!)
+-Give player grenades (if he had them before) when rescued
+-Don't play tag sounds for specials
+-Disable alert/idle sounds when incapping
 
 Bugs:
--Multiplayer:
-	>-Can't ghost ✅
 - Sometimes when an incapper dies the enemy gets sent to a random location ✅ (gone for now)
-- Charger never reaches carry target sometimes ✅
-- The first Boomer overlay to be initiated in the server doesn't show
+- MP: The first Boomer overlay to be initiated in the server doesn't show (can't really do anything here) ❌
 - Witch music plays remaining song duration after it's removed
 
 ConVars:
--Spitter goo damage slider ❌
--Other special infected damage sliders ❌
-
-Before release:
--Tank: Don't range when climbing ✅
-
-Tensor:
--General
-	>-Give player grenades (if he had them before) when stopping incapping
-	>-Add ConVar to disable music system ✅
-
-Hirasmous:
--Boomer
-	>-Improve Boomer vomitting (match ability to effect enemy with vomit particle) ❗
-	>-Stop playing vomit anim if enemy is too far and it didn't vomit ❗
--Witch
-	>-Show Witch blood slash particles only if it hit something ❗
--General
-	>-Add customizable halo colors (Allies,Enemies,Ghosted Allies) ✅
-	>-Fix thirdperson view when Hunter/Charger are incapping ❗
+-Spitter goo damage slider
+-Other Special Infected damage sliders
 	
 Next update:
 -Rewrite Boomer
--Give player grenades after incap'd
+-Give player grenades when rescued
 -Touch up the music system
 -Improve Charger
 -Temporarily incap player when hit by Tank
 -Temporarily incap player if hit by a charger carrying an enemy
 -Add configurable damage via sliders
 -Resize materials
--Fix incap'd enemies getting stuck in special after it is shoved
+-Fix rescued incap'd enemies getting stuck in Special after it is shoved
 -Improve Jockey hitbox when incapping
