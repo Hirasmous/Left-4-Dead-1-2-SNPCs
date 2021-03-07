@@ -798,13 +798,73 @@ function NPC:Infected_IsCrouching()
 	return false
 end
 
-function NPC:L4D2_DeathMessage(attacker)
+function NPC:L4D2_DeathMessage(messagetype,attacker)
 	if GetConVar("vj_l4d2_print"):GetInt() == 1 then
-		if IsValid(attacker) then
-			if attacker:IsNPC() then
-				PrintMessage(HUD_PRINTTALK, attacker:GetClass().." killed ".. self:GetName())
-			elseif attacker:IsPlayer() then
-				PrintMessage(HUD_PRINTTALK, attacker:GetName().." killed ".. self:GetName())
+		if messagetype == "EKS" then
+			if IsValid(attacker) then
+				if attacker:IsNPC() then
+					if attacker.IsVJBaseSNPC then
+						net.Start("Infected_PrintChat")
+							net.WriteVector(Vector(255,0,0))
+							net.WriteVector(Vector(255,255,255))
+							net.WriteVector(Vector(255,0,0))
+							net.WriteString(attacker:GetName())
+							net.WriteString(" killed ")
+							net.WriteString(self:GetName()) 
+					    net.Broadcast()
+					else
+						net.Start("Infected_PrintChat")
+							net.WriteVector(Vector(255,0,0))
+							net.WriteVector(Vector(255,255,255))
+							net.WriteVector(Vector(255,0,0))
+							net.WriteString(attacker:GetClass())
+							net.WriteString(" killed ")
+							net.WriteString(self:GetName()) 
+					    net.Broadcast()
+					end
+				elseif attacker:IsPlayer() then
+					net.Start("Infected_PrintChat")
+						net.WriteVector(Vector(255,0,0))
+						net.WriteVector(Vector(255,255,255))
+						net.WriteVector(Vector(255,0,0))
+						net.WriteString(attacker:Nick())
+						net.WriteString(" killed ")
+						net.WriteString(self:GetName())
+					net.Broadcast()
+				end
+			end
+		elseif messagetype == "SKE" then
+			if IsValid(attacker) then
+				if attacker:IsNPC() then
+					if attacker.IsVJBaseSNPC then
+						net.Start("Infected_PrintChat")
+							net.WriteVector(Vector(255,0,0))
+							net.WriteVector(Vector(255,255,255))
+							net.WriteVector(Vector(255,0,0))
+							net.WriteString(self:GetName())
+							net.WriteString(" killed ")
+							net.WriteString(attacker:GetName())
+						net.Broadcast()
+					else
+						net.Start("Infected_PrintChat")
+							net.WriteVector(Vector(255,0,0))
+							net.WriteVector(Vector(255,255,255))
+							net.WriteVector(Vector(255,0,0))
+							net.WriteString(self:GetName())
+							net.WriteString(" killed ")
+							net.WriteString(attacker:GetClass())
+						net.Broadcast()
+					end
+				elseif attacker:IsPlayer() then
+					net.Start("Infected_PrintChat")
+						net.WriteVector(Vector(255,0,0))
+						net.WriteVector(Vector(255,255,255))
+						net.WriteVector(Vector(255,0,0))
+						net.WriteString(self:GetName())
+						net.WriteString(" killed ")
+						net.WriteString(attacker:Nick())
+					net.Broadcast()
+				end
 			end
 		end
 	end
