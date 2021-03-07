@@ -131,6 +131,7 @@ util.AddNetworkString("L4D2SmokerHUDGhost")
 
 util.AddNetworkString("Smoker_CreateTongue")
 util.AddNetworkString("Smoker_DestroyTongue")
+util.AddNetworkString("Smoker_InitializeParticles")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:L4D2_InitializeHooks()
@@ -155,13 +156,6 @@ function ENT:CustomOnInitialize()
 
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
-	if GetConVarNumber("vj_l4d2_ghosted") == 0 then
-		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
-		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("smoker_mouth")) 
-		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine")) 
-		ParticleEffectAttach("smoker_spore_trail_spores_cluster",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("spine"))
-		ParticleEffectAttach("smoker_spore_trail",PATTACH_POINT_FOLLOW,self,0)
-	end
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -862,11 +856,7 @@ function ENT:CustomOnThink()
 					if self.IncapLights_Spawned == false then
 						self.IncapLights_Spawned = true
 						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
-						for k, v in ipairs(ents.FindByClass("player")) do
-							if enemy:IsNPC() then
-								VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-							end
-						end
+						self:PlayIncapTagSound("vj_l4d2/music/tags/asphyxiationhit.mp3")
 					end
 					if ene:IsPlayer() then
 						if self.IncapLights_Spawned == false then
