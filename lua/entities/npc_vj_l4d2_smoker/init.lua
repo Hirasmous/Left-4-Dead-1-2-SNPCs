@@ -165,12 +165,6 @@ function ENT:OnUnGhost()
 	VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnUnSetGhost()
-	net.Start("Smoker_InitializeParticles")
-		net.WriteEntity(self)
-	net.Broadcast()
-end
----------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_emit FootStep" then
 		self:FootStepSoundCode()
