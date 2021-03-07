@@ -521,14 +521,7 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnLeapAttack_AfterChecks(TheHitEntity)
 	self:PummelEnemy(TheHitEntity)
-	for k, v in ipairs(ents.FindByClass("player")) do
-		if TheHitEntity:IsPlayer() then
-			VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.mp3",90,self:VJ_DecideSoundPitch(100,100))
-		elseif TheHitEntity:IsNPC() then
-			TheHitEntity:StopMoving()
-			VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-		end
-	end
+	self:PlayIncapTagSound("vj_l4d2/music/tags/contusionhit.mp3", TheHitEntity)
 	return
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -942,13 +935,7 @@ function ENT:CarryEnemy()
 		self:SetTarget(tgt)
 		self:DeleteOnRemove(tgt)
 		VJ_EmitSound(self,self.SoundTbl_Charger_Pummel,75,self:VJ_DecideSoundPitch(100,95)) 
-		for k, v in ipairs(ents.FindByClass("player")) do
-			if self.pChargeEnt:IsPlayer() then
-				VJ_CreateSound(v,"vj_l4d2/music/special_attacks/contusion.mp3",90,self:VJ_DecideSoundPitch(100,100))
-			elseif self.pChargeEnt:IsNPC() then
-				VJ_CreateSound(v,"vj_l4d2/music/tags/contusionhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-			end
-		end		
+		self:PlayIncapTagSound("vj_l4d2/music/tags/contusionhit.mp3", tgt, true)
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1120,11 +1107,7 @@ function ENT:SetUpCharger()
 	self.MovementType = VJ_MOVETYPE_STATIONARY
 	self:VJ_ACT_PLAYACTIVITY("vjseq_"..self.IncapAnimation)
 	self:Incap_Lighting(self.pIncapacitatedEnemy, false)
-	for k, v in ipairs(ents.FindByClass("player")) do
-		if self.pIncapacitatedEnemy:IsNPC() then
-			VJ_CreateSound(v,"vj_l4d2/music/tags/mortificationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-		end
-	end
+	self:PlayIncapTagSound("vj_l4d2/music/tags/mortificationhit.mp3")
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnThink()
