@@ -39,7 +39,7 @@ ENT.HasRangeAttack = true -- Should the SNPC have a range attack?
 ENT.AnimTbl_RangeAttack = {"vjseq_Tongue_Attack_Grab_Survivor"} -- Range Attack Animations
 ENT.RangeAttackPos_Up = 47
 ENT.RangeDistance = 780 -- This is how far away it can shoot
-ENT.RangeToMeleeDistance = 250 -- How close does it have to be until it uses melee? -- This is how far away it can shoot
+ENT.RangeToMeleeDistance = 125 -- How close does it have to be until it uses melee? -- This is how far away it can shoot
 ENT.RangeUseAttachmentForPos = true -- Should the projectile spawn on a attachment?
 ENT.RangeUseAttachmentForPosID = "smoker_mouth" -- The attachment used on the range attack if RangeUseAttachmentForPos is set to true
 ENT.RangeAttackEntityToSpawn = "obj_vj_l4d2_tongue" -- The entity that is spawned when range attacking
@@ -163,12 +163,6 @@ function ENT:OnUnGhost()
 		net.WriteEntity(self)
 	net.Broadcast()
 	VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
-end
----------------------------------------------------------------------------------------------------------------------------------------------
-function ENT:CustomOnUnSetGhost()
-	net.Start("Smoker_InitializeParticles")
-		net.WriteEntity(self)
-	net.Broadcast()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
