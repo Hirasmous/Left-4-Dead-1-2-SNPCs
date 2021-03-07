@@ -540,11 +540,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 											self:IncapacitateEnemy(enemy, mdl)
 										end
 										self.pEnemyRagdoll = mdl
-										for k, v in ipairs(ents.FindByClass("player")) do
-											if enemy:IsNPC() then
-												VJ_CreateSound(v,"vj_l4d2/music/tags/exenterationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-											end
-										end
+										self:PlayIncapTagSound("vj_l4d2/music/tags/exenterationhit.mp3")
 										enemy:CallOnRemove("hunter_ClearParent", function(ent)
 											if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
 												self:DismountHunter()
