@@ -64,9 +64,11 @@ if( file.Exists( VJExists, "GAME" ) ) then
 	game.AddParticles("particles/item_fx.pcf")
 
 	PrecacheParticleSystem("smoker_tongue")
-	PrecacheParticleSystem("vomit_jar")
 	PrecacheParticleSystem("smoker_spore_trail_spores_cluster")
 	PrecacheParticleSystem("smoker_spore_trail")
+	
+	PrecacheParticleSystem("spitter_drool")
+	PrecacheParticleSystem("spitter_slime_trail")
 
 	-- Boomer
 	VJ.AddConVar("vj_l4d2_b_h",50)
