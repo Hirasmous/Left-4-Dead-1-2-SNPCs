@@ -124,6 +124,7 @@ ENT.IsGhosted = false
 ENT.FootStepType = "Common"
 ENT.NextAlertSound = CurTime()
 ENT.IncapLights_Spawned = false
+ENT.HasRandomAlertSounds = false
 
 util.AddNetworkString("L4D2SmokerHUD")
 util.AddNetworkString("L4D2SmokerHUDGhost")
@@ -370,7 +371,8 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnRangeAttack_BeforeStartTimer(seed) 
 	if self:IsShoved() then return end
-	if self.VJ_IsBeingControlled == false then
+	if self.VJ_IsBeingControlled == false && !self.IsGhosted then
+		if self.IsGhosted then self.vStopAttacks = true self:StopAttacks(true) end
 		self:VJ_ACT_PLAYACTIVITY("vjseq_Tongue_Attack_Antic",false,VJ_GetSequenceDuration(self,"vjseq_Tongue_Attack_Antic"),false)
 	end
 end
@@ -898,10 +900,14 @@ function ENT:CustomOnThink()
 		self:PlayBacteria()
 	end
 
-	if self.VJ_IsBeingControlled then
-		self.ConstantlyFaceEnemy = false
-	else
-		self.ConstantlyFaceEnemy = true
+	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
+		if !self.IsGhosted then
+			self.ConstantlyFaceEnemy = false
+		    self.HasRangeAttack = false
+		else
+			self.ConstantlyFaceEnemy = true
+			self.HasRangeAttack = true
+		end
 	end
 
 	self:ManageHUD(self.VJ_TheController)
@@ -962,9 +968,13 @@ function ENT:CustomOnPriorToKilled(dmginfo,hitgroup)
 	end) 
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnDoKilledEnemy(ent, attacker, inflictor)
+	self:L4D2_DeathMessage("SKE",ent)
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnDeath_AfterCorpseSpawned(dmginfo, hitgroup, corpseEnt)
 	corpseEnt:GetPhysicsObject():SetVelocity(corpseEnt:GetPhysicsObject():GetVelocity() +self:GetUp() *15000 +VectorRand() *15000)
-	self:L4D2_DeathMessage(dmginfo:GetAttacker())
+	self:L4D2_DeathMessage("EKS",dmginfo:GetAttacker())
 	self:DismountSmoker()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
