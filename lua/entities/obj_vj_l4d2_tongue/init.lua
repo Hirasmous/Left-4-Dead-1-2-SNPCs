@@ -136,10 +136,11 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					dragObj:SetSolid(SOLID_BBOX)
 					dragObj:SetCollisionGroup(1)
 					dragObj:SetPos(enemy:GetPos() + enemy:OBBCenter())
-					dragObj:Spawn()
-					owner.pEnemyObj = dragObj
 					dragObj:DrawShadow(false) 
 					dragObj:SetNoDraw(true)
+					dragObj:SetRenderMode(1)
+					dragObj:Spawn()
+					owner.pEnemyObj = dragObj
 					enemy:SetGravity(0)
 					enemy:SetMoveType(MOVETYPE_FLY)
 					constraint.NoCollide(enemy, dragObj, 1, 1)
