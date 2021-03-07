@@ -100,37 +100,40 @@ ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.FootStepType = "Common"
 ENT.NextAlertSound = CurTime()
+ENT.GlowLight = nil
 
 util.AddNetworkString("L4D2SpitterHUD")
 util.AddNetworkString("L4D2SpitterHUDGhost")
+
+util.AddNetworkString("Spitter_InitializeParticles")
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnInitialize()
 	self:L4D2_InitializeHooks()
 	self:SetHullType(self.HullType)
 	self.nextBacteria = 0
 	if GetConVarNumber("vj_l4d2_ghosted") == 0 then
-		ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
-		ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
-		local glowlight = ents.Create("light_dynamic")
-		glowlight:SetKeyValue("_light","110 230 0 255")
-		glowlight:SetKeyValue("brightness","0.1")
-		glowlight:SetKeyValue("distance","150")
-		glowlight:SetKeyValue("style","0")
-		glowlight:SetPos(self:GetPos())
-		glowlight:SetParent(self)
-		glowlight:Spawn()
-		glowlight:Activate()
-		glowlight:Fire("SetParentAttachment","mouth")
-		glowlight:Fire("TurnOn","",0)
-		self:DeleteOnRemove(glowlight)
+		local light = ents.Create("light_dynamic")
+		light:SetKeyValue("_light","110 230 0 255")
+		light:SetKeyValue("brightness","0.1")
+		light:SetKeyValue("distance","150")
+		light:SetKeyValue("style","0")
+		light:SetPos(self:GetPos())
+		light:SetParent(self)
+		light:Spawn()
+		light:Activate()
+		light:Fire("SetParentAttachment","mouth")
+		light:Fire("TurnOn","",0)
+		self:DeleteOnRemove(light)
+		self.GlowLight = light
 	end
 	self:SetGhost(tobool(GetConVarNumber("vj_l4d2_ghosted")))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnUnGhost()
-    VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
-    ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
-    ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
+	net.Start("Spitter_InitializeParticles")
+		net.WriteEntity(self)
+	net.Broadcast()
+	VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
@@ -214,16 +217,16 @@ end
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos())
 	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
-	    self:Special_Think()
+		self:Special_Think()
 	end
 	
 	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
-        self.FindEnemy_UseSphere = true 
-        self.FindEnemy_CanSeeThroughWalls = true 
-    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
-        self.FindEnemy_UseSphere = false 
-        self.FindEnemy_CanSeeThroughWalls = false
-    end
+		self.FindEnemy_UseSphere = true 
+		self.FindEnemy_CanSeeThroughWalls = true 
+	elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+		self.FindEnemy_UseSphere = false 
+		self.FindEnemy_CanSeeThroughWalls = false
+	end
 	if self.IsGhosted then
 		self:Ghost()
 	end
