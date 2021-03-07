@@ -18,6 +18,7 @@ Smoker:
 -Stops incapacitating when the enemy is within incap range
 
 Spitter:
+-Drool particles don't come back after ghosting
 
 Tank:
 
