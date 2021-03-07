@@ -65,6 +65,8 @@ if( file.Exists( VJExists, "GAME" ) ) then
 
 	PrecacheParticleSystem("smoker_tongue")
 	PrecacheParticleSystem("vomit_jar")
+	PrecacheParticleSystem("smoker_spore_trail_spores_cluster")
+	PrecacheParticleSystem("smoker_spore_trail")
 
 	-- Boomer
 	VJ.AddConVar("vj_l4d2_b_h",50)
@@ -105,6 +107,8 @@ if( file.Exists( VJExists, "GAME" ) ) then
     VJ.AddClientConVar("vj_l4d2_halo_ghost_g",150)
     VJ.AddClientConVar("vj_l4d2_halo_ghost_b",150)
 
+    VJ.AddClientConVar("vj_l4d2_particles", 1)
+
     -- Other 
     VJ.AddConVar("vj_l4d2_musictype",1)
     VJ.AddConVar("vj_l4d2_tanktype",1)
@@ -126,11 +130,14 @@ if SERVER then
 
 	hook.Add("KeyPress", "Infected_Ghost", function(ply, key)
 		if ply.IsControlingNPC == true then
+			local npc = ply.VJ_TheControllerEntity.VJCE_NPC
+			if not string.find(npc:GetClass(), "npc_vj_l4d") then return end
+			if string.find(npc:GetClass(), "_com") then return end
 			if key == IN_USE then
-				if ply.VJ_TheControllerEntity.VJCE_NPC.IsGhosted == true then
-					ply.VJ_TheControllerEntity.VJCE_NPC:SetGhost(false)
-				elseif ply.VJ_TheControllerEntity.VJCE_NPC.IsGhosted == false then
-					ply.VJ_TheControllerEntity.VJCE_NPC:SetGhost(true)
+				if npc.IsGhosted == true then
+					npc:SetGhost(false)
+				elseif npc.IsGhosted == false then
+					npc:SetGhost(true)
 				end
 			end
 		end
@@ -139,6 +146,8 @@ if SERVER then
 		if ply.IsControlingNPC == true then
 			if key == IN_DUCK then
 				local npc = ply.VJ_TheControllerEntity.VJCE_NPC
+				if not string.find(npc:GetClass(), "npc_vj_l4d") then return end
+				if string.find(npc:GetClass(), "_com") then return end
 				if npc:LookupSequence("Crouch_Idle_Upper_Knife") ~= -1 then
 					seq = "Crouch_Idle_Upper_Knife"
 				elseif npc:LookupSequence("Crouch_Idle") ~= -1 then
@@ -158,6 +167,8 @@ if SERVER then
 		if ply.IsControlingNPC == true then
 			if key == IN_DUCK then
 				local npc = ply.VJ_TheControllerEntity.VJCE_NPC
+				if not string.find(npc:GetClass(), "npc_vj_l4d") then return end
+				if string.find(npc:GetClass(), "_com") then return end
 				npc.AnimTbl_IdleStand = {ACT_IDLE}
 				npc.AnimTbl_Walk = {ACT_WALK}
 				npc.AnimTbl_Run = {ACT_RUN}
@@ -188,6 +199,7 @@ if CLIENT then
 			tank_type.Options["TheSacrifice"] = {vj_l4d2_tanktype = 2}
 
 			Panel:AddControl("Checkbox", {Label = "Should the music system play?", Command = "vj_l4d2_music"})
+			Panel:AddControl("Checkbox", {Label = "Should particles show (clientside)?", Command = "vj_l4d2_particles"})
 			Panel:AddControl("Checkbox", {Label = "Should incapacitated NPCs drop their weapons?", Command = "vj_l4d2_npcs_dropweapons"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected start ghosted?", Command = "vj_l4d2_ghosted"})
 			Panel:AddControl("Checkbox", {Label = "Do Special Infected see through walls/see all around?", Command = "vj_l4d2_enemy_finding"})
