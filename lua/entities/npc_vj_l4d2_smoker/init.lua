@@ -165,6 +165,12 @@ function ENT:OnUnGhost()
 	VJ_CreateSound(self,self.SoundTbl_Alert,90,self:VJ_DecideSoundPitch(95,105))
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
+function ENT:CustomOnUnSetGhost()
+	net.Start("Smoker_InitializeParticles")
+		net.WriteEntity(self)
+	net.Broadcast()
+end
+---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnAcceptInput(key,activator,caller,data)
 	if key == "event_emit FootStep" then
 		self:FootStepSoundCode()
@@ -841,20 +847,12 @@ function ENT:CustomOnThink()
 						if self.IncapLights_Spawned == false then
 							self.IncapLights_Spawned = true
 							self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
-							for k, v in ipairs(ents.FindByClass("player")) do
-								if enemy:IsNPC() then
-									VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-								end
-							end
+							self:PlayIncapTagSound("vj_l4d2/music/tags/asphyxiationhit.mp3")
 						end
 					end
 					if self.IncapLights_Spawned == false then
 						self.IncapLights_Spawned = true
-						for k, v in ipairs(ents.FindByClass("player")) do
-							if enemy:IsNPC() then
-								VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-							end
-						end
+						self:PlayIncapTagSound("vj_l4d2/music/tags/asphyxiationhit.mp3")
 					end
 					if ene:IsPlayer() then
 						self:Incap_Lighting(ene, false)
@@ -870,11 +868,6 @@ function ENT:CustomOnThink()
 					if self.IncapLights_Spawned == false then
 						self.IncapLights_Spawned = true
 						self:Incap_Lighting(ene,false,self.pEnemyRagdoll)
-					end
-					for k, v in ipairs(ents.FindByClass("player")) do
-						if enemy:IsNPC() then
-							VJ_CreateSound(v,"vj_l4d2/music/tags/asphyxiationhit.mp3",95,self:VJ_DecideSoundPitch(100,100))
-						end
 					end
 				end
 			elseif self:GetSequence() == self:LookupSequence(self.IncapAnimation) then
