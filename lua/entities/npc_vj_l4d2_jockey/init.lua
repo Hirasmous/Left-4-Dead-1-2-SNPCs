@@ -495,11 +495,10 @@ function ENT:CustomOnThink()
 							self:ClearPoseParameters()
 
 							v:SetNoDraw(true)
+							
+							self:PlayIncapTagSound("vj_l4d2/music/tags/vassalationhit.mp3")
 
 							if v:IsNPC() then
-								for k, x in ipairs(ents.FindByClass("player")) do
-									VJ_CreateSound(x,"vj_l4d2/music/tags/vassalationhit.mp3",90,self:VJ_DecideSoundPitch(100,100))
-								end
 								if GetConVar("vj_l4d2_npcs_dropweapons"):GetInt() == 0 then
 									if IsValid(v:GetActiveWeapon()) then
 										v:GetActiveWeapon():SetNoDraw(true)
