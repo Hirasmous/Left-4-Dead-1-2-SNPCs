@@ -1292,14 +1292,14 @@ function ENT:CustomOnThink()
 
 	if self.IsGhosted then
 		self.HasChargeAttack = false
-		--[[if self.VJ_IsBeingControlled then
+		if self.VJ_IsBeingControlled then
 			self.HasLeapAttack = false
-		end]]
+		end
 	else
 		self.HasChargeAttack = true
-		--[[if self.VJ_IsBeingControlled then
+		if self.VJ_IsBeingControlled then
 			self.HasLeapAttack = true
-		end]]
+		end
 	end
 
 	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
