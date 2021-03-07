@@ -21,7 +21,7 @@ if CLIENT then
 					if IsValid(v) then
 						if v == LocalPlayer() then
 							local dist = v:GetPos():Distance(vec)
-							if dist > 200 then dist = 200 end
+							if dist > 200 then dist = 250 end
 							val = math.Remap(dist or 0, 250, 0, 1, 0.05)
 							tab = {
 								[ "$pp_colour_addr" ] = 0.0,
