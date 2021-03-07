@@ -290,7 +290,8 @@ function NPC:SetGhost(bool)
 	self.HasMeleeAttack = !bool
 	self.GhostRunAwayT = 0
 	self:SetNW2Bool("Ghosted",bool)
-	if bool then
+	if bool == true then
+		self:StopParticles()
 		self:SetRenderMode(RENDERMODE_NONE)
 		self:EmitSound("ui/menu_horror01.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
