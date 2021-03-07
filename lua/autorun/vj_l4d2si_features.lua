@@ -420,6 +420,23 @@ function NPC:PlayIncapSong(bOverwrite)
 	end)
 end
 
+function NPC:PlayIncapTagSound(sound, enemy, bNoIncap)
+	if GetConVar("vj_l4d2_music"):GetInt() == 1 then
+		local enemy = enemy or self.pIncapacitatedEnemy
+		for k, v in ipairs(ents.FindByClass("player")) do
+			if bNoIncap == false then
+				if enemy:IsNPC() || enemy:IsPlayer() && IsValid(self.pIncapacitatedEnemy) && self.IncapacitateEnemy ~= v then
+					VJ_CreateSound(v, sound, 75, 100)
+				end
+			else
+				if enemy:IsNPC() then
+					VJ_CreateSound(v, sound, 75, 100)
+				end
+			end
+		end
+	end
+end
+
 function NPC:CanIncapacitate(ent)
 	for k, v in ipairs(ents.FindByClass("npc_vj_l4d*")) do
 		if v.HasEnemyIncapacitated == true && IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == ent then
