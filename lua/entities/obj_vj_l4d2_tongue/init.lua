@@ -245,6 +245,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 						local tng = tongue
 						timer.Simple(0.1, function()
 							if !IsValid(owner) then return end
+							if !IsValid(enemy) || enemy:Health() <= 0 then return end
 							net.Start("Smoker_CreateTongue")
 								net.WriteString(tostring(owner:EntIndex()))
 								net.WriteEntity(tng)
