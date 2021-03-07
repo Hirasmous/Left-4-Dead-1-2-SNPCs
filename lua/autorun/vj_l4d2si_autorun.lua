@@ -129,6 +129,7 @@ if SERVER then
 	util.AddNetworkString("Infected_IncapLight")
 	util.AddNetworkString("Infected_DrawIncapOverlay")
 	util.AddNetworkString("Smoker_CloudSmokeInit")
+	util.AddNetworkString("Infected_PrintChat")
 
 	hook.Add("KeyPress", "Infected_Ghost", function(ply, key)
 		if ply.IsControlingNPC == true then
@@ -270,6 +271,17 @@ if CLIENT then
 			surface.DrawTexturedRect(0,0,ScrW(),ScrH())
 		end)
 	    if isdeleted == true then hook.Remove("RenderScreenspaceEffects","IncapOverlay") end
+	end)
+	
+	net.Receive("Infected_PrintChat",function(len,pl)
+		local color1 = net.ReadVector()
+		local color2 = net.ReadVector()
+		local color3 = net.ReadVector()
+		local text1 = net.ReadString()
+		local text2 = net.ReadString()
+		local text3 = net.ReadString()
+		
+		chat.AddText(Color(color1.x,color1.y,color1.z),text1,Color(color2.x,color2.y,color2.z),text2,Color(color3.x,color3.y,color3.z),text3)
 	end)
 end
 
