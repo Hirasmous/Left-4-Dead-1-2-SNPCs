@@ -16,6 +16,23 @@ killicon.Add("#"..LangName,"HUD/killicons/default",Color ( 255, 80, 0, 255 ) )
 end
 
 if CLIENT then
+
+	net.Receive("Spitter_InitializeParticles", function()
+		local entity = net.ReadEntity()
+		if GetConVar("vj_l4d2_particles"):GetInt() == 1 then
+			ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,entity,entity:LookupAttachment("mouth"))
+			ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,entity,entity:LookupAttachment("eye"))
+		end
+	end)
+
+	function ENT:Initialize()
+		if GetConVar("vj_l4d2_particles"):GetInt() == 1 then
+			ParticleEffectAttach("spitter_drool",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("mouth"))
+			ParticleEffectAttach("spitter_slime_trail",PATTACH_POINT_FOLLOW,self,self:LookupAttachment("eye"))
+		end
+	end
+
+
 	net.Receive("L4D2SpitterHUD",function(len,pl)
 		local isdeleted = net.ReadBool()
 		local entity = net.ReadEntity()
