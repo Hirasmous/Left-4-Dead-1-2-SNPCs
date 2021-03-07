@@ -207,9 +207,8 @@ function ENT:VomitEnemy(v,bDeath)
 		end
 		if v:IsPlayer() then
 			self:VomitEffect(v,true)
-		elseif v:IsNPC() then
-			VJ_CreateSound(v,"vj_l4d2/music/tags/pukricidehit.mp3",90,self:VJ_DecideSoundPitch(100,100))  
 		end	 
+		self:PlayIncapTagSound("vj_l4d2/music/tags/pukricidehit.mp3", v, true)
 		net.Start("nBoomer_InitializeResidue")
 			net.WriteBool(bDeath or false)
 			net.WriteVector(self:GetPos())
