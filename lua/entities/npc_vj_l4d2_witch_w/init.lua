@@ -225,25 +225,28 @@ function ENT:CustomOnThink()
 		if self.PoseParams_Rage <= 0 then
 			self:PlayCalmIdleSound() 
 		end
-		if self.PoseParams_Rage > 0 && self.PoseParams_Rage <= 0.25 then
+		if self.PoseParams_Rage > 0 && self.PoseParams_Rage <= 0.2 then
 			self:CreateAggressionSound(1)
 			self:PlayIrritatedSound(1)
-		elseif self.PoseParams_Rage > 0.25 && self.PoseParams_Rage <= 0.5 then
+		elseif self.PoseParams_Rage > 0.2 && self.PoseParams_Rage <= 0.4 then
 			self:CreateAggressionSound(1)
 			self:PlayIrritatedSound(2)
-		elseif self.PoseParams_Rage > 0.5 && self.PoseParams_Rage <= 0.75 then
+		elseif self.PoseParams_Rage > 0.4 && self.PoseParams_Rage <= 0.6 then
 			self:CreateAggressionSound(2)
 			self:PlayIrritatedSound(3)
 			if self.IsSitting == true then
 				self:VJ_ACT_PLAYACTIVITY("vjseq_Agitated_02")
 			end
-		elseif self.PoseParams_Rage > 0.75 && self.PoseParams_Rage <= 1 then
+		elseif self.PoseParams_Rage > 0.6 && self.PoseParams_Rage <= 1 then
 			self:CreateAggressionSound(3)
 			self:PlayIrritatedSound(4)
 		end
 		if self:GetEnemiesInRange() then
 			self.HasIdleSounds = false
 			self.bCanChangePPs = true
+			if self.IsSitting == false then
+				self.DisableWandering = true
+			end
 			if self.bSwitchedMode == false then
 				self.nextPoseChange = CurTime() + 1
 				self.bSwitchedMode = true
@@ -255,6 +258,8 @@ function ENT:CustomOnThink()
 					self:ResetSequenceInfo()
 				end
 				self.AnimTbl_IdleStand = {ACT_IDLE_RELAXED}
+			else
+				self.DisableWandering = false
 			end
 			self.bCanChangePPs = false
 			if self.bSwitchedMode == false then
