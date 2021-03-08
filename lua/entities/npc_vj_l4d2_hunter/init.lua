@@ -301,6 +301,8 @@ function ENT:DismountHunter()
 			enemy:GetActiveWeapon():SetNoDraw(false)
 		end
 	end
+	enemy:SetRenderMode(0)
+	enemy:SetColor(Color(255, 255, 255, 255))
 	if enemy:GetNoDraw() == true then
 		enemy:SetNoDraw(false)
 	end
@@ -508,6 +510,8 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 											if (ent1 == self and ent2 == enemy) then return false end
 										end)
 										local ang = self:GetAngles()
+										enemy:SetRenderMode(1)
+										enemy:SetColor(Color(255, 255, 255, 0))
 										enemy:SetNoDraw(true)
 										local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
 										if IsValid(self.pEnemyRagdoll) then
