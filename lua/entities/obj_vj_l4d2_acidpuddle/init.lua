@@ -10,7 +10,6 @@ ENT.TouchSoundv = 80
 ENT.DeathIdleSoundv = 90
 ENT.Decal = "vj_acidslime1"
 ENT.AlreadyPaintedDecal = false
-ENT.Damage = 45
 ENT.DamageDistance = 200
 ENT.Dead = false
 ENT.Owner = nil 
@@ -40,7 +39,7 @@ function ENT:CustomOnThink()
 				if v:IsNPC() && (v:Classify() == CLASS_ZOMBIE || v.IsVJBaseSNPC && table.HasValue(v.VJ_NPC_Class, "CLASS_ZOMBIE")) then return end
 		    if math.random(1,5) == 5 then
 			    VJ_EmitSound(self,VJ_PICKRANDOMTABLE({"player/pz/hit/zombie_slice_1.mp3","player/pz/hit/zombie_slice_2.mp3","player/pz/hit/zombie_slice_3.mp3","player/pz/hit/zombie_slice_4.mp3","player/pz/hit/zombie_slice_5.mp3","player/pz/hit/zombie_slice_6.mp3"}),65,math.random(100,100))
-			    v:TakeDamage(math.random(5, 10), self:GetOwner() or self, self:GetOwner() or self)
+			    v:TakeDamage(math.random(3, 5), self:GetOwner() or self, self:GetOwner() or self)
 			end
 		end
 	    end
