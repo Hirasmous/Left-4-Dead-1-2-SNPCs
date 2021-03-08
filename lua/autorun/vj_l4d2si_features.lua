@@ -790,6 +790,13 @@ end
 
 -- Add hooks here
 function NPC:L4D2_InitializeHooks()
+	timer.Simple(2,function()
+		if IsValid(self) then
+			if self.HasRandomAlertSounds == false then
+				self.HasRandomAlertSounds = true
+			end
+		end
+	end)
 end
 
 function NPC:Infected_IsCrouching()
