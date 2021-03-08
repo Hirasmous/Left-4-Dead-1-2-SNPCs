@@ -323,6 +323,8 @@ function ENT:PummelEnemy(v)
 						self:SetCustomCollisionCheck(true)
 						enemy:SetCustomCollisionCheck(true)				 
 						local ang = self:GetAngles()
+						enemy:SetRenderMode(1)
+						enemy:SetColor(Color(255, 255, 255, 0))
 						enemy:SetNoDraw(true)								
 						local tr = util.TraceLine({start = self:GetPos() + self:GetUp() * self:OBBMins():Distance(self:OBBMaxs()), endpos = self:GetPos() - self:GetUp() * self:OBBMaxs():Distance(self:OBBMins()), filter = {self, enemy}})
 						if IsValid(self.pEnemyRagdoll) then
@@ -360,6 +362,24 @@ function ENT:PummelEnemy(v)
 						self.pEnemyRagdoll = mdl
 						enemy:SetParent(self)
 						enemy:SetPos(self:GetPos())	
+						enemy:CallOnRemove("charger_ClearParent", function(ent)
+							if IsValid(self.pIncapacitatedEnemy) && self.pIncapacitatedEnemy == ent then
+								self:DismountCharger()
+							end
+							if ent:IsPlayer() then
+								ent:SetParent(nil)
+							end
+						end)		  
+						hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
+							if victim == self.pIncapacitatedEnemy then
+								victim:SetParent(nil)
+								victim:SetRenderMode(0)
+								victim:SetColor(Color(255, 255, 255, 255))
+								victim:SetObserverMode(0)
+								victim:DrawViewModel(true)
+								victim:DrawWorldModel(true)
+							end
+						end)
 					end
 				end
 			end
@@ -391,6 +411,8 @@ function ENT:DismountCharger()
 			enemy:GetActiveWeapon():SetNoDraw(false)
 		end
 	end
+	enemy:SetRenderMode(0)
+	enemy:SetColor(Color(255, 255, 255, 255))
 	if enemy:GetNoDraw() == true then
 		enemy:SetNoDraw(false)
 	end
