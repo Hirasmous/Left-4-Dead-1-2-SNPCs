@@ -38,17 +38,17 @@ ENT.SlowPlayerOnMeleeAttackTime = 0.5 -- How much time until player's Speed rese
 ENT.HasLeapAttack = true -- Should the SNPC have a leap attack?
 ENT.LeapAttackDamage = 15
 ENT.LeapAttackDamageType = DMG_SLASH -- Type of Damage
-ENT.TimeUntilLeapAttackDamage = 2 -- How much time until it runs the leap damage code?
-ENT.TimeUntilLeapAttackVelocity = 2 -- How much time until it runs the velocity code?
+ENT.TimeUntilLeapAttackDamage = 1 -- How much time until it runs the leap damage code?
+ENT.TimeUntilLeapAttackVelocity = 1 -- How much time until it runs the velocity code?
 ENT.NextLeapAttackTime = 1 -- How much time until it can use a leap attack?
 ENT.NextAnyAttackTime_Leap = 0.4 -- How much time until it can use any attack again? | Counted in Seconds
-ENT.LeapAttackVelocityForward = 300 -- How much forward force should it apply?
-ENT.LeapAttackVelocityUp = 285 -- How much upward force should it apply?
+ENT.LeapAttackVelocityForward = 500 -- How much forward force should it apply?
+ENT.LeapAttackVelocityUp = 335 -- How much upward force should it apply?
 ENT.LeapAttackAnimationDelay = 2 -- It will wait certain amount of time before playing the animation
 ENT.LeapAttackAnimationFaceEnemy = true -- Should it face the enemy while playing the leap attack animation?
 ENT.LeapAttackAnimationDecreaseLengthAmount = 0 -- This will decrease the time until starts chasing again. Use it to fix animation pauses until it chases the enemy.
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
-ENT.LeapDistance = 750 -- The distance of the leap, for example if it is set to 500, when the SNPC is 500 Unit away, it will jump
+ENT.LeapDistance = 950 -- The distance of the leap, for example if it is set to 500, when the SNPC is 500 Unit away, it will jump
 ENT.LeapToMeleeDistance = 50 -- How close does it have to be until it uses melee?
 ENT.LeapAttackDamageDistance = 100 -- How far does the damage go?
 ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
@@ -87,7 +87,7 @@ ENT.FootStepSoundLevel = 80
 ENT.AlertSoundLevel = 95
 ENT.IdleSoundLevel = 95
 ENT.DeathSoundLevel = 85
-ENT.LeapAttackJumpSoundLevel = 95
+ENT.LeapAttackJumpSoundLevel = 85
 ENT.BeforeLeapAttackSoundLevel = 105
 ENT.LeapAttackJumpSoundPitch1 = 95
 ENT.LeapAttackJumpSoundPitch1 = 105
@@ -124,6 +124,11 @@ ENT.NextFlyLoopSound = CurTime()
 ENT.EnemyMoveType = 3
 ENT.NextAlertSound = CurTime() 
 ENT.HasRandomAlertSounds = false
+ENT.IsCrouching = false
+
+ENT.JumpAttackTimer = 0.5 -- Primary timer
+ENT.JumpAttackTimer1 = 0.88
+ENT.JumpAttackTimer2 = 0.98
 
 util.AddNetworkString("L4D2HunterHUD")
 util.AddNetworkString("L4D2HunterHUDGhost")
@@ -361,7 +366,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 	self.nEntityIndex = self:EntIndex()
 	self:SetNW2Float("PounceT",CurTime() +self.NextLeapAttackTime)
 	if self.VJ_IsBeingControlled == false then
-		timer.Simple(1.89,function()
+		timer.Simple(self.JumpAttackTimer1,function()
 			if IsValid(self) && IsValid(self:GetEnemy()) then
 				if self:IsShoved() then return end 
 				self:VJ_ACT_PLAYACTIVITY("Pounce_01",true,1.7,true) 
@@ -379,7 +384,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 		end)
 	end
 	if self.VJ_IsBeingControlled == false then
-		timer.Simple(1.9, function()
+		timer.Simple(self.JumpAttackTimer2, function()
 			if IsValid(self) && IsValid(self:GetEnemy()) then 
 				if self:IsShoved() then return end 
 				self:VJ_ACT_PLAYACTIVITY("Pounce_Idle_01",false,1.2,false)
@@ -397,7 +402,7 @@ function ENT:CustomOnLeapAttack_AfterStartTimer()
 		end)
 	end
 	if self.VJ_IsBeingControlled == false then
-		timer.Simple(1.94, function()
+		timer.Simple(self.JumpAttackTimer, function()
 			if IsValid(self) && IsValid(self:GetEnemy()) then 
 				if self:IsShoved() then return end 
 				if timer.Exists("Hunter_Land") then timer.Stop("Hunter_Land") end
@@ -642,12 +647,15 @@ function ENT:CustomOnThink()
 	end
 
 	SetPitch(self, "horiz_vel", self:GetEnemy())
+	SetPitch(self, "vert_vel", self:GetEnemy())
 
 	self:GetGroundType(self:GetPos()) -- in the features.lua
 	if self.VJ_IsBeingControlled == false then
-		self.CheckEnemyTimer = 2
+		self.CheckEnemyTimer = 1
+		self.JumpAttackTimer = 1
 	elseif self.VJ_IsBeingControlled == true then
 		self.CheckEnemyTimer = 0
+		self.JumpAttackTimer = 0
 	end
 	
 	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
@@ -707,6 +715,13 @@ function ENT:CustomOnThink()
 
 	if self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_UP) or self:GetSequence() == self:SelectWeightedSequence(ACT_CLIMB_DOWN) then
     	self.ConstantlyFaceEnemy = false 
+    else
+    	self.ConstantlyFaceEnemy = true
+    end
+
+    if self:GetSequence() == self:SelectWeightedSequence(ACT_RUN_CROUCH) then
+    	self.ConstantlyFaceEnemy = false
+    	self.CombatFaceEnemy = false
     else
     	self.ConstantlyFaceEnemy = true
     end
@@ -796,6 +811,35 @@ function ENT:CustomOnThink()
 			self.HasMeleeAttack = true
 		end
 		self.CombatFaceEnemy = true
+	end
+
+    if self.VJ_IsBeingControlled == false then
+		if self.IsCrouching == true then
+			self.AnimTbl_IdleStand = {"Idle_Crouching_01"}
+			self.AnimTbl_Run = {ACT_RUN_CROUCH}
+			self.AnimTbl_Walk = {ACT_RUN_CROUCH}
+		elseif self.IsCrouching == false then
+			self.AnimTbl_IdleStand = {ACT_IDLE}
+			self.AnimTbl_Run = {ACT_RUN}
+			self.AnimTbl_Walk = {ACT_WALK}
+		end
+	end
+
+    if IsValid(self:GetEnemy()) && self:Visible(self:GetEnemy()) then
+	    if self.VJ_IsBeingControlled == false then
+			if self.NearestPointToEnemyDistance <= 1150 then
+				self.IsCrouching = true
+			elseif self.NearestPointToEnemyDistance >= 1150 then
+				self.IsCrouching = false
+			end
+			if self.NearestPointToEnemyDistance <= 500 then
+				self.LeapAttackVelocityForward = 400 
+				self.LeapAttackVelocityUp = 250
+			elseif self.NearestPointToEnemyDistance >= 500 then -- Controls the height and forward velocity so that it doesnt jump too high when close to an enemy
+				self.LeapAttackVelocityForward = 500 
+				self.LeapAttackVelocityUp = 335
+			end
+		end
 	end
 
 	self:ManageHUD(self.VJ_TheController)
