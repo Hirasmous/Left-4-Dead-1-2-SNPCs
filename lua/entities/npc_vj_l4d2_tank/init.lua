@@ -325,7 +325,7 @@ function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
 			end
 		end
 	end
-	--[[if hitEnt:IsPlayer() then
+	if hitEnt:IsPlayer() then
 		hitEnt:Freeze(true)
 		hitEnt:DrawViewModel(false)
 		timer.Simple(1,function()
@@ -335,7 +335,7 @@ function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
 				hitEnt:DrawViewModel(true)
 			end
 		end)
-	end]]
+	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayTankSong(bOverwrite)
@@ -352,16 +352,9 @@ function ENT:PlayTankSong(bOverwrite)
 			end
 		end
 	end
-	local sndIncap = self.SoundTrack[1]
+	local sndIncap = VJ_PICK(self.SoundTrack)
 	local filter = RecipientFilter()
 	filter:AddAllPlayers()
-	--[[for k, v in ipairs(ents.FindByClass("player")) do 
-		for l, w in ipairs(ents.FindByClass("npc_vj_l4d*")) do
-			if w.VJ_IsBeingControlled == true && w.VJ_TheController == v then
-				filter:RemovePlayer(v)
-			end
-		end
-	end]]
 	local sound = CreateSound(self, sndIncap, filter)
 	self.TankSong = sound
 	sound:SetSoundLevel(0)
@@ -425,8 +418,7 @@ function ENT:CustomOnThink()
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
-	if self:IsShoved() then return end
-	if IsValid(self.Debris) then self.Debris:Remove() end
+	if self:IsShoved() then if IsValid(self.Debris) then self.Debris:Remove() return end end
 	if dmginfo:GetDamageType() == DMG_BLAST || dmginfo:GetDamageType() == DMG_CRUSH then
 		local function GetDirection()
 			local directions = {
