@@ -194,8 +194,8 @@ if CLIENT then
 			end
 			local tank_musictype = {Options = {}, CVars = {}, Label = "Tank music type", MenuButton = "0"}
 			tank_musictype.Options["Default"] = {vj_l4d2_musictype = 1}
-			tank_musictype.Options["Sacrifice"] = {vj_l4d2_musictype = 2}
-			tank_musictype.Options["SuicideBlitz"] = {vj_l4d2_musictype = 3}
+			tank_musictype.Options["OneBadTank"] = {vj_l4d2_musictype = 2}
+			tank_musictype.Options["MidnightTank"] = {vj_l4d2_musictype = 3}
 
 			local tank_type = {Options = {}, CVars = {}, Label = "Tank type", MenuButton = "0"}
 			tank_type.Options["Default"] = {vj_l4d2_tanktype = 1}
