@@ -325,7 +325,7 @@ function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
 			end
 		end
 	end
-	if hitEnt:IsPlayer() then
+	--[[if hitEnt:IsPlayer() then
 		hitEnt:Freeze(true)
 		hitEnt:DrawViewModel(false)
 		timer.Simple(1,function()
@@ -335,7 +335,7 @@ function ENT:CustomOnMeleeAttack_AfterChecks(hitEnt)
 				hitEnt:DrawViewModel(true)
 			end
 		end)
-	end
+	end]]
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:PlayTankSong(bOverwrite)
