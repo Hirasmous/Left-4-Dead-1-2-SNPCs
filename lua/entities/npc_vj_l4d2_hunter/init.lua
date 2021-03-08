@@ -49,7 +49,7 @@ ENT.LeapAttackAnimationFaceEnemy = true -- Should it face the enemy while playin
 ENT.LeapAttackAnimationDecreaseLengthAmount = 0 -- This will decrease the time until starts chasing again. Use it to fix animation pauses until it chases the enemy.
 ENT.Passive_RunOnDamage = false -- Should it run when it's damaged? | This doesn't impact how self.Passive_AlliesRunOnDamage works
 ENT.LeapDistance = 950 -- The distance of the leap, for example if it is set to 500, when the SNPC is 500 Unit away, it will jump
-ENT.LeapToMeleeDistance = 50 -- How close does it have to be until it uses melee?
+ENT.LeapToMeleeDistance = 170 -- How close does it have to be until it uses melee?
 ENT.LeapAttackDamageDistance = 100 -- How far does the damage go?
 ENT.DisableFootStepSoundTimer = true -- If set to true, it will disable the time system for the footstep sound code, allowing you to use other ways like model events
 	-- ====== Flinching Code ====== --
@@ -87,8 +87,8 @@ ENT.FootStepSoundLevel = 80
 ENT.AlertSoundLevel = 95
 ENT.IdleSoundLevel = 95
 ENT.DeathSoundLevel = 85
-ENT.LeapAttackJumpSoundLevel = 85
-ENT.BeforeLeapAttackSoundLevel = 105
+ENT.LeapAttackJumpSoundLevel = 90
+ENT.BeforeLeapAttackSoundLevel = 100
 ENT.LeapAttackJumpSoundPitch1 = 95
 ENT.LeapAttackJumpSoundPitch1 = 105
 
@@ -118,7 +118,6 @@ ENT.CanSpawnWhileGhosted = false
 ENT.HasSpawned = false
 ENT.IsGhosted = false
 ENT.IsFlying = false
-ENT.CheckEnemyTimer = 2
 ENT.FootStepType = "Common"
 ENT.NextFlyLoopSound = CurTime()
 ENT.EnemyMoveType = 3
@@ -126,6 +125,8 @@ ENT.NextAlertSound = CurTime()
 ENT.HasRandomAlertSounds = false
 ENT.IsCrouching = false
 
+-- Timers --
+ENT.CheckEnemyTimer = 2
 ENT.JumpAttackTimer = 0.5 -- Primary timer
 ENT.JumpAttackTimer1 = 0.88
 ENT.JumpAttackTimer2 = 0.98
@@ -826,16 +827,16 @@ function ENT:CustomOnThink()
 	end
 
     if IsValid(self:GetEnemy()) && self:Visible(self:GetEnemy()) then
-	    if self.VJ_IsBeingControlled == false then
+	    if self.VJ_IsBeingControlled == false && !self.IsGhosted then
 			if self.NearestPointToEnemyDistance <= 1150 then
 				self.IsCrouching = true
 			elseif self.NearestPointToEnemyDistance >= 1150 then
 				self.IsCrouching = false
 			end
-			if self.NearestPointToEnemyDistance <= 500 then
-				self.LeapAttackVelocityForward = 400 
+			if self.NearestPointToEnemyDistance <= 700 then
+				self.LeapAttackVelocityForward = 500 
 				self.LeapAttackVelocityUp = 250
-			elseif self.NearestPointToEnemyDistance >= 500 then -- Controls the height and forward velocity so that it doesnt jump too high when close to an enemy
+			elseif self.NearestPointToEnemyDistance >= 700 then -- Controls the height and forward velocity so that it doesnt jump too high when close to an enemy
 				self.LeapAttackVelocityForward = 500 
 				self.LeapAttackVelocityUp = 335
 			end
