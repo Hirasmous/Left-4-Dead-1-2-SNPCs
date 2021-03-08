@@ -318,6 +318,8 @@ function ENT:DismountSmoker()
 		end
 	end
 	enemy:SetMoveType(self.EnemyMoveType)
+	enemy:SetRenderMode(0)
+	enemy:SetColor(Color(255, 255, 255, 255))
 	if enemy:GetNoDraw() == true then
 		enemy:SetNoDraw(false)
 	end
