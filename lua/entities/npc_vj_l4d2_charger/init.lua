@@ -1185,7 +1185,7 @@ function ENT:CustomOnThink()
 
 			local leftPos  = self:GetPos() - self:GetRight() * 45
 			local rightPos = self:GetPos() + self:GetRight() * 45
-			for k, v in ipairs(ents.FindInCone(self:GetPos(), self:GetForward(), 100, 0.707)) do
+			for k, v in ipairs(ents.FindInCone(self:GetPos(), self:GetForward(), 200, 0.707)) do
 				if v ~= self.pChargeEnt then
 					if self:IsEntityAlly(v) == false then
 						local function GetSidePos()
