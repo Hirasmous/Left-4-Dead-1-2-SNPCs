@@ -120,6 +120,8 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					if enemy:IsPlayer() then
 						enemy:SetMoveType(MOVETYPE_CUSTOM)
 					else
+						enemy:SetRenderMode(1)
+						enemy:SetColor(Color(255, 255, 255, 0))
 						enemy:SetNoDraw(true)
 					end
 
@@ -171,6 +173,8 @@ function ENT:PhysicsCollide(data, physobj, entity)
 							local ene = enemy
 							timer.Simple(1.5, function()
 								if (!IsValid(owner) || !IsValid(enemy) || enemy:Alive() == false) then return end
+								enemy:SetRenderMode(1)
+								enemy:SetColor(Color(255, 255, 255, 0))
 								enemy:SetNoDraw(true)
 								owner:SmokerIncapacitate(enemy)
 								if IsValid(owner.pEnemyTongueAttach) then
@@ -264,10 +268,7 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					--enemy fail-safes
 					enemy:CallOnRemove("smoker_ClearParent", function(ent)
 						if IsValid(owner.pIncapacitatedEnemy) && owner.pIncapacitatedEnemy == ent then
-							owner:SetParent(nil)
-							net.Start("infected_RemoveCSEnt")
-								net.WriteString(tostring(owner:EntIndex()))
-							net.Broadcast()
+							owner:DismountSmoker()
 						end
 						if ent:IsPlayer() then
 							ent:SetParent(nil)
@@ -277,6 +278,8 @@ function ENT:PhysicsCollide(data, physobj, entity)
 					hook.Add("PlayerDeath", "player_RemoveCSEnt", function(victim, inflictor, attacker)
 						if victim == owner.pIncapacitatedEnemy then
 							victim:SetParent(nil)
+							victim:SetRenderMode(0)
+							victim:SetColor(Color(255, 255, 255, 255))
 							victim:SetMoveType(owner.EnemyMoveType)
 							victim:SetObserverMode(0)
 							victim:DrawViewModel(true)
