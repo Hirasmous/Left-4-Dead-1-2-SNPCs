@@ -353,6 +353,11 @@ end
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
+	
+	if IsValid(self:GetParent()) then
+		self:SetAngles(self:GetParent():GetAngles())
+	end
+	
 	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
 	    self:Special_Think()
 	end
