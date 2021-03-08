@@ -521,7 +521,9 @@ function NPC:StripEnemyWeapons(ent)
 		self.tblEnemyWeapons[index][2] = {w:GetPrimaryAmmoType(), w:Clip1()}
 		self.tblEnemyWeapons[index][3] = {w:GetSecondaryAmmoType(), w:Clip2()}
 	end
-	self.EnemyActiveWeapon = ent:GetActiveWeapon():GetClass()
+	if IsValid(ent:GetActiveWeapon()) then
+		self.EnemyActiveWeapon = ent:GetActiveWeapon():GetClass()
+	end
 	ent:StripWeapons()
 	ent:StripAmmo()
 end
