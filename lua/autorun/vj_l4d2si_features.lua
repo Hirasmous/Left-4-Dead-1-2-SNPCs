@@ -305,7 +305,9 @@ function NPC:SetGhost(bool)
 		self:SetCollisionGroup(COLLISION_GROUP_NPC)
 		self.AnimationPlaybackRate = 1
 		if self:GetClass() == "npc_vj_l4d2_hunter" or self:GetClass() == "npc_vj_l4d_hunter" then
-			self.HasLeapAttack = true
+			if self.VJ_IsBeingControlled == false then
+				self.HasLeapAttack = true
+			end
 		end
 		if self:IsFlagSet(FL_NOTARGET) then
 			self:RemoveFlags(FL_NOTARGET)
@@ -808,7 +810,7 @@ function NPC:L4D2_DeathMessage(messagetype,attacker)
 					if attacker.IsVJBaseSNPC then
 						net.Start("Infected_PrintChat")
 							net.WriteVector(Vector(255,0,0))
-							net.WriteVector(Vector(255,255,255))
+							net.WriteVector(Vector(255,0,0))
 							net.WriteVector(Vector(255,0,0))
 							net.WriteString(attacker:GetName())
 							net.WriteString(" killed ")
@@ -817,7 +819,7 @@ function NPC:L4D2_DeathMessage(messagetype,attacker)
 					else
 						net.Start("Infected_PrintChat")
 							net.WriteVector(Vector(255,0,0))
-							net.WriteVector(Vector(255,255,255))
+							net.WriteVector(Vector(255,0,0))
 							net.WriteVector(Vector(255,0,0))
 							net.WriteString(attacker:GetClass())
 							net.WriteString(" killed ")
@@ -827,7 +829,7 @@ function NPC:L4D2_DeathMessage(messagetype,attacker)
 				elseif attacker:IsPlayer() then
 					net.Start("Infected_PrintChat")
 						net.WriteVector(Vector(255,0,0))
-						net.WriteVector(Vector(255,255,255))
+						net.WriteVector(Vector(255,0,0))
 						net.WriteVector(Vector(255,0,0))
 						net.WriteString(attacker:Nick())
 						net.WriteString(" killed ")
@@ -841,7 +843,7 @@ function NPC:L4D2_DeathMessage(messagetype,attacker)
 					if attacker.IsVJBaseSNPC then
 						net.Start("Infected_PrintChat")
 							net.WriteVector(Vector(255,0,0))
-							net.WriteVector(Vector(255,255,255))
+							net.WriteVector(Vector(255,0,0))
 							net.WriteVector(Vector(255,0,0))
 							net.WriteString(self:GetName())
 							net.WriteString(" killed ")
@@ -850,7 +852,7 @@ function NPC:L4D2_DeathMessage(messagetype,attacker)
 					else
 						net.Start("Infected_PrintChat")
 							net.WriteVector(Vector(255,0,0))
-							net.WriteVector(Vector(255,255,255))
+							net.WriteVector(Vector(255,0,0))
 							net.WriteVector(Vector(255,0,0))
 							net.WriteString(self:GetName())
 							net.WriteString(" killed ")
@@ -860,7 +862,7 @@ function NPC:L4D2_DeathMessage(messagetype,attacker)
 				elseif attacker:IsPlayer() then
 					net.Start("Infected_PrintChat")
 						net.WriteVector(Vector(255,0,0))
-						net.WriteVector(Vector(255,255,255))
+						net.WriteVector(Vector(255,0,0))
 						net.WriteVector(Vector(255,0,0))
 						net.WriteString(self:GetName())
 						net.WriteString(" killed ")
