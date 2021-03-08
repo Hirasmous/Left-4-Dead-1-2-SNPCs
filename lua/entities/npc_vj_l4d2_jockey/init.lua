@@ -272,6 +272,8 @@ function ENT:ResetJockey()
 	hook.Add("ShouldCollide", "Jockey_EnableCollisions", function(ent1, ent2)
 		if (ent1 == self and ent2 == enemy) then return true end
 	end)
+	enemy:SetRenderMode(0)
+	enemy:SetColor(Color(255, 255, 255, 255))
 	if enemy:GetNoDraw() == true then
 		enemy:SetNoDraw(false)
 	end
@@ -353,11 +355,11 @@ end
 function ENT:CustomOnThink()
 	self:GetGroundType(self:GetPos())
 	self:IgnoreIncappedEnemies()
-	
+
 	if IsValid(self:GetParent()) then
 		self:SetAngles(self:GetParent():GetAngles())
 	end
-	
+
 	if self.VJ_IsBeingControlled == false && self.IsGhosted == false then
 	    self:Special_Think()
 	end
@@ -513,6 +515,8 @@ function ENT:CustomOnThink()
 
 							self:ClearPoseParameters()
 
+							v:SetRenderMode(1)
+							v:SetColor(Color(255, 255, 255, 0))
 							v:SetNoDraw(true)
 
 							self:PlayIncapTagSound("vj_l4d2/music/tags/vassalationhit.mp3")
@@ -605,6 +609,8 @@ function ENT:CustomOnThink()
 							hook.Add("PlayerDeath", "player_RemoveCSEnt", function( victim, inflictor, attacker )
 								if victim == self.pIncapacitatedEnemy then
 									victim:SetParent(nil)
+									victim:SetRenderMode(0)
+									victim:SetColor(Color(255, 255, 255, 255))
 									victim:SetObserverMode(0)
 									victim:DrawViewModel(true)
 									victim:DrawWorldModel(true)
