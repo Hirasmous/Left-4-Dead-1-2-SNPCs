@@ -181,6 +181,7 @@ if CLIENT then
 		local id = net.ReadString()
 		local ent = net.ReadEntity()
 		local par = net.ReadEntity()
+		if !IsValid(ent) then return end
 		local prt = CreateParticleSystem(par, "smoker_tongue", 4, par:LookupAttachment("smoker_mouth"), Vector( 0, 0, 0 ))
 		prt:SetControlPoint(1,  ent:GetPos())
 		prt:StartEmission()
