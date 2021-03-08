@@ -303,6 +303,7 @@ function NPC:SetGhost(bool)
 		self:SetRenderMode(RENDERMODE_NORMAL)
 		self:EmitSound("ui/pickup_guitarriff10.mp3")
 		self:SetCollisionGroup(COLLISION_GROUP_NPC)
+		self.MeleeAttackAnimationAllowOtherTasks = true
 		self.AnimationPlaybackRate = 1
 		if self:GetClass() == "npc_vj_l4d2_hunter" or self:GetClass() == "npc_vj_l4d_hunter" then
 			if self.VJ_IsBeingControlled == false then
@@ -350,6 +351,9 @@ function NPC:Ghost()
 			end
 		end
 	end
+	if self:IsMoving() && self:IsOnGround() then
+        self:SetLocalVelocity(self:GetGroundSpeedVelocity() * 3.5)
+    end
 end
 
 function NPC:PlayBacteria(bOverwrite)
