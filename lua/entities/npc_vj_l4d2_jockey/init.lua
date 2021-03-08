@@ -733,6 +733,14 @@ function ENT:CustomOnThink()
 	if CurTime() >= self.nextBacteria then
 		self:PlayBacteria()
 	end
+	
+	if GetConVarNumber("vj_l4d2_enemy_finding") == 1 then
+        self.FindEnemy_UseSphere = true 
+        self.FindEnemy_CanSeeThroughWalls = true 
+    elseif GetConVarNumber("vj_l4d2_enemy_finding") == 0 then
+        self.FindEnemy_UseSphere = false 
+        self.FindEnemy_CanSeeThroughWalls = false
+    end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:CustomOnTakeDamage_AfterDamage(dmginfo,hitgroup)
