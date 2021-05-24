@@ -231,6 +231,7 @@ function ENT:ManageHUD(ply)
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:Smoker_PlayIncapSong_Choke(bOverwrite,fadeout)
+	if GetConVar("vj_l4d2_music"):GetInt() ~= 1 then return end
 	if self.IncapSong2 && self.IncapSong2:IsPlaying() then return end
 	for k, v in ipairs(ents.FindByClass("npc_vj_l4d2_*")) do
 		if IsValid(v.pIncapacitatedEnemy) && v.pIncapacitatedEnemy == self.pIncapacitatedEnemy then
