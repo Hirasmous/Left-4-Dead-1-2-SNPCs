@@ -173,7 +173,9 @@ if CLIENT then
 
 		local sound = CreateSound(LocalPlayer(), "vj_l4d2/music/terror/pukricide.mp3", filter)
 		sound:SetSoundLevel(0)
-		sound:Play()
+		if GetConVar("vj_l4d2_music"):GetInt() == 1 then
+			sound:Play()
+		end
 		timer.Create("ply"..LocalPlayer():EntIndex().."_Boomer_Pukricide", 0.1, 140, function()
 			if LocalPlayer():Alive() == false then
 				sound:Stop()
