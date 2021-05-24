@@ -38,9 +38,9 @@ function ENT:CustomOnInitialize()
 	self:SetOwner(self:GetOwner())
 	self:DrawShadow(false)
 	self:SetNoDraw(false) 
-    self:SetMaterial("models/flesh")    
-    self.Owner = self:GetOwner()
-         	
+	self:SetMaterial("models/flesh")	
+	self.Owner = self:GetOwner()
+		 	
 	-- Physics Functions
 	local phys = self.Entity:GetPhysicsObject()
 	if (phys:IsValid()) then
@@ -72,8 +72,8 @@ function ENT:PhysicsCollide(data,physobj,entity)
 	self.Dead = true
 	if self.idlesoundc then self.idlesoundc:Stop() end
 	self:StopParticles()
-    self:SetMoveType(MOVETYPE_NONE)
-    self:DrawShadow(true)
+	self:SetMoveType(MOVETYPE_NONE)
+	self:DrawShadow(true)
 	self:SetNoDraw(true)
 	self.Owner = self:GetOwner()
 
@@ -100,39 +100,41 @@ function ENT:DeathEffects(data,phys)
 		end
 	end
 
-    if self.HasMusic == true then
-	    self.cspIdleAcidLoop = CreateSound(self, "vj_l4d2/music/terror/pileobile.mp3",filter)
-	    self.cspIdleAcidLoop:SetSoundLevel(70)  
-	    self.cspIdleAcidLoop:PlayEx(1,100)  
+	if GetConVar("vj_l4d2_music"):GetInt() == 1 then
+		if self.HasMusic == true then
+			self.cspIdleAcidLoop = CreateSound(self, "vj_l4d2/music/terror/pileobile.mp3",filter)
+			self.cspIdleAcidLoop:SetSoundLevel(70)  
+			self.cspIdleAcidLoop:PlayEx(1,100)  
+		end
 	end
 
-    for i = 1,self.AcidCount do
-        timer.Simple(i *0.2,function()
-	        if IsValid(self) then
-		        local acid = ents.Create( "obj_vj_l4d2_acidpuddle" )
-		        if self.AcidCount == 8 then
-		            acid:SetPos( self:GetPos() + Vector( math.Rand( -37, 37 ), math.Rand( -39, 39 ), 0 ) )
-		        elseif self.AcidCount == 30 then
-		            acid:SetPos( self:GetPos() + Vector( math.Rand( -87, 87 ), math.Rand( -89, 89 ), 0 ) )
-		        end
-		        acid:SetOwner(self:GetOwner())
-		        acid:Spawn()
-		        acid:DropToFloor()
+	for i = 1,self.AcidCount do
+		timer.Simple(i *0.2,function()
+			if IsValid(self) then
+				local acid = ents.Create( "obj_vj_l4d2_acidpuddle" )
+				if self.AcidCount == 8 then
+					acid:SetPos( self:GetPos() + Vector( math.Rand( -37, 37 ), math.Rand( -39, 39 ), 0 ) )
+				elseif self.AcidCount == 30 then
+					acid:SetPos( self:GetPos() + Vector( math.Rand( -87, 87 ), math.Rand( -89, 89 ), 0 ) )
+				end
+				acid:SetOwner(self:GetOwner())
+				acid:Spawn()
+				acid:DropToFloor()
 			end
 		end)
-    end 
-    timer.Simple(6,function()
-        if IsValid(acid) then
-            acid:Remove()
-        end
-    end)   
-    timer.Simple(7,function()
-        if IsValid(self) then
-        	if self.cspIdleAcidLoop && self.cspIdleAcidLoop:IsPlaying() then
-                self.cspIdleAcidLoop:FadeOut(1)
-            end
-        end
-    end)    
+	end 
+	timer.Simple(6,function()
+		if IsValid(acid) then
+			acid:Remove()
+		end
+	end)   
+	timer.Simple(7,function()
+		if IsValid(self) then
+			if self.cspIdleAcidLoop && self.cspIdleAcidLoop:IsPlaying() then
+				self.cspIdleAcidLoop:FadeOut(1)
+			end
+		end
+	end)	
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------
 function ENT:OnRemove()
